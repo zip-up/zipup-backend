@@ -23,7 +23,6 @@ public class CrawlerServiceTest {
 
     for (CrawlerResponse r : response) {
       System.out.println(r.getProductName());
-      System.out.println(r.getPrice());
       System.out.println(r.getImageUrl());
     }
 
@@ -33,7 +32,6 @@ public class CrawlerServiceTest {
     for (CrawlerResponse r : response) {
       assertNotNull(r.getImageUrl());
       assertNotNull(r.getProductName());
-      assertTrue(r.getPrice() > 0);
     }
   }
 

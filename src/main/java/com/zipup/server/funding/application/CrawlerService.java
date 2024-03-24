@@ -23,29 +23,20 @@ public class CrawlerService {
 
     ChromeOptions options = new ChromeOptions();
     options.addArguments("--remote-allow-origins=*");
+    options.addArguments("--headless");
     WebDriver driver = new ChromeDriver(options);
 
     driver.get(url);
 
-    String IMAGE_XPATH = "//img[@class='rf-configuration-hero-image']";
-    String TITLE_XPATH = "//h1";
-    String PRICE_XPATH = "//span[@class='rc-prices-fullprice']";
+    WebElement ogTitleElement = driver.findElement(By.xpath("//meta[@property='og:title']"));
+    String ogTitle = ogTitleElement.getAttribute("content");
 
-    List<WebElement> images = driver.findElements(By.xpath(IMAGE_XPATH));
-    List<WebElement> titles = driver.findElements(By.xpath(TITLE_XPATH));
-    List<WebElement> prices = driver.findElements(By.xpath(PRICE_XPATH));
+    WebElement ogImageUrlElement = driver.findElement(By.xpath("//meta[@property='og:image']"));
+    String ogImageUrl = ogImageUrlElement.getAttribute("content");
 
     List<CrawlerResponse> response = new ArrayList<>();
 
-    final String[] imageUrl = {""};
-    final String[] title = {""};
-    final int[] price = {0};
-
-    prices.forEach(p -> price[0] = Integer.parseInt(p.getText().substring(1).replaceAll(",", "")));
-    images.forEach(image -> imageUrl[0] = image.getAttribute("src"));
-    titles.forEach(t -> title[0] = t.getText());
-
-    response.add(new CrawlerResponse(imageUrl[0], title[0], price[0]));
+    response.add(new CrawlerResponse(ogImageUrl, ogTitle));
 
     driver.quit();
 

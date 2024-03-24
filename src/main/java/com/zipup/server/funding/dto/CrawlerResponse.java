@@ -9,8 +9,8 @@ import lombok.*;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CrawlerResponse {
 
-  private String imageUrl;
-  private String productName;
+  private final String imageUrl;
+  private final String productName;
   private Integer price;
 
 }
