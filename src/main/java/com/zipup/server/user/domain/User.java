@@ -31,7 +31,11 @@ public class User extends BaseTimeEntity {
   @Convert(converter = StringToUuidConverter.class)
   private UUID id;
 
+  @Column
   private String name;
+
+  @Column
+  private String password;
 
   @Column(nullable = false, unique = true)
   @Email(message = "메일 형식에 맞춰 작성해주세요",
@@ -43,7 +47,7 @@ public class User extends BaseTimeEntity {
   private UserRole role;
 
   @Enumerated(EnumType.STRING)
-  private LoginProvider socialProvider;
+  private LoginProvider loginProvider;
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<Fund> funds;
