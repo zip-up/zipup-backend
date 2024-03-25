@@ -62,7 +62,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
       throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
 
-    String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
+    String targetUrl = redirectUri.orElse(client);
 
     OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
     LoginProvider providerType = LoginProvider.valueOf(authToken.getAuthorizedClientRegistrationId().toUpperCase());
