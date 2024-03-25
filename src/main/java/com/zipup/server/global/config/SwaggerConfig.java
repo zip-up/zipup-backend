@@ -31,7 +31,7 @@ public class SwaggerConfig {
                 .components(components);
     }
 
-    private Info apiInfo() {
+    public Info apiInfo() {
         return new Info()
                 .version("v1.0.0")
                 .title("\uD83C\uDFE0\uD83C\uDF81️ ZIPUP API 명세서")
