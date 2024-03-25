@@ -3,6 +3,12 @@ package com.zipup.server.funding.presentation;
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,27 +22,52 @@ import java.util.List;
 @RequestMapping("/api/v1/fund")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Funding", description = "펀딩 주최 관련 API")
 public class FundController {
 
   private final FundService fundService;
   private final CrawlerService crawlerService;
 
+  @Operation(summary = "상품 이미지 크롤링", description = "상품 URL로 이미지 크롤링")
+  @Parameter(name = "product", description = "상품 URL")
+  @ApiResponse(
+          responseCode = "200",
+          description = "크롤링 성공",
+          content = @Content(schema = @Schema(implementation = CrawlerResponse.class)))
   @GetMapping("/crawler")
   public List<CrawlerResponse> crawlingProductInfo(@RequestParam(value = "product") String url) {
     List<CrawlerResponse> response = crawlerService.crawlingProductInfo(url);
     return response;
   }
 
+  @Operation(summary = "내가 주최한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
+  @Parameter(name = "user", description = "마이페이지 유저의 식별자 값 (UUID)")
+  @ApiResponse(
+          responseCode = "200",
+          description = "조회 성공",
+          content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
   public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user") String userId) {
     return ResponseEntity.ok(fundService.getMyFundingList(userId));
   }
 
+  @Operation(summary = "내가 주최한 펀딩 상세 조회", description = "펀딩 상세 내용")
+  @Parameter(name = "funding", description = "선택한 펀딩의 식별자 값 (UUID)")
+  @ApiResponse(
+          responseCode = "200",
+          description = "조회 성공",
+          content = @Content(schema = @Schema(implementation = FundingDetailResponse.class)))
   @GetMapping("")
   public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "funding") String id) {
     return ResponseEntity.ok(fundService.getFundingDetail(id));
   }
 
+  @Operation(summary = "펀딩 주최", description = "펀딩 주최")
+  @Parameter(name = "funding", description = "선택한 펀딩의 식별자 값 (UUID)")
+  @ApiResponse(
+          responseCode = "201",
+          description = "펀딩 주최 성공",
+          content = @Content(schema = @Schema(implementation = CreateFundingRequest.class)))
   @PostMapping("")
   public ResponseEntity<CreateFundingRequest> createFunding(@RequestPart("request") CreateFundingRequest request
   ) {
