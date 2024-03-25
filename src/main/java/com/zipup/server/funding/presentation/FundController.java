@@ -2,9 +2,7 @@ package com.zipup.server.funding.presentation;
 
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
-import com.zipup.server.funding.dto.CrawlerResponse;
-import com.zipup.server.funding.dto.CreateFundingRequest;
-import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.funding.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +25,16 @@ public class FundController {
   public List<CrawlerResponse> crawlingProductInfo(@RequestParam String url) {
     List<CrawlerResponse> response = crawlerService.crawlingProductInfo(url);
     return response;
+  }
+
+  @GetMapping("")
+  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user-id") String id) {
+    return ResponseEntity.ok(fundService.getMyFundingList(id));
+  }
+
+  @GetMapping("")
+  public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "fund-id") String id) {
+    return ResponseEntity.ok(fundService.getFundingDetail(id));
   }
 
   @PostMapping("")

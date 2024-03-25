@@ -1,13 +1,19 @@
 package com.zipup.server.funding.domain;
 
+import com.zipup.server.funding.dto.FundingDetailResponse;
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.*;
+import com.zipup.server.present.domain.Present;
 import com.zipup.server.user.domain.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -66,5 +72,39 @@ public class Fund extends BaseTimeEntity {
   @JoinColumn(name = "user_id")
   @Setter
   private User user;
+
+  @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+  private List<Present> presents;
+
+  public FundingSummaryResponse toSummaryResponse() {
+    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
+    int nowPresent = presents.stream()
+            .mapToInt(Present::getPrice)
+            .sum();
+
+    return FundingSummaryResponse.builder()
+            .id(id.toString())
+            .title(title)
+            .imageUrl(imageUrl)
+            .status(duration > 0 ? "D-" + duration : "완료")
+            .percent(nowPresent / goalPrice)
+            .build();
+  }
+
+  public FundingDetailResponse toDetailResponse() {
+    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
+    int nowPresent = presents.stream()
+            .mapToInt(Present::getPrice)
+            .sum();
+
+    return FundingDetailResponse.builder()
+            .id(id.toString())
+            .title(title)
+            .imageUrl(imageUrl)
+            .status(duration > 0 ? "D-" + duration : "완료")
+            .goalPrice(goalPrice)
+            .percent(nowPresent / goalPrice)
+            .build();
+  }
 
 }
