@@ -4,6 +4,7 @@ import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.present.domain.Present;
 import lombok.*;
+import org.checkerframework.common.aliasing.qual.Unique;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -30,20 +31,19 @@ public class Payment extends BaseTimeEntity {
   private String paymentKey;
 
   @Column
+  @Unique
   @NotNull(message = "주문 번호 누락")
   private String orderId;
 
   @Column
-  @NotNull(message = "은행 누락")
+  @NotNull(message = "결제 가격 누락")
+  private Integer price;
+
+  @Column
   private String bank;
 
   @Column
-  @NotNull(message = "결제 수단 누락")
   private String paymentMethod;
-
-  @Column
-  @NotNull(message = "결제 가격 누락")
-  private Integer price;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "present_id")
