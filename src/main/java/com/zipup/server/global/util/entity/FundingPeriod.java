@@ -16,9 +16,9 @@ import java.time.LocalDateTime;
 public class FundingPeriod {
   @Column
   @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
-  private LocalDateTime beginEvent;
+  private LocalDateTime beginFunding;
 
   @Column
   @Convert(converter = Jsr310JpaConverters.LocalDateTimeConverter.class)
-  private LocalDateTime finishEvent;
+  private LocalDateTime finishFunding;
 }

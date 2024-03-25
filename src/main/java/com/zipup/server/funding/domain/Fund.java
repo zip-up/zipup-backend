@@ -60,15 +60,11 @@ public class Fund extends BaseTimeEntity {
   private GiftCard card;
 
   @Embedded
-  private FundingPeriod recruitPeriod;
+  private FundingPeriod fundingPeriod;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   @Setter
   private User user;
-
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "fund_id")
-  private Fund fund;
 
 }
