@@ -43,11 +43,10 @@ public class Payment extends BaseTimeEntity {
   private String bank;
 
   @Column
+  @NotNull(message = "결제 수단 누락")
   private String paymentMethod;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "present_id")
-  @Setter
+  @OneToOne(fetch = FetchType.LAZY)
   private Present present;
 
 }

@@ -1,14 +1,21 @@
 package com.zipup.server.funding.domain;
 
+import com.zipup.server.funding.dto.FundingDetailResponse;
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.*;
+import com.zipup.server.present.domain.Present;
 import com.zipup.server.user.domain.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "fundings")
@@ -60,15 +67,47 @@ public class Fund extends BaseTimeEntity {
   private GiftCard card;
 
   @Embedded
-  private FundingPeriod recruitPeriod;
+  private FundingPeriod fundingPeriod;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   @Setter
   private User user;
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "fund_id")
-  private Fund fund;
+  @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+  private List<Present> presents;
+
+  public FundingSummaryResponse toSummaryResponse() {
+    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
+    int nowPresent = presents.stream()
+            .mapToInt(present -> present.getPayment().getPrice())
+            .sum();
+
+    return FundingSummaryResponse.builder()
+            .id(id.toString())
+            .title(title)
+            .imageUrl(imageUrl)
+            .status(duration > 0 ? "D-" + duration : "완료")
+            .percent(nowPresent / goalPrice)
+            .build();
+  }
+
+  public FundingDetailResponse toDetailResponse() {
+    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
+    int nowPresent = presents.stream()
+            .mapToInt(present -> present.getPayment().getPrice())
+            .sum();
+
+    return FundingDetailResponse.builder()
+            .id(id.toString())
+            .title(title)
+            .imageUrl(imageUrl)
+            .description(description)
+            .status(duration > 0 ? "D-" + duration : "완료")
+            .goalPrice(goalPrice)
+            .percent(nowPresent / goalPrice)
+            .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
+            .build();
+  }
 
 }
