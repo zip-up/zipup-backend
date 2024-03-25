@@ -3,12 +3,15 @@ package com.zipup.server.present.domain;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
+import com.zipup.server.payment.domain.Payment;
+import com.zipup.server.present.dto.PresentSummaryResponse;
 import com.zipup.server.user.domain.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -31,11 +34,7 @@ public class Present extends BaseTimeEntity {
   private String senderName;
 
   @Column
-  private String congrats_message;
-
-  @Column
-  @NotNull(message = "참여 가격 누락")
-  private Integer price;
+  private String congratsMessage;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
@@ -46,5 +45,18 @@ public class Present extends BaseTimeEntity {
   @JoinColumn(name = "fund_id")
   @Setter
   private Fund fund;
+
+  @OneToOne(fetch = FetchType.LAZY)
+  private Payment payment;
+
+  public PresentSummaryResponse toSummaryResponse() {
+    return PresentSummaryResponse.builder()
+            .id(id.toString())
+            .senderName(senderName)
+            .profileImage(user.getProfileImage())
+            .congratsMessage(congratsMessage)
+            .contributionPercent(payment.getPrice() / fund.getGoalPrice())
+            .build();
+  }
 
 }

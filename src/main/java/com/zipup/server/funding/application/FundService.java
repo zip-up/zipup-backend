@@ -36,7 +36,7 @@ public class FundService {
   public Fund findById(String id) {
     isValidUUID(id);
     return fundRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new NoResultException("존재하지 않는 회원이에요."));
+            .orElseThrow(() -> new NoResultException("존재하지 않는 펀딩이에요."));
   }
 
   @Transactional
@@ -51,14 +51,16 @@ public class FundService {
   }
 
   @Transactional(readOnly = true)
-  public List<FundingSummaryResponse> getMyFundingList(String id) {
-    return fundRepository.findAllByUser(userService.findById(id))
+  public List<FundingSummaryResponse> getMyFundingList(String userId) {
+    isValidUUID(userId);
+    return fundRepository.findAllByUser(userService.findById(userId))
             .stream()
             .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());
   }
 
   public FundingDetailResponse getFundingDetail(String id) {
+    isValidUUID(id);
     return findById(id).toDetailResponse();
   }
 

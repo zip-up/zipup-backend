@@ -21,19 +21,19 @@ public class FundController {
   private final FundService fundService;
   private final CrawlerService crawlerService;
 
-  @GetMapping("")
-  public List<CrawlerResponse> crawlingProductInfo(@RequestParam String url) {
+  @GetMapping("/crawler")
+  public List<CrawlerResponse> crawlingProductInfo(@RequestParam(value = "product") String url) {
     List<CrawlerResponse> response = crawlerService.crawlingProductInfo(url);
     return response;
   }
 
-  @GetMapping("")
-  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user-id") String id) {
-    return ResponseEntity.ok(fundService.getMyFundingList(id));
+  @GetMapping("/list")
+  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user") String userId) {
+    return ResponseEntity.ok(fundService.getMyFundingList(userId));
   }
 
   @GetMapping("")
-  public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "fund-id") String id) {
+  public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "funding") String id) {
     return ResponseEntity.ok(fundService.getFundingDetail(id));
   }
 

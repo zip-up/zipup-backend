@@ -15,6 +15,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "fundings")
@@ -79,7 +80,7 @@ public class Fund extends BaseTimeEntity {
   public FundingSummaryResponse toSummaryResponse() {
     long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
     int nowPresent = presents.stream()
-            .mapToInt(Present::getPrice)
+            .mapToInt(present -> present.getPayment().getPrice())
             .sum();
 
     return FundingSummaryResponse.builder()
@@ -94,16 +95,18 @@ public class Fund extends BaseTimeEntity {
   public FundingDetailResponse toDetailResponse() {
     long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
     int nowPresent = presents.stream()
-            .mapToInt(Present::getPrice)
+            .mapToInt(present -> present.getPayment().getPrice())
             .sum();
 
     return FundingDetailResponse.builder()
             .id(id.toString())
             .title(title)
             .imageUrl(imageUrl)
+            .description(description)
             .status(duration > 0 ? "D-" + duration : "완료")
             .goalPrice(goalPrice)
             .percent(nowPresent / goalPrice)
+            .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
             .build();
   }
 

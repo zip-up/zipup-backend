@@ -14,6 +14,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.NoResultException;
+import java.util.UUID;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -32,6 +36,21 @@ public class PaymentService {
 
   private final RedisTemplate<String, String> redisTemplate;
   private final PaymentRepository paymentRepository;
+
+  private void isValidUUID(String id) {
+    try {
+      UUID.fromString(id);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+    }
+  }
+
+  @Transactional(readOnly = true)
+  public Payment findById(String id) {
+    isValidUUID(id);
+    return paymentRepository.findById(UUID.fromString(id))
+            .orElseThrow(() -> new NoResultException("존재하지 않는 결제 내역이에요."));
+  }
 
   public Boolean isOrderIdExist(String orderId) {
     return redisTemplate.opsForValue().get(orderId) == null;
