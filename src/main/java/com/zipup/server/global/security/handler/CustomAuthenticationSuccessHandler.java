@@ -39,8 +39,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
   private final UserService userService;
   private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
-  @Value("${client.address}")
-  private String client;
+//  @Value("${client.address}")
+  private String client = "http://localhost:3000/funding/create";
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
