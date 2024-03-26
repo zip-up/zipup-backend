@@ -1,6 +1,7 @@
 package com.zipup.server.present.domain;
 
 import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.payment.domain.Payment;
@@ -11,11 +12,10 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "present")
+@Table(name = "presents")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -36,27 +36,32 @@ public class Present extends BaseTimeEntity {
   @Column
   private String congratsMessage;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "user_id")
   @Setter
   private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "fund_id")
   @Setter
   private Fund fund;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.EAGER)
   private Payment payment;
 
   public PresentSummaryResponse toSummaryResponse() {
     return PresentSummaryResponse.builder()
             .id(id.toString())
             .senderName(senderName)
-            .profileImage(user.getProfileImage())
+            .profileImage(user.getProfileImage() != null ? user.getProfileImage() : "")
             .congratsMessage(congratsMessage)
-            .contributionPercent(payment.getPrice() / fund.getGoalPrice())
+            .contributionPercent((int) ((double) payment.getPrice() / fund.getGoalPrice()) * 100)
             .build();
   }
 
+  public SimpleDataResponse toSimpleDataResponse() {
+    return SimpleDataResponse.builder()
+            .id(id.toString())
+            .build();
+  }
 }

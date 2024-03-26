@@ -92,4 +92,11 @@ public class FundController {
     return ResponseEntity.created(location).build();
   }
 
+  @Operation(summary = "임시 데이터", description = "임시")
+  @GetMapping("/temp")
+  public ResponseEntity<List<FundingSummaryResponse>> getFundList() {
+    List<FundingSummaryResponse> response = fundService.getFundList();
+    return ResponseEntity.ok(response);
+  }
+
 }

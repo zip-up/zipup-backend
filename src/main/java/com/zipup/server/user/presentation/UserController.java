@@ -1,13 +1,9 @@
 package com.zipup.server.user.presentation;
 
-import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.user.application.UserService;
-import com.zipup.server.user.dto.SignInRequest;
-import com.zipup.server.user.dto.SignInResponse;
-import com.zipup.server.user.dto.SignUpRequest;
-import com.zipup.server.user.dto.TokenResponse;
+import com.zipup.server.user.domain.User;
+import com.zipup.server.user.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -59,6 +56,13 @@ public class UserController {
   public ResponseEntity<TokenResponse> signIn(@Valid @RequestBody SignInRequest request) {
     HttpHeaders headers = userService.signIn(request);
     return ResponseEntity.ok().headers(headers).build();
+  }
+
+  @Operation(summary = "임시 데이터", description = "임시")
+  @GetMapping("/temp")
+  public ResponseEntity<List<UserListResponse>> getUserList() {
+    List<UserListResponse> response = userService.getUserList();
+    return ResponseEntity.ok(response);
   }
 
 }

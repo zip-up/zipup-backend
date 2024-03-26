@@ -2,6 +2,7 @@ package com.zipup.server.funding.domain;
 
 import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.*;
 import com.zipup.server.present.domain.Present;
@@ -74,8 +75,11 @@ public class Fund extends BaseTimeEntity {
   @Setter
   private User user;
 
-  @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+  @OneToMany(
+          mappedBy = "fund"
+          , fetch = FetchType.EAGER)
   private List<Present> presents;
+
 
   public FundingSummaryResponse toSummaryResponse() {
     long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
@@ -88,7 +92,8 @@ public class Fund extends BaseTimeEntity {
             .title(title)
             .imageUrl(imageUrl)
             .status(duration > 0 ? "D-" + duration : "완료")
-            .percent(nowPresent / goalPrice)
+            .percent((int) (((double) nowPresent / goalPrice) * 100))
+            .organizer(user.getId().toString())
             .build();
   }
 
@@ -108,6 +113,13 @@ public class Fund extends BaseTimeEntity {
             .percent(nowPresent / goalPrice)
             .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
             .isOrganizer(isOrganizer)
+            .organizer(user.getId().toString())
+            .build();
+  }
+
+  public SimpleDataResponse toSimpleDataResponse() {
+    return SimpleDataResponse.builder()
+            .id(id.toString())
             .build();
   }
 

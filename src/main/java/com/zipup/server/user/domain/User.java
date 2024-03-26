@@ -1,12 +1,14 @@
 package com.zipup.server.user.domain;
 
 import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.global.util.entity.LoginProvider;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.review.domain.Review;
+import com.zipup.server.user.dto.UserListResponse;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -15,6 +17,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -52,13 +55,40 @@ public class User extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private LoginProvider loginProvider;
 
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @OneToMany(
+          mappedBy = "user"
+          , fetch = FetchType.LAZY
+          , cascade = CascadeType.PERSIST
+          , orphanRemoval = true
+  )
   private List<Fund> funds;
 
-  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @OneToMany(
+          mappedBy = "user"
+          , fetch = FetchType.LAZY
+          , cascade = CascadeType.PERSIST
+          , orphanRemoval = true
+  )
   private List<Present> presents;
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   private List<Review> reviews;
+
+  public UserListResponse toResponseList() {
+    return UserListResponse.builder()
+            .id(id.toString())
+            .name(name)
+            .email(email)
+//            .fundList(funds.stream().map(Fund::toSimpleDataResponse).collect(Collectors.toList()))
+//            .presentList(presents.stream().map(Present::toSimpleDataResponse).collect(Collectors.toList()))
+            .build();
+  }
+
+  public SimpleDataResponse toSimpleDataResponse() {
+
+    return SimpleDataResponse.builder()
+            .id(id.toString())
+            .build();
+  }
 
 }
