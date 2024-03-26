@@ -23,23 +23,6 @@ import org.springframework.web.bind.annotation.*;
 public class PresentController {
   private final PresentService presentService;
 
-  @Operation(summary = "참여할 펀딩 조회", description = "펀딩 식별자 값으로 참여할 펀딩 조회")
-  @Parameter(name = "funding", description = "펀딩 식별자 값 (UUID)")
-  @ApiResponses(value = {
-          @ApiResponse(
-                  responseCode = "200",
-                  description = "조회 성공",
-                  content = @Content(schema = @Schema(implementation = FundingDetailResponse.class))),
-          @ApiResponse(
-                  responseCode = "400",
-                  description = "잘못된 UUID 형태",
-                  content = @Content(schema = @Schema(type = "유효하지 않은 UUID입니다: {요청 인자}")))
-  })
-  @GetMapping("")
-  public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "funding") String id) {
-    return ResponseEntity.ok(presentService.getFundingDetail(id));
-  }
-
   @Operation(summary = "펀딩 참여하기", description = "펀딩 식별자 값으로 참여할 펀딩 조회")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "펀딩, 참여자, 결제 내역에 대한 식별자 값과 보내는 사람 이름 & 축하 메시지")
   @ApiResponses(value = {

@@ -21,4 +21,5 @@ public class FundingDetailResponse {
   private Integer goalPrice;
   @Schema(description = "해당 펀딩에 참여한 사람 목록")
   private List<PresentSummaryResponse> presentList;
+  private Boolean isOrganizer;
 }

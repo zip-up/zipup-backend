@@ -7,7 +7,6 @@ import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.user.application.UserService;
-import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,9 +40,8 @@ public class FundService {
 
   @Transactional
   public SimpleDataResponse createFunding(CreateFundingRequest request) {
-    User user = userService.findById(request.getUser());
     Fund targetFund = request.toEntity();
-    targetFund.setUser(user);
+    targetFund.setUser(userService.findById(request.getUser()));
 
     Fund response = fundRepository.save(targetFund);
 
@@ -59,9 +57,13 @@ public class FundService {
             .collect(Collectors.toList());
   }
 
-  public FundingDetailResponse getFundingDetail(String id) {
-    isValidUUID(id);
-    return findById(id).toDetailResponse();
+  public FundingDetailResponse getFundingDetail(String fundId, String userId) {
+    isValidUUID(fundId);
+    isValidUUID(userId);
+
+    Fund targetFunding = findById(fundId);
+
+    return targetFunding.toDetailResponse(userService.findById(userId).equals(targetFunding.getUser()));
   }
 
 }

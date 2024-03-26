@@ -22,19 +22,6 @@ public class PresentService {
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
 
-  private void isValidUUID(String id) {
-    try {
-      UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
-    }
-  }
-
-  public FundingDetailResponse getFundingDetail(String id) {
-    isValidUUID(id);
-    return fundService.getFundingDetail(id);
-  }
-
   @Transactional
   public String participateFunding(ParticipatePresentRequest request) {
     String fundingId = request.getFundingId();
