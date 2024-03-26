@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,15 +52,25 @@ public class FundController {
     return ResponseEntity.ok(fundService.getMyFundingList(userId));
   }
 
-  @Operation(summary = "내가 주최한 펀딩 상세 조회", description = "펀딩 상세 내용")
+  @Operation(summary = "펀딩 페이지 상세 조회", description = "펀딩 상세 내용")
   @Parameter(name = "funding", description = "선택한 펀딩의 식별자 값 (UUID)")
-  @ApiResponse(
-          responseCode = "200",
-          description = "조회 성공",
-          content = @Content(schema = @Schema(implementation = FundingDetailResponse.class)))
+  @Parameter(name = "user", description = "진입한 유저의 식별자 값 (UUID)")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "조회 성공",
+                  content = @Content(schema = @Schema(implementation = FundingDetailResponse.class))),
+          @ApiResponse(
+                  responseCode = "400",
+                  description = "잘못된 UUID 형태",
+                  content = @Content(schema = @Schema(type = "유효하지 않은 UUID입니다: {요청 인자}")))
+  })
   @GetMapping("")
-  public ResponseEntity<FundingDetailResponse> getFundingDetail(@RequestParam(value = "funding") String id) {
-    return ResponseEntity.ok(fundService.getFundingDetail(id));
+  public ResponseEntity<FundingDetailResponse> getFundingDetail(
+          @RequestParam(value = "funding") String fundId,
+          @RequestParam(value = "user") String userId
+  ) {
+    return ResponseEntity.ok(fundService.getFundingDetail(fundId, userId));
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")
