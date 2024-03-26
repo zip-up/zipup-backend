@@ -46,7 +46,7 @@ public class Payment extends BaseTimeEntity {
   @NotNull(message = "결제 수단 누락")
   private String paymentMethod;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @Transient
   private Present present;
 
 }

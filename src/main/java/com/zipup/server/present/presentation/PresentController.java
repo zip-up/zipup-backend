@@ -1,8 +1,11 @@
 package com.zipup.server.present.presentation;
 
 import com.zipup.server.funding.dto.FundingDetailResponse;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
+import com.zipup.server.present.dto.PresentSummaryResponse;
+import com.zipup.server.user.dto.UserListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/present")
@@ -38,5 +43,12 @@ public class PresentController {
   @PostMapping("")
   public ResponseEntity<String> participateFunding(@RequestBody ParticipatePresentRequest request) {
     return ResponseEntity.ok(presentService.participateFunding(request));
+  }
+
+  @Operation(summary = "임시 데이터", description = "임시")
+  @GetMapping("/temp")
+  public ResponseEntity<List<PresentSummaryResponse>> getParticipateList() {
+    List<PresentSummaryResponse> response = presentService.getParticipateList();
+    return ResponseEntity.ok(response);
   }
 }

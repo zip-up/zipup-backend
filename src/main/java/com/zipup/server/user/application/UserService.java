@@ -4,10 +4,7 @@ import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;
-import com.zipup.server.user.dto.SignInRequest;
-import com.zipup.server.user.dto.SignInResponse;
-import com.zipup.server.user.dto.SignUpRequest;
-import com.zipup.server.user.dto.TokenResponse;
+import com.zipup.server.user.dto.*;
 import com.zipup.server.user.infrastructure.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,7 +15,9 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.NoResultException;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
 
@@ -88,6 +87,10 @@ public class UserService {
     else throw new BaseException(TOKEN_NOT_FOUND);
   }
 
-
-
+  public List<UserListResponse> getUserList() {
+    return userRepository.findAll()
+            .stream()
+            .map(User::toResponseList)
+            .collect(Collectors.toList());
+  }
 }

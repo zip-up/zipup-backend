@@ -11,4 +11,5 @@ public class FundingSummaryResponse {
   private String imageUrl;
   private String status;
   private Integer percent;
+  private String organizer;
 }
