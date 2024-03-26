@@ -55,6 +55,7 @@ public class Present extends BaseTimeEntity {
             .senderName(senderName)
             .profileImage(user.getProfileImage() != null ? user.getProfileImage() : "")
             .congratsMessage(congratsMessage)
+            .participantId(user.getId().toString())
             .contributionPercent((int) ((double) payment.getPrice() / fund.getGoalPrice()) * 100)
             .build();
   }
