@@ -64,7 +64,7 @@ public class FundService {
 
     Fund targetFunding = findById(fundId);
 
-    return targetFunding.toDetailResponse(userService.findById(userId).equals(targetFunding.getUser()));
+    return targetFunding.toDetailResponse(userService.findById(userId).getId().equals(targetFunding.getUser().getId()));
   }
 
   public List<FundingSummaryResponse> getFundList() {
