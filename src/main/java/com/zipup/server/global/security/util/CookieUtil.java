@@ -34,13 +34,23 @@ public class CookieUtil {
   public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
     Cookie cookie = new Cookie(name, value);
     cookie.setPath("/");
-    cookie.setHttpOnly(true);
+//    cookie.setHttpOnly(true);
     cookie.setMaxAge(maxAge);
 
     response.addCookie(cookie);
   }
 
-  public static ResponseCookie addResponseCookie(String name, String value, int maxAge) {
+  public static ResponseCookie addResponseAccessCookie(String name, String value, int maxAge) {
+    return ResponseCookie.from(name, value)
+            .maxAge(maxAge)
+            .sameSite("None")
+//            .secure(true)
+//            .httpOnly(true)
+            .path("/")
+            .build();
+  }
+
+  public static ResponseCookie addResponseSecureCookie(String name, String value, int maxAge) {
     return ResponseCookie.from(name, value)
             .maxAge(maxAge)
             .sameSite("None")
@@ -50,7 +60,24 @@ public class CookieUtil {
             .build();
   }
 
-  public static ResponseCookie addResponseCookie(HttpServletResponse response, String name, String value, int maxAge, String url) {
+  public static ResponseCookie addResponseAccessCookie(HttpServletResponse response, String name, String value, int maxAge, String url) {
+    String domain = extractDomain(url);
+
+    ResponseCookie cookie = ResponseCookie.from(name, value)
+            .maxAge(maxAge)
+            .sameSite("None")
+//            .secure(true)
+//            .httpOnly(true)
+            .path("/")
+            .domain(domain)
+            .build();
+
+    response.addHeader(SET_COOKIE, cookie.toString());
+
+    return cookie;
+  }
+
+  public static ResponseCookie addResponseSecureCookie(HttpServletResponse response, String name, String value, int maxAge, String url) {
     String domain = extractDomain(url);
 
     ResponseCookie cookie = ResponseCookie.from(name, value)
