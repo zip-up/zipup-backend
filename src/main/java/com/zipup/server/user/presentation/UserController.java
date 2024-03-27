@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -26,6 +27,12 @@ import java.util.List;
 public class UserController {
 
   private final UserService userService;
+
+  @GetMapping("/endpoint")
+  public ResponseEntity<String> myEndpoint(HttpServletRequest request) {
+    String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
+    return ResponseEntity.ok("Base URL: " + baseUrl);
+  }
 
   @Operation(summary = "회원 가입")
   @ApiResponses(value = {
