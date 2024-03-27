@@ -60,7 +60,7 @@ public class FundService {
 
   public FundingDetailResponse getFundingDetail(String fundId, String userId) {
     isValidUUID(fundId);
-    isValidUUID(userId);
+    if (!userId.isEmpty()) isValidUUID(userId);
     return findById(fundId).toDetailResponse(userId);
   }
 
