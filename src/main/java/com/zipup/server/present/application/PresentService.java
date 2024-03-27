@@ -1,11 +1,7 @@
 package com.zipup.server.present.application;
 
 import com.zipup.server.funding.application.FundService;
-import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.FundingDetailResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.payment.application.PaymentService;
-import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.present.dto.PresentSummaryResponse;
@@ -27,6 +23,13 @@ public class PresentService {
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
 
+  private void isValidUUID(String id) {
+    try {
+      UUID.fromString(id);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+    }
+  }
   @Transactional
   public String participateFunding(ParticipatePresentRequest request) {
     String fundingId = request.getFundingId();
@@ -55,4 +58,11 @@ public class PresentService {
             .collect(Collectors.toList());
   }
 
+  public List<PresentSummaryResponse> getMyParticipateList(String userId) {
+    isValidUUID(userId);
+    return presentRepository.findAllByUser(userService.findById(userId))
+            .stream()
+            .map(Present::toSummaryResponse)
+            .collect(Collectors.toList());
+  }
 }
