@@ -28,12 +28,6 @@ public class UserController {
 
   private final UserService userService;
 
-  @GetMapping("/endpoint")
-  public ResponseEntity<String> myEndpoint(HttpServletRequest request) {
-    String baseUrl = request.getRequestURL().toString().replace(request.getRequestURI(), request.getContextPath());
-    return ResponseEntity.ok("Base URL: " + baseUrl);
-  }
-
   @Operation(summary = "회원 가입")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "회원가입이 성공적으로 완료되었습니다.",
