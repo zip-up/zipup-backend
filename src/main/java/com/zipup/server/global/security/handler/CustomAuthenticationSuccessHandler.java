@@ -80,12 +80,12 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     if ((accessTokenList != null ? accessTokenList.size() : 0) > 0) {
       String accessToken = userService.resolveToken(accessTokenList.get(0));
-      CookieUtil.addResponseCookie(response, HttpHeaders.AUTHORIZATION, accessToken, COOKIE_EXPIRE_SECONDS, client);
+      CookieUtil.addResponseAccessCookie(response, HttpHeaders.AUTHORIZATION, accessToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
     if ((refreshTokenList != null ? refreshTokenList.size() : 0) > 0) {
       String refreshToken = userService.resolveToken(refreshTokenList.get(0));
-      CookieUtil.addResponseCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
+      CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
     return UriComponentsBuilder.fromUriString(targetUrl)
