@@ -14,7 +14,7 @@ public class FundingDetailResponse {
   private String title;
   private String description;
   private String imageUrl;
-  @Schema(description = "펀딩 상태 ex) 완료, D-1 ...")
+  @Schema(description = "펀딩 상태 ex) 완료, 1 ...")
   private String status;
   @Schema(description = "현재 달성률")
   private Integer percent;

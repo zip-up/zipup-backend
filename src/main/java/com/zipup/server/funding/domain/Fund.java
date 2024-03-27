@@ -91,7 +91,7 @@ public class Fund extends BaseTimeEntity {
             .id(id.toString())
             .title(title)
             .imageUrl(imageUrl)
-            .status(duration > 0 ? "D-" + duration : "완료")
+            .status(duration > 0 ? String.valueOf(duration) : "완료")
             .percent((int) (((double) nowPresent / goalPrice) * 100))
             .organizer(user.getId().toString())
             .build();
@@ -108,7 +108,7 @@ public class Fund extends BaseTimeEntity {
             .title(title)
             .imageUrl(imageUrl)
             .description(description)
-            .status(duration > 0 ? "D-" + duration : "완료")
+            .status(duration > 0 ? String.valueOf(duration) : "완료")
             .goalPrice(goalPrice)
             .percent(nowPresent / goalPrice)
             .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
