@@ -48,19 +48,22 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     if (response.isCommitted()) {
       super.logger.error("Response has already been committed. Unable to redirect to " + targetUrl);
+      response.setStatus(HttpServletResponse.SC_FOUND);
+      response.getWriter().println("ResponseAlreadyCommittedException");
+      response.getWriter().flush();
       return;
     }
 
     clearAuthenticationAttributes(request, response);
-    getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    response.setStatus(HttpServletResponse.SC_OK);
   }
 
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
             .map(Cookie::getValue);
 
-    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
-      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
+//    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
+//      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
 
     String targetUrl = redirectUri.orElse(client);
 
