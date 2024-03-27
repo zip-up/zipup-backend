@@ -61,10 +61,7 @@ public class FundService {
   public FundingDetailResponse getFundingDetail(String fundId, String userId) {
     isValidUUID(fundId);
     isValidUUID(userId);
-
-    Fund targetFunding = findById(fundId);
-
-    return targetFunding.toDetailResponse(userService.findById(userId).getId().equals(targetFunding.getUser().getId()));
+    return findById(fundId).toDetailResponse(userId);
   }
 
   public List<FundingSummaryResponse> getFundList() {

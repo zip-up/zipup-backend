@@ -97,11 +97,14 @@ public class Fund extends BaseTimeEntity {
             .build();
   }
 
-  public FundingDetailResponse toDetailResponse(Boolean isOrganizer) {
+  public FundingDetailResponse toDetailResponse(String nowUserId) {
     long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
     int nowPresent = presents.stream()
             .mapToInt(present -> present.getPayment().getPrice())
             .sum();
+    Boolean isOrganizer = nowUserId.equals(user.getId().toString());
+    boolean isParticipant = presents.stream()
+            .anyMatch(p -> p.getUser().getId().toString().equals(nowUserId));
 
     return FundingDetailResponse.builder()
             .id(id.toString())
@@ -114,6 +117,7 @@ public class Fund extends BaseTimeEntity {
             .percent(nowPresent / goalPrice)
             .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
             .isOrganizer(isOrganizer)
+            .isParticipant(isParticipant)
             .organizer(user.getId().toString())
             .build();
   }
