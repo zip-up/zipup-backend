@@ -1,8 +1,8 @@
 name: github-action
 
 on:
-  push:
-    branches: [ "main" ]
+#  push:
+#    branches: [ "main" ]
 #    paths:
 #      - '**.java'
   pull_request:
