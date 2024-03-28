@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.NoResultException;
+import java.util.HashMap;
 import java.util.UUID;
 
 import java.io.*;
@@ -71,12 +72,12 @@ public class PaymentService {
 
     OutputStream outputStream = connection.getOutputStream();
 
-    JSONObject obj = new JSONObject();
-    obj.put("orderId", request.getOrderId());
-    obj.put("amount", request.getAmount());
-    obj.put("paymentKey", request.getPaymentKey());
+    HashMap<String, Object> obj = new HashMap<>();
+    obj.putIfAbsent("orderId", request.getOrderId());
+    obj.putIfAbsent("amount", request.getAmount());
+    obj.putIfAbsent("paymentKey", request.getPaymentKey());
 
-    outputStream.write(obj.toString().getBytes("UTF-8"));
+    outputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
 
     int code = connection.getResponseCode();
     boolean isSuccess = code == 200;
@@ -96,14 +97,19 @@ public class PaymentService {
     String message = "";
 
     if (method != null) {
-      if (method.equals("카드")) {
-        cardNumber = ((JSONObject) jsonObject.get("card")).get("number").toString();
-      } else if (method.equals("가상계좌")) {
-        accountNumber = ((JSONObject) jsonObject.get("virtualAccount")).get("accountNumber").toString();
-      } else if (method.equals("계좌이체")) {
-        bank = ((JSONObject) jsonObject.get("transfer")).get("bank").toString();
-      } else if (method.equals("휴대폰")) {
-        customerMobilePhone = ((JSONObject) jsonObject.get("mobilePhone")).get("customerMobilePhone").toString();
+      switch (method) {
+        case "카드":
+          cardNumber = ((JSONObject) jsonObject.get("card")).get("number").toString();
+          break;
+        case "가상계좌":
+          accountNumber = ((JSONObject) jsonObject.get("virtualAccount")).get("accountNumber").toString();
+          break;
+        case "계좌이체":
+          bank = ((JSONObject) jsonObject.get("transfer")).get("bank").toString();
+          break;
+        case "휴대폰":
+          customerMobilePhone = ((JSONObject) jsonObject.get("mobilePhone")).get("customerMobilePhone").toString();
+          break;
       }
 
       Payment successPayment = Payment.builder()

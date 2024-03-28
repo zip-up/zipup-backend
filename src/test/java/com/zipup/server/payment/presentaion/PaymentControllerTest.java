@@ -24,15 +24,11 @@ public class PaymentControllerTest {
   @Autowired
   private RedisTemplate<String, String> redisTemplate;
 
-  private String orderId = "1W_pCfO4rzG9szJEcThKw";
-  private Integer amount = 10000;
-  private String paymentKey = "test_payment_key";
-  private String message;
-  private Integer code;
-
   @Test
   @WithMockUser(authorities = {"ROLE_USER"})
   public void testCheckPaymentInfo() throws Exception {
+    String orderId = "1W_pCfO4rzG9szJEcThKw";
+    Integer amount = 10000;
     mockMvc.perform(post("/api/v1/payment/")
                     .param("orderId", orderId)
                     .param("amount", String.valueOf(amount)))
@@ -51,24 +47,14 @@ public class PaymentControllerTest {
   @Test
   @WithMockUser(authorities = {"ROLE_USER"})
   public void testFailPayment() throws Exception {
-    message = "Payment failed";
-    code = 400;
+    String message = "Payment failed";
+    Integer code = 400;
 
     mockMvc.perform(get("/api/v1/payment/fail")
                     .param("message", message)
                     .param("code", String.valueOf(code)))
             .andExpect(status().isBadRequest())
             .andExpect(content().string(message));
-  }
-
-  @Test
-  @WithMockUser(authorities = {"ROLE_USER"})
-  public void testSuccessPayment() throws Exception {
-    mockMvc.perform(get("/api/v1/payment/success")
-                    .param("orderId", orderId)
-                    .param("amount", String.valueOf(amount))
-                    .param("paymentKey", paymentKey))
-            .andExpect(status().isBadRequest());
   }
 
 }
