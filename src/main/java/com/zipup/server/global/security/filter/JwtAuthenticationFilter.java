@@ -33,7 +33,17 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
 
-  private static final String[] AUTH_LIST = { "/api/v1/user/sign-up", "/api/v1/user/sign-in" };
+  private static final String[] AUTH_LIST = {
+          "/error",
+          "/*/oauth2/code/*",
+          "/favicon.ico",
+          "/configuration/security",
+          "/swagger-ui/**",
+          "/webjars/**",
+          "/h2-console/**",
+          "/api/v1/user/sign-**",
+          "/v3/api-docs/**"
+  };
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -48,10 +58,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : cookieAttribute.get("Authorization") != null ? cookieAttribute.get("Authorization")
             : null;
 
-    if (!StringUtils.hasText(accessToken)) {
+    if (!StringUtils.hasText(accessToken) && Arrays.stream(AUTH_LIST).noneMatch(requestURI::contains)) {
       exceptionResponse(request, response, NOT_EXIST_TOKEN, SC_UNAUTHORIZED);
       return;
-    } else {
+    }
+
+    else if (StringUtils.hasText(accessToken) && Arrays.stream(AUTH_LIST).noneMatch(requestURI::contains)) {
       try{
         if (jwtProvider.validateToken(accessToken)) {
           log.error("validateToken :: {} {} {}", NOT_EXIST_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
