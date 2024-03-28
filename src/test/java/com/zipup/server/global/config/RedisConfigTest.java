@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(properties = "spring.cloud.config.enabled=false")
+@SpringBootTest
 @Transactional
 class RedisConfigTest {
 

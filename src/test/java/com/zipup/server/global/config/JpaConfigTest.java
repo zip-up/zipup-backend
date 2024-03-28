@@ -28,16 +28,17 @@ public class JpaConfigTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
         jpaConfig = new JpaConfig(entityManager);
     }
 
     @Test
-    public void testJpaDBConnection() {
+    public void testJpaDBConnection() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             assertThat(connection).isNotNull();
         } catch (SQLException e) {
             System.err.println(e);
+            throw e;
         }
     }
 

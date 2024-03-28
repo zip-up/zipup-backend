@@ -60,9 +60,4 @@ public class Present extends BaseTimeEntity {
             .build();
   }
 
-  public SimpleDataResponse toSimpleDataResponse() {
-    return SimpleDataResponse.builder()
-            .id(id.toString())
-            .build();
-  }
 }

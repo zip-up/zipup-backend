@@ -7,7 +7,6 @@ import com.zipup.server.user.infrastructure.UserRepository;
 import com.zipup.server.global.security.exception.OAuthProviderMissMatchException;
 import com.zipup.server.global.security.oauth.info.OAuth2UserInfo;
 import com.zipup.server.global.security.oauth.info.OAuth2UserInfoFactory;
-import com.zipup.server.global.util.entity.LoginProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;

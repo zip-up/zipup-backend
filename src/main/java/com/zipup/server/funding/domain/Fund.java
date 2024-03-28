@@ -2,7 +2,6 @@ package com.zipup.server.funding.domain;
 
 import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.*;
 import com.zipup.server.present.domain.Present;
@@ -119,12 +118,6 @@ public class Fund extends BaseTimeEntity {
             .isOrganizer(isOrganizer)
             .isParticipant(isParticipant)
             .organizer(user.getId().toString())
-            .build();
-  }
-
-  public SimpleDataResponse toSimpleDataResponse() {
-    return SimpleDataResponse.builder()
-            .id(id.toString())
             .build();
   }
 

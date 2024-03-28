@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +41,7 @@ public class AuthController {
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
     ) {
-        TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest, httpServletResponse);
+        TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest);
         httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
         return ResponseEntity.ok().body(response.getSignInResponse());

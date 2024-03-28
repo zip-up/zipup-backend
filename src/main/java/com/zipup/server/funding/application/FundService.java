@@ -7,7 +7,6 @@ import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.user.application.UserService;
-import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

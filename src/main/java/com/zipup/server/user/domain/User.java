@@ -1,7 +1,6 @@
 package com.zipup.server.user.domain;
 
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.global.util.entity.LoginProvider;
 import com.zipup.server.global.util.entity.UserRole;
@@ -79,15 +78,6 @@ public class User extends BaseTimeEntity {
             .id(id.toString())
             .name(name)
             .email(email)
-//            .fundList(funds.stream().map(Fund::toSimpleDataResponse).collect(Collectors.toList()))
-//            .presentList(presents.stream().map(Present::toSimpleDataResponse).collect(Collectors.toList()))
-            .build();
-  }
-
-  public SimpleDataResponse toSimpleDataResponse() {
-
-    return SimpleDataResponse.builder()
-            .id(id.toString())
             .build();
   }
 
