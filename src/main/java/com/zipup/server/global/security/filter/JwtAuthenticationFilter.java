@@ -8,6 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -55,8 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-      } catch (MalformedJwtException e){
+      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e){
         request.setAttribute("exception", WRONG_TYPE_TOKEN);
+      } catch (UnsupportedJwtException e){
+        request.setAttribute("exception", UNSUPPORTED_TOKEN);
       } catch (JwtException e){
         request.setAttribute("exception", EXPIRED_TOKEN);
       } catch (RedisConnectionFailureException e) {
