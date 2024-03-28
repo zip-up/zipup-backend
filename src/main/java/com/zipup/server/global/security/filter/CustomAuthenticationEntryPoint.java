@@ -11,6 +11,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 
 import java.io.IOException;
 
+/**
+ * 유효한 자격증명을 제공하지 않고 접근하는 경우 : SC_UNAUTHORIZED (401) 응답
+ */
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   private final JSONObject responseJson = new JSONObject();

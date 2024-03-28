@@ -15,9 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import static com.zipup.server.global.exception.CustomErrorCode.NOT_EXIST_TOKEN;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.COOKIE_EXPIRE_SECONDS;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 
@@ -32,10 +31,14 @@ public class AuthService {
 
   public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request) {
     String accessToken = jwtProvider.resolveToken(request);
+    if (accessToken.isBlank()) throw new BaseException(EMPTY_ACCESS_JWT);
+
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
 
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
+
+    if (redisRefreshToken.isBlank()) throw new BaseException(NOT_EXIST_TOKEN);
 
     ResponseCookie[] responseCookies = refresh(redisRefreshToken);
 
@@ -48,13 +51,14 @@ public class AuthService {
 
   @Transactional
   public ResponseCookie[] refresh(String refreshToken) {
+    if (refreshToken.isBlank()) throw new BaseException(EMPTY_REFRESH_JWT);
     jwtProvider.verifyRefreshToken(refreshToken);
 
     Authentication authentication = jwtProvider.getAuthenticationByToken(refreshToken);
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
-    if (redisRefreshToken == null || !redisRefreshToken.equals(refreshToken))
+    if (redisRefreshToken.isBlank() || !redisRefreshToken.equals(refreshToken))
       throw new BaseException(NOT_EXIST_TOKEN);
 
     redisTemplate.delete(key);

@@ -1,6 +1,7 @@
 package com.zipup.server.present.application;
 
 import com.zipup.server.funding.application.FundService;
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
@@ -15,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
+
 @Service
 @RequiredArgsConstructor
 public class PresentService {
@@ -27,7 +30,7 @@ public class PresentService {
     try {
       UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+      throw new BaseException(INVALID_USER_UUID);
     }
   }
   @Transactional
