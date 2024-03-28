@@ -3,12 +3,12 @@ name: github-action
 on:
   push:
     branches: [ "main" ]
-    paths:
-      - '**.java'
+#    paths:
+#      - '**.java'
   pull_request:
     branches: [ "main" ]
-    paths:
-        - '**.java'
+#    paths:
+#        - '**.java'
 
 jobs:
   ci:
