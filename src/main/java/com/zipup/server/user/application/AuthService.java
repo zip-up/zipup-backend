@@ -1,6 +1,6 @@
 package com.zipup.server.user.application;
 
-import com.zipup.server.user.dto.SignInResponse;
+import com.zipup.server.user.dto.TokenAndUserInfoResponse;
 import com.zipup.server.user.dto.TokenResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.security.util.CookieUtil;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import static com.zipup.server.global.exception.CustomErrorCode.NOT_EXIST_TOKEN;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.COOKIE_EXPIRE_SECONDS;
@@ -29,10 +30,20 @@ public class AuthService {
   private final RedisTemplate<String, String> redisTemplate;
   private final UserService userService;
 
-  public SignInResponse signInWithAccessToken(HttpServletRequest request) {
+  public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request, HttpServletResponse response) {
     String accessToken = jwtProvider.resolveToken(request);
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    return userService.findById(authentication.getName()).toSignInResponse();
+
+    String key = authentication.getName();
+    String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
+
+    ResponseCookie[] responseCookies = refresh(redisRefreshToken);
+
+    return TokenAndUserInfoResponse.builder()
+            .signInResponse(userService.findById(authentication.getName()).toSignInResponse())
+            .accessToken(responseCookies[0])
+            .refreshToken(responseCookies[1])
+            .build();
   }
 
   @Transactional
@@ -40,10 +51,14 @@ public class AuthService {
     jwtProvider.verifyRefreshToken(refreshToken);
 
     Authentication authentication = jwtProvider.getAuthenticationByToken(refreshToken);
-    String redisRefreshToken = redisTemplate.opsForValue().get(authentication.getName() + "_REFRESH");
+    String key = authentication.getName();
+    String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
     if (redisRefreshToken == null || !redisRefreshToken.equals(refreshToken))
       throw new BaseException(NOT_EXIST_TOKEN);
+
+    redisTemplate.delete(key);
+    redisTemplate.delete(key + "_REFRESH");
 
     TokenResponse newToken = jwtProvider.generateToken(
             authentication.getName(),

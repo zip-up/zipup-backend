@@ -31,9 +31,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
-import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
-import static com.zipup.server.global.exception.CustomErrorCode.UNSUPPORTED_TOKEN;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 
 @Slf4j
 @Component
@@ -199,6 +197,8 @@ public class JwtProvider {
             throw new BaseException(UNSUPPORTED_TOKEN);
         } catch (ExpiredJwtException e) {
             throw new BaseException(EXPIRED_TOKEN);
+        } catch (SignatureException e) {
+            throw new BaseException(WRONG_TYPE_TOKEN);
         }
     }
 }
