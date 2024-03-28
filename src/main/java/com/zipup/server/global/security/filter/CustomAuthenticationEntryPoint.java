@@ -13,7 +13,7 @@ import java.io.IOException;
 
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-  private JSONObject responseJson = new JSONObject();
+  private final JSONObject responseJson = new JSONObject();
 
   @Override
   public void commence(HttpServletRequest request,

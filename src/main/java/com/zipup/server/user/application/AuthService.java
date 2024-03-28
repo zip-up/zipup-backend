@@ -30,7 +30,7 @@ public class AuthService {
   private final RedisTemplate<String, String> redisTemplate;
   private final UserService userService;
 
-  public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request, HttpServletResponse response) {
+  public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request) {
     String accessToken = jwtProvider.resolveToken(request);
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
 

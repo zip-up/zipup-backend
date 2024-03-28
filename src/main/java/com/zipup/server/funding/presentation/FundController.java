@@ -37,8 +37,7 @@ public class FundController {
           content = @Content(schema = @Schema(implementation = CrawlerResponse.class)))
   @GetMapping("/crawler")
   public List<CrawlerResponse> crawlingProductInfo(@RequestParam(value = "product") String url) {
-    List<CrawlerResponse> response = crawlerService.crawlingProductInfo(url);
-    return response;
+    return crawlerService.crawlingProductInfo(url);
   }
 
   @Operation(summary = "내가 주최한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
