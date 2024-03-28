@@ -40,7 +40,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
   private final UserService userService;
   private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
 //  @Value("${client.address}")
-  private String client = "http://localhost:3000/funding/create";
+  private String client = "http://localhost:3000";
+  private String authenticationUrl = "http://localhost:8080/api/v1/auth/get-authentication";
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -55,18 +56,18 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     clearAuthenticationAttributes(request, response);
-    response.setStatus(HttpServletResponse.SC_OK);
+    getRedirectStrategy().sendRedirect(request, response, targetUrl);
   }
 
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-    Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
-            .map(Cookie::getValue);
+//    Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
+//            .map(Cookie::getValue);
+//    String redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME).map(Cookie::getValue).get();
 
 //    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
 //      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
 
-    String targetUrl = redirectUri.orElse(client);
-
+//    String targetUrl = redirectUri.orElse(client);
     OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
     LoginProvider providerType = LoginProvider.valueOf(authToken.getAuthorizedClientRegistrationId().toUpperCase());
 
@@ -81,17 +82,23 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
 
+    String accessToken = new String();
+    String refreshToken;
+
     if ((accessTokenList != null ? accessTokenList.size() : 0) > 0) {
-      String accessToken = userService.resolveToken(accessTokenList.get(0));
+      accessToken = userService.resolveToken(accessTokenList.get(0));
       CookieUtil.addResponseAccessCookie(response, HttpHeaders.AUTHORIZATION, accessToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
     if ((refreshTokenList != null ? refreshTokenList.size() : 0) > 0) {
-      String refreshToken = userService.resolveToken(refreshTokenList.get(0));
+      refreshToken = userService.resolveToken(refreshTokenList.get(0));
       CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
-    return UriComponentsBuilder.fromUriString(targetUrl)
+//    return UriComponentsBuilder.fromUriString(authenticationUrl)
+    return UriComponentsBuilder.fromUriString(client)
+            .queryParam(HttpHeaders.AUTHORIZATION, accessToken)
+//            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)
             .build()
             .encode(StandardCharsets.UTF_8)
             .toUriString();

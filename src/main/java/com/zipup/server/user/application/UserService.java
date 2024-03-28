@@ -55,7 +55,7 @@ public class UserService {
     User user = createUser(request);
 
     return SignInResponse.builder()
-            .id(user.getId())
+            .id(user.getId().toString())
             .email(user.getEmail())
             .name(user.getName())
             .build();
