@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.zipup.server.user.dto.SignInResponse;
+import com.zipup.server.user.dto.TokenAndUserInfoResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
@@ -27,8 +27,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Tag(name = "Auth", description = "JWT 관련 API")
 public class AuthController {
 
-    @Value("${client.address}")
-    private String client;
     private final AuthService authService;
 
     @Operation(summary = "최초 로그인 시 access 토큰 검증 및 회원 정보 추출")
@@ -41,14 +39,13 @@ public class AuthController {
     })
     @GetMapping("/get-authentication")
     public ResponseEntity<SignInResponse> signInWithAccessToken(
-            HttpServletRequest request
+            final HttpServletRequest httpServletRequest,
+            final HttpServletResponse httpServletResponse
     ) {
-        SignInResponse response = authService.signInWithAccessToken(request);
-
-//        RestTemplate restTemplate = new RestTemplate();
-//        ResponseEntity<SignInResponse> responseEntity = restTemplate.getForEntity(client, SignInResponse.class, response);
-
-        return ResponseEntity.ok().body(response);
+        TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest, httpServletResponse);
+        httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
+        httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
+        return ResponseEntity.ok().body(response.getSignInResponse());
     }
 
     @Operation(summary = "refresh token으로 신규 access token 발급")

@@ -7,7 +7,6 @@ import com.zipup.server.global.security.oauth.info.OAuth2UserInfo;
 import com.zipup.server.global.security.oauth.info.OAuth2UserInfoFactory;
 import com.zipup.server.global.security.util.CookieUtil;
 import com.zipup.server.user.application.UserService;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Optional;
 
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.*;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
@@ -39,9 +36,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
   private final UserService userService;
   private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
-//  @Value("${client.address}")
-  private String client = "http://localhost:3000";
-  private String authenticationUrl = "http://localhost:8080/api/v1/auth/get-authentication";
+  @Value("${client.address}")
+  private String client;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
@@ -97,10 +93,10 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
 //    return UriComponentsBuilder.fromUriString(authenticationUrl)
     return UriComponentsBuilder.fromUriString(client)
-            .queryParam(HttpHeaders.AUTHORIZATION, accessToken)
+            .query(accessToken)
 //            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)
-            .build()
-            .encode(StandardCharsets.UTF_8)
+//            .build(false)
+//            .encode(StandardCharsets.UTF_8)
             .toUriString();
   }
 
