@@ -1,5 +1,6 @@
 package com.zipup.server.global.security.filter;
 
+import com.google.common.net.HttpHeaders;
 import com.zipup.server.global.exception.CustomErrorCode;
 import com.zipup.server.global.security.util.JwtProvider;
 import io.jsonwebtoken.JwtException;
@@ -42,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String requestURI = request.getRequestURI();
     String accessToken = jwtProvider.resolveToken(request) != null ? jwtProvider.resolveToken(request)
             : cookieAttribute == null ? null
-            : cookieAttribute.get("Authorization") != null ? cookieAttribute.get("Authorization")
+            : cookieAttribute.get(HttpHeaders.AUTHORIZATION) != null ? cookieAttribute.get(HttpHeaders.AUTHORIZATION)
             : null;
 
     if (!StringUtils.hasText(accessToken))
