@@ -1,5 +1,6 @@
 package com.zipup.server.payment.application;
 
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
@@ -16,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.NoResultException;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -25,6 +25,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+
+import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +45,7 @@ public class PaymentService {
     try {
       UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+      throw new BaseException(INVALID_USER_UUID);
     }
   }
 
@@ -50,11 +53,11 @@ public class PaymentService {
   public Payment findById(String id) {
     isValidUUID(id);
     return paymentRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new NoResultException("존재하지 않는 결제 내역이에요."));
+            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
   }
 
   public Boolean isOrderIdExist(String orderId) {
-    return redisTemplate.opsForValue().get(orderId) == null;
+    return redisTemplate.opsForValue().get(orderId).isBlank();
   }
 
   public Boolean checkPaymentInfo(String orderId, Integer amount) {

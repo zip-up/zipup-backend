@@ -13,13 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.NoResultException;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -32,21 +30,21 @@ public class UserService {
     try {
       UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+      throw new BaseException(INVALID_USER_UUID);
     }
   }
 
   @Transactional(readOnly = true)
   public User findByEmail(String email) {
     return userRepository.findByEmail(email)
-            .orElseThrow(() -> new NoResultException("존재하지 않는 회원이에요."));
+            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
   }
 
   @Transactional(readOnly = true)
   public User findById(String id) {
     isValidUUID(id);
     return userRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new NoResultException("존재하지 않는 회원이에요."));
+            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
   }
 
   @SneakyThrows
@@ -87,6 +85,7 @@ public class UserService {
     else throw new BaseException(TOKEN_NOT_FOUND);
   }
 
+  @Transactional(readOnly = true)
   public List<UserListResponse> getUserList() {
     return userRepository.findAll()
             .stream()

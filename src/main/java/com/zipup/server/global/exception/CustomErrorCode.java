@@ -19,9 +19,10 @@ public enum CustomErrorCode {
   EXPIRED_TOKEN(2006,"만료된 Access 토큰입니다. Refresh 토큰을 이용해서 새로운 Access 토큰을 발급 받으세요."),
   TOKEN_NOT_FOUND( 2007, "토큰이 존재하지 않습니다."),
   ACCESS_DENIED(2008, "권한이 없습니다."),
+  DATA_NOT_FOUND(2009, "존재하지 않는 데이터에요."),
 
   // users
-  INVALID_USER_UUID(2101, "유저 정보를 불러오는데 실패했습니다"),
+  INVALID_USER_UUID(2101, "유효하지 않은 UUID 입니다. :: "),
 
   /**
    * 3000 : Response 오류

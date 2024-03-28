@@ -6,15 +6,18 @@ import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.funding.infrastructure.FundRepository;
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.user.application.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.NoResultException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +30,7 @@ public class FundService {
     try {
       UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("유효하지 않은 UUID입니다: " + id);
+      throw new BaseException(INVALID_USER_UUID);
     }
   }
 
@@ -35,7 +38,7 @@ public class FundService {
   public Fund findById(String id) {
     isValidUUID(id);
     return fundRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new NoResultException("존재하지 않는 펀딩이에요."));
+            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
   }
 
   @Transactional
