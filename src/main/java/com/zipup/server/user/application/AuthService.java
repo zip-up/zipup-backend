@@ -11,6 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +32,9 @@ public class AuthService {
 
   public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request) {
     String accessToken = jwtProvider.resolveToken(request);
-    if (accessToken.isBlank()) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (accessToken == null) throw new BaseException(EMPTY_ACCESS_JWT);
 
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
@@ -51,18 +52,17 @@ public class AuthService {
 
   @Transactional
   public ResponseCookie[] refresh(String refreshToken) {
-    if (refreshToken.isBlank()) throw new BaseException(EMPTY_REFRESH_JWT);
+    if (refreshToken == null) throw new BaseException(EMPTY_REFRESH_JWT);
     jwtProvider.verifyRefreshToken(refreshToken);
 
-    Authentication authentication = jwtProvider.getAuthenticationByToken(refreshToken);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
     if (redisRefreshToken.isBlank() || !redisRefreshToken.equals(refreshToken))
       throw new BaseException(NOT_EXIST_TOKEN);
 
-    redisTemplate.delete(key);
-    redisTemplate.delete(key + "_REFRESH");
+    removeRedisToken(key);
 
     TokenResponse newToken = jwtProvider.generateToken(
             authentication.getName(),
@@ -76,6 +76,11 @@ public class AuthService {
             CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
             CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), COOKIE_EXPIRE_SECONDS)
     };
+  }
+
+  private void removeRedisToken(String key) {
+    redisTemplate.delete(key);
+    redisTemplate.delete(key + "_REFRESH");
   }
 
 }
