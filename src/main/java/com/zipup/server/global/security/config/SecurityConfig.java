@@ -49,14 +49,11 @@ public class SecurityConfig {
           "/error",
           "/*/oauth2/code/*",
           "/favicon.ico",
-          "/swagger-resources/**",
-          "/configuration/ui",
           "/configuration/security",
           "/swagger-ui/**",
           "/webjars/**",
           "/h2-console/**",
           "/api/v1/user/sign-**",
-          "/api/v1/auth/**",
           "/v3/api-docs/**"
   };
 
