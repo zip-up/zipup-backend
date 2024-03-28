@@ -26,24 +26,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
-import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
-
-  private static final String[] AUTH_LIST = {
-          "/error",
-          "/*/oauth2/code/*",
-          "/favicon.ico",
-          "/configuration/security",
-          "/swagger-ui/**",
-          "/webjars/**",
-          "/h2-console/**",
-          "/api/v1/user/sign-**",
-          "/v3/api-docs/**"
-  };
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -58,17 +45,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : cookieAttribute.get("Authorization") != null ? cookieAttribute.get("Authorization")
             : null;
 
-    if (!StringUtils.hasText(accessToken) && Arrays.stream(AUTH_LIST).noneMatch(requestURI::contains)) {
-      exceptionResponse(request, response, NOT_EXIST_TOKEN, SC_UNAUTHORIZED);
-      return;
-    }
+    if (!StringUtils.hasText(accessToken))
+      request.setAttribute("exception", NOT_EXIST_TOKEN);
 
-    else if (StringUtils.hasText(accessToken) && Arrays.stream(AUTH_LIST).noneMatch(requestURI::contains)) {
+    else if (StringUtils.hasText(accessToken)) {
       try{
         if (jwtProvider.validateToken(accessToken)) {
           log.error("validateToken :: {} {} {}", NOT_EXIST_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
-          exceptionResponse(request, response, NOT_EXIST_TOKEN, SC_UNAUTHORIZED);
-          return;
+          request.setAttribute("exception", NOT_EXIST_TOKEN);
         }
 
         Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
