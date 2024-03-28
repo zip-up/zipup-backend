@@ -40,4 +40,3 @@ out/
 src/main/resources/static/*
 application.yml
 data
-nginx/default.conf
