@@ -21,7 +21,6 @@ public class CorsConfig {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.addAllowedOrigin(server);
     configuration.addAllowedOrigin(client);
-    configuration.addAllowedOrigin("http://localhost:3000");
 
     configuration.setAllowCredentials(true);
     configuration.setAllowedMethods(Collections.singletonList("*"));
