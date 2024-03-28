@@ -8,6 +8,7 @@ import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.review.domain.Review;
+import com.zipup.server.user.dto.SignInResponse;
 import com.zipup.server.user.dto.UserListResponse;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -17,7 +18,6 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -88,6 +88,16 @@ public class User extends BaseTimeEntity {
 
     return SimpleDataResponse.builder()
             .id(id.toString())
+            .build();
+  }
+
+  public SignInResponse toSignInResponse() {
+
+    return SignInResponse.builder()
+            .id(id.toString())
+            .name(name)
+            .email(email)
+            .profileImage(profileImage != null ? profileImage : "")
             .build();
   }
 

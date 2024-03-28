@@ -142,8 +142,11 @@ public class JwtProvider {
 
     public String resolveToken(HttpServletRequest request) {
         String accessToken = request.getHeader(accessHeader);
-        if (StringUtils.hasText(accessToken) && accessToken.startsWith(prefix)) {
-            return accessToken.substring(7);
+        if (StringUtils.hasText(accessToken)) {
+          if (accessToken.startsWith(prefix)) {
+              return accessToken.substring(7);
+          }
+            return accessToken;
         }
         return null;
     }

@@ -1,5 +1,6 @@
 package com.zipup.server.user.application;
 
+import com.zipup.server.user.dto.SignInResponse;
 import com.zipup.server.user.dto.TokenResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.security.util.CookieUtil;
@@ -13,6 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static com.zipup.server.global.exception.CustomErrorCode.NOT_EXIST_TOKEN;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.COOKIE_EXPIRE_SECONDS;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
@@ -24,6 +27,13 @@ public class AuthService {
 
   private final JwtProvider jwtProvider;
   private final RedisTemplate<String, String> redisTemplate;
+  private final UserService userService;
+
+  public SignInResponse signInWithAccessToken(HttpServletRequest request) {
+    String accessToken = jwtProvider.resolveToken(request);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    return userService.findById(authentication.getName()).toSignInResponse();
+  }
 
   @Transactional
   public ResponseCookie[] refresh(String refreshToken) {
