@@ -57,7 +57,7 @@ public class PaymentService {
   }
 
   public Boolean isOrderIdExist(String orderId) {
-    return redisTemplate.opsForValue().get(orderId).isBlank();
+    return redisTemplate.opsForValue().get(orderId) == null;
   }
 
   public Boolean checkPaymentInfo(String orderId, Integer amount) {

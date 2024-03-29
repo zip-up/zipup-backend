@@ -36,7 +36,7 @@ public class AuthController {
             @ApiResponse(responseCode = "403", description = "토큰이 만료되었거나 유효하지 않습니다."),
             @ApiResponse(responseCode = "500", description = "내부 서버 오류가 발생했습니다.")
     })
-    @GetMapping("/get-authentication")
+    @GetMapping("/authentication")
     public ResponseEntity<SignInResponse> signInWithAccessToken(
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
@@ -44,6 +44,9 @@ public class AuthController {
         TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest);
         httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
+        String newAccessToken = response.getAccessToken().getValue();
+
+        response.getSignInResponse().setAccesstoken(newAccessToken);
         return ResponseEntity.ok().body(response.getSignInResponse());
     }
 

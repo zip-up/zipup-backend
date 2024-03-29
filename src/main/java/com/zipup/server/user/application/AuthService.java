@@ -39,7 +39,7 @@ public class AuthService {
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
-    if (redisRefreshToken.isBlank()) throw new BaseException(NOT_EXIST_TOKEN);
+    if (redisRefreshToken == null) throw new BaseException(NOT_EXIST_TOKEN);
 
     ResponseCookie[] responseCookies = refresh(redisRefreshToken);
 
@@ -59,7 +59,7 @@ public class AuthService {
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
-    if (redisRefreshToken.isBlank() || !redisRefreshToken.equals(refreshToken))
+    if (redisRefreshToken == null || !redisRefreshToken.equals(refreshToken))
       throw new BaseException(NOT_EXIST_TOKEN);
 
     removeRedisToken(key);
