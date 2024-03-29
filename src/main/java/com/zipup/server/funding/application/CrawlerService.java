@@ -8,10 +8,13 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,12 @@ public class CrawlerService {
 
   @Value("${web-driver.chrome}")
   private String chromeDriver;
+
+  @Value("${spring.data.redis.port}")
+  private int seleniumPort;
+
+  @Value("${spring.data.redis.host}")
+  private String seleniumHost;
 
   public List<CrawlerResponse> crawlingProductInfo(String url) {
     WebDriver driver = setChromeDriver();
@@ -49,28 +58,33 @@ public class CrawlerService {
 
   private WebDriver setChromeDriver() {
     try {
-      String osName = System.getProperty("os.name").toLowerCase();
-      ChromeDriverService.Builder serviceBuilder = new ChromeDriverService.Builder();
+//      String osName = System.getProperty("os.name").toLowerCase();
+//      ChromeDriverService.Builder serviceBuilder = new ChromeDriverService.Builder();
+//
+//      if (osName.contains("mac"))
+//        serviceBuilder.usingDriverExecutable(new File(chromeDriver));
+//
+//      else if (osName.contains("linux") && osName.contains("arm"))
+//        serviceBuilder.usingDriverExecutable(new File("/usr/lib/chromium-browser/chromedriver"));
+//
+//      else if (osName.contains("linux"))
+//        serviceBuilder.usingDriverExecutable(new File("/usr/local/bin/chromedriver"));
+//
+//      ChromeDriverService service = serviceBuilder.usingPort(9515).build();
+//      service.start();
+//
+//      ChromeOptions options = new ChromeOptions()
+//              .addArguments("--remote-allow-origins=*")
+//              .addArguments("--headless") // headless 모드 활성화
+//              .addArguments("--no-sandbox") // no-sandbox 옵션 추가
+//              .addArguments("--disable-dev-shm-usage"); //  unknown error: session deleted because of page crash
 
-      if (osName.contains("mac"))
-        serviceBuilder.usingDriverExecutable(new File(chromeDriver));
+//      return new ChromeDriver(service, options);
+      String seleniumUrl = "http://localhost:4444/wd/hub";
 
-      else if (osName.contains("linux") && osName.contains("arm"))
-        serviceBuilder.usingDriverExecutable(new File("/usr/lib/chromium-browser/chromedriver"));
-
-      else if (osName.contains("linux"))
-        serviceBuilder.usingDriverExecutable(new File("/usr/local/bin/chromedriver"));
-
-      ChromeDriverService service = serviceBuilder.usingPort(9515).build();
-      service.start();
-
-      ChromeOptions options = new ChromeOptions()
-              .addArguments("--remote-allow-origins=*")
-              .addArguments("--headless") // headless 모드 활성화
-              .addArguments("--no-sandbox") // no-sandbox 옵션 추가
-              .addArguments("--disable-dev-shm-usage"); //  unknown error: session deleted because of page crash
-
-      return new ChromeDriver(service, options);
+      DesiredCapabilities capabilities = new DesiredCapabilities();
+      capabilities.setBrowserName("chrome");
+      return new RemoteWebDriver(new URL(seleniumUrl), capabilities);
     } catch (Exception ex) {
       log.info("setChromeDriver");
       log.error(ex.getMessage());
