@@ -57,6 +57,16 @@ public class UserController {
     return ResponseEntity.ok().headers(headers).build();
   }
 
+  @Operation(summary = "회원 정보", description = "한 명의 사용자 정보")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "회원 정보"),
+          @ApiResponse(responseCode = "404", description = "없는 회원입니다."),
+  })
+  @GetMapping("")
+  public ResponseEntity<UserListResponse> getUserInfo(@RequestParam String id) {
+    return ResponseEntity.ok().body(userService.getUserInfo(id));
+  }
+
   @Operation(summary = "임시 데이터", description = "임시")
   @GetMapping("/temp")
   public ResponseEntity<List<UserListResponse>> getUserList() {
