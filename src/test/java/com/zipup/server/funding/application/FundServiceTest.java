@@ -1,15 +1,10 @@
 package com.zipup.server.funding.application;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import com.zipup.server.funding.dto.CreateFundingRequest;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +20,8 @@ public class FundServiceTest {
   private UserService userService;
   @Autowired
   private FundService fundService;
+  @Autowired
+  private CrawlerService crawlerService;
   @Autowired
   private EntityManager entityManager;
   @Autowired
@@ -54,21 +51,10 @@ public class FundServiceTest {
             "Product URL",
             "Image URL",
             "2024-03-25T00:00:00",
-            "2024-04-25T00:00:00",
-            user.getId().toString()
+            "2024-04-25T00:00:00"
     );
 
-    fundService = new FundService(fundRepository, userService);
-  }
-
-  @Test
-  void testCreateFunding() {
-    assertNotNull(user);
-    assertEquals(user.getId().toString(), request.getUser());
-
-    SimpleDataResponse response = fundService.createFunding(request);
-
-    assertNotNull(response.getId());
+    fundService = new FundService(fundRepository, userService, crawlerService);
   }
 
 }

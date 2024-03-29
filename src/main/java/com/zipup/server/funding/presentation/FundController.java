@@ -3,6 +3,7 @@ package com.zipup.server.funding.presentation;
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.*;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -36,7 +35,8 @@ public class FundController {
           description = "크롤링 성공",
           content = @Content(schema = @Schema(implementation = CrawlerResponse.class)))
   @GetMapping("/crawler")
-  public List<CrawlerResponse> crawlingProductInfo(@RequestParam(value = "product") String url) {
+  @Hidden
+  public CrawlerResponse crawlingProductInfo(@RequestParam(value = "product") String url) {
     return crawlerService.crawlingProductInfo(url);
   }
 

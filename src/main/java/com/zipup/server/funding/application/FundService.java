@@ -27,6 +27,7 @@ public class FundService {
 
   private final FundRepository fundRepository;
   private final UserService userService;
+  private final CrawlerService crawlerService;
 
   private void isValidUUID(String id) {
     try {
@@ -47,8 +48,12 @@ public class FundService {
   public SimpleDataResponse createFunding(CreateFundingRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+    String productUrl = request.getProductUrl();
+
     Fund targetFund = request.toEntity();
     targetFund.setUser(userService.findById(authentication.getName()));
+    targetFund.setImageUrl(crawlerService.crawlingProductInfo(productUrl).getImageUrl());
+
     Fund response = fundRepository.save(targetFund);
 
     return new SimpleDataResponse(response.getId().toString());
@@ -63,6 +68,7 @@ public class FundService {
             .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public FundingDetailResponse getFundingDetail(String fundId) {
     isValidUUID(fundId);
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -70,6 +76,7 @@ public class FundService {
     return findById(fundId).toDetailResponse(authentication.getName());
   }
 
+  @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getFundList() {
     return fundRepository.findAll()
             .stream()

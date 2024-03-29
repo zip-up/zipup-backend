@@ -54,6 +54,7 @@ public class PresentService {
     return participateFunding.getId().toString();
   }
 
+  @Transactional(readOnly = true)
   public List<PresentSummaryResponse> getParticipateList() {
     return presentRepository.findAll()
             .stream()
@@ -61,6 +62,7 @@ public class PresentService {
             .collect(Collectors.toList());
   }
 
+  @Transactional(readOnly = true)
   public List<PresentSummaryResponse> getMyParticipateList(String userId) {
     isValidUUID(userId);
     return presentRepository.findAllByUser(userService.findById(userId))
