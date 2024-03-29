@@ -45,7 +45,6 @@ public class CreateFundingRequest {
             .description(description)
             .goalPrice(goalPrice)
             .productUrl(productUrl)
-            .imageUrl(imageUrl)
             .fundingPeriod(new FundingPeriod(LocalDateTime.parse(fundingStart), LocalDateTime.parse(fundingFinish)))
             .build();
   }

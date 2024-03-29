@@ -60,7 +60,7 @@ public class Fund extends BaseTimeEntity {
   private String productUrl;
 
   @Column
-  @NotNull(message = "이미지 사진 누락")
+  @Setter
   private String imageUrl;
 
   @Enumerated(EnumType.STRING)

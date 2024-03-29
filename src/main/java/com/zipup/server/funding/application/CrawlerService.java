@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -30,7 +28,7 @@ public class CrawlerService {
   @Value("${selenium.path}")
   private String seleniumPath;
 
-  public List<CrawlerResponse> crawlingProductInfo(String url) {
+  public CrawlerResponse crawlingProductInfo(String url) {
     WebDriver driver = setChromeDriver();
 
     try {
@@ -42,11 +40,7 @@ public class CrawlerService {
       WebElement ogImageUrlElement = driver.findElement(By.xpath("//meta[@property='og:image']"));
       String ogImageUrl = ogImageUrlElement.getAttribute("content");
 
-      List<CrawlerResponse> response = new ArrayList<>();
-
-      response.add(new CrawlerResponse(ogImageUrl, ogTitle));
-
-      return response;
+      return new CrawlerResponse(ogImageUrl, ogTitle);
     } catch(Exception ex){
       log.error(ex.getMessage());
       return null;
