@@ -73,7 +73,6 @@ public class FundController {
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")
-  @Parameter(name = "funding", description = "선택한 펀딩의 식별자 값 (UUID)")
   @ApiResponse(
           responseCode = "201",
           description = "펀딩 주최 성공",
