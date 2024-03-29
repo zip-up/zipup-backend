@@ -7,10 +7,13 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
+import java.time.Duration;
 
 @Service
 @Slf4j
@@ -33,6 +36,8 @@ public class CrawlerService {
 
     try {
       driver.get(url);
+      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+      wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//meta[@property='og:image']")));
 
       WebElement ogTitleElement = driver.findElement(By.xpath("//meta[@property='og:title']"));
       String ogTitle = ogTitleElement.getAttribute("content");
