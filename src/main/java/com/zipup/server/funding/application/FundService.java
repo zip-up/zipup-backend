@@ -1,10 +1,7 @@
 package com.zipup.server.funding.application;
 
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.CreateFundingRequest;
-import com.zipup.server.funding.dto.FundingDetailResponse;
-import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.user.application.UserService;
@@ -52,7 +49,10 @@ public class FundService {
 
     Fund targetFund = request.toEntity();
     targetFund.setUser(userService.findById(authentication.getName()));
-    targetFund.setImageUrl(crawlerService.crawlingProductInfo(productUrl).getImageUrl());
+    CrawlerResponse crawlerResponse = crawlerService.crawlingProductInfo(productUrl);
+    String imageUrl = crawlerResponse.getImageUrl() != null
+            ? crawlerResponse.getImageUrl() : "";
+    targetFund.setImageUrl(imageUrl);
 
     Fund response = fundRepository.save(targetFund);
 
