@@ -17,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 import java.io.*;
@@ -75,10 +74,12 @@ public class PaymentService {
 
     OutputStream outputStream = connection.getOutputStream();
 
-    HashMap<String, Object> obj = new HashMap<>();
-    obj.putIfAbsent("orderId", request.getOrderId());
-    obj.putIfAbsent("amount", request.getAmount());
-    obj.putIfAbsent("paymentKey", request.getPaymentKey());
+    JSONObject obj = new JSONObject();
+    obj.put("orderId", request.getOrderId());
+    obj.put("amount", request.getAmount());
+    obj.put("paymentKey", request.getPaymentKey());
+
+    outputStream.write(obj.toString().getBytes("UTF-8"));
 
     outputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
 
@@ -90,6 +91,9 @@ public class PaymentService {
     Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
     JSONParser parser = new JSONParser();
     JSONObject jsonObject = (JSONObject) parser.parse(reader);
+
+    if (!isSuccess)
+      throw new BaseException(Integer.parseInt(jsonObject.get("code").toString()), jsonObject.get("message").toString());
 
     System.out.println(jsonObject);
     String method = jsonObject.get("method").toString();
