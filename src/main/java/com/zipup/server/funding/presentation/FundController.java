@@ -53,7 +53,6 @@ public class FundController {
 
   @Operation(summary = "펀딩 페이지 상세 조회", description = "펀딩 상세 내용")
   @Parameter(name = "funding", description = "선택한 펀딩의 식별자 값 (UUID)")
-  @Parameter(name = "user", description = "진입한 유저의 식별자 값 (UUID)")
   @ApiResponses(value = {
           @ApiResponse(
                   responseCode = "200",
@@ -66,8 +65,7 @@ public class FundController {
   })
   @GetMapping("")
   public ResponseEntity<FundingDetailResponse> getFundingDetail(
-          @RequestParam(value = "funding") String fundId,
-          @RequestParam(value = "user", required = false) String userId
+          @RequestParam(value = "funding") String fundId
   ) {
     return ResponseEntity.ok(fundService.getFundingDetail(fundId));
   }
