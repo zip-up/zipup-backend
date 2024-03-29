@@ -25,11 +25,14 @@ public class CrawlerService {
   @Value("${web-driver.chrome}")
   private String chromeDriver;
 
-  @Value("${spring.data.redis.port}")
+  @Value("${selenium.port}")
   private int seleniumPort;
 
-  @Value("${spring.data.redis.host}")
+  @Value("${selenium.host}")
   private String seleniumHost;
+
+  @Value("${selenium.path}")
+  private String seleniumPath;
 
   public List<CrawlerResponse> crawlingProductInfo(String url) {
     WebDriver driver = setChromeDriver();
@@ -80,7 +83,7 @@ public class CrawlerService {
 //              .addArguments("--disable-dev-shm-usage"); //  unknown error: session deleted because of page crash
 
 //      return new ChromeDriver(service, options);
-      String seleniumUrl = "http://localhost:4444/wd/hub";
+      String seleniumUrl = "http://" + seleniumHost + ":" + seleniumPort + seleniumPath;
 
       DesiredCapabilities capabilities = new DesiredCapabilities();
       capabilities.setBrowserName("chrome");
