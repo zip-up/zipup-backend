@@ -54,5 +54,14 @@ services:
     environment:
       - TZ=Asia/Seoul
 
+  zipup-selenium:
+    networks:
+      - app-tier
+    image: selenium/standalone-chrome:latest
+    restart: unless-stopped
+    container_name: zipup-selenium
+    ports:
+      - 4444:4444
+
 volumes:
   redisdb:
