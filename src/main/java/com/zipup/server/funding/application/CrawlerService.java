@@ -1,45 +1,81 @@
 package com.zipup.server.funding.application;
 
 import com.zipup.server.funding.dto.CrawlerResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class CrawlerService {
 
   @Value("${web-driver.chrome}")
   private String chromeDriver;
 
   public List<CrawlerResponse> crawlingProductInfo(String url) {
-    System.setProperty("webdriver.chrome.driver", chromeDriver);
+    WebDriver driver = setChromeDriver();
 
-    ChromeOptions options = new ChromeOptions();
-    options.addArguments("--remote-allow-origins=*");
-    options.addArguments("--headless");
-    WebDriver driver = new ChromeDriver(options);
+    try {
+      driver.get(url);
 
-    driver.get(url);
+      WebElement ogTitleElement = driver.findElement(By.xpath("//meta[@property='og:title']"));
+      String ogTitle = ogTitleElement.getAttribute("content");
 
-    WebElement ogTitleElement = driver.findElement(By.xpath("//meta[@property='og:title']"));
-    String ogTitle = ogTitleElement.getAttribute("content");
+      WebElement ogImageUrlElement = driver.findElement(By.xpath("//meta[@property='og:image']"));
+      String ogImageUrl = ogImageUrlElement.getAttribute("content");
 
-    WebElement ogImageUrlElement = driver.findElement(By.xpath("//meta[@property='og:image']"));
-    String ogImageUrl = ogImageUrlElement.getAttribute("content");
+      List<CrawlerResponse> response = new ArrayList<>();
 
-    List<CrawlerResponse> response = new ArrayList<>();
+      response.add(new CrawlerResponse(ogImageUrl, ogTitle));
 
-    response.add(new CrawlerResponse(ogImageUrl, ogTitle));
-
-    driver.quit();
-
-    return response;
+      return response;
+    } catch(Exception ex){
+      log.error(ex.getMessage());
+      return null;
+    } finally {
+      driver.quit();
+    }
   }
+
+  private WebDriver setChromeDriver() {
+    try {
+      String osName = System.getProperty("os.name").toLowerCase();
+      ChromeDriverService.Builder serviceBuilder = new ChromeDriverService.Builder();
+
+      if (osName.contains("mac"))
+        serviceBuilder.usingDriverExecutable(new File(chromeDriver));
+
+      else if (osName.contains("linux") && osName.contains("arm"))
+        serviceBuilder.usingDriverExecutable(new File("/usr/lib/chromium-browser/chromedriver"));
+
+      else if (osName.contains("linux"))
+        serviceBuilder.usingDriverExecutable(new File("/usr/local/bin/chromedriver"));
+
+      ChromeDriverService service = serviceBuilder.usingPort(9515).build();
+      service.start();
+
+      ChromeOptions options = new ChromeOptions()
+              .addArguments("--remote-allow-origins=*")
+              .addArguments("--headless") // headless 모드 활성화
+              .addArguments("--no-sandbox") // no-sandbox 옵션 추가
+              .addArguments("--disable-dev-shm-usage"); //  unknown error: session deleted because of page crash
+
+      return new ChromeDriver(service, options);
+    } catch (Exception ex) {
+      log.info("setChromeDriver");
+      log.error(ex.getMessage());
+      return null;
+    }
+  }
+
 }
