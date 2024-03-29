@@ -1,8 +1,6 @@
 FROM --platform=linux/amd64 adoptopenjdk:11-jdk-hotspot
 
 RUN ln -sf /usr/share/zoneinfo/Asiz/Seoul /etc/localtime
-RUN chmod +x ./gradlew
-RUN ./gradlew clean build --no-daemon -x test
 
 ARG JAR_FILE=build/libs/*.jar
 
