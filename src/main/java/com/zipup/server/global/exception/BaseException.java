@@ -1,6 +1,5 @@
 package com.zipup.server.global.exception;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 

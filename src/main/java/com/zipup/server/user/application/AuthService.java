@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -83,4 +84,14 @@ public class AuthService {
     redisTemplate.delete(key + "_REFRESH");
   }
 
+  public void signOut(HttpServletRequest request) {
+    String token = jwtProvider.resolveToken(request);
+    if (!StringUtils.hasText(token))
+      throw new BaseException(EMPTY_ACCESS_JWT);
+
+    if (jwtProvider.validateToken(token))
+      throw new BaseException(NOT_EXIST_TOKEN);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    removeRedisToken(authentication.getName());
+  }
 }
