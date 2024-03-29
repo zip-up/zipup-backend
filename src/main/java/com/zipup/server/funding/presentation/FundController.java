@@ -67,9 +67,9 @@ public class FundController {
   @GetMapping("")
   public ResponseEntity<FundingDetailResponse> getFundingDetail(
           @RequestParam(value = "funding") String fundId,
-          @RequestParam(value = "user") String userId
+          @RequestParam(value = "user", required = false) String userId
   ) {
-    return ResponseEntity.ok(fundService.getFundingDetail(fundId, userId));
+    return ResponseEntity.ok(fundService.getFundingDetail(fundId));
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")

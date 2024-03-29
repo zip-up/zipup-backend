@@ -9,6 +9,8 @@ import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.user.application.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,10 +62,11 @@ public class FundService {
             .collect(Collectors.toList());
   }
 
-  public FundingDetailResponse getFundingDetail(String fundId, String userId) {
+  public FundingDetailResponse getFundingDetail(String fundId) {
     isValidUUID(fundId);
-    if (!userId.isEmpty()) isValidUUID(userId);
-    return findById(fundId).toDetailResponse(userId);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+    return findById(fundId).toDetailResponse(authentication.getName());
   }
 
   public List<FundingSummaryResponse> getFundList() {
