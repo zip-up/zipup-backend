@@ -80,7 +80,7 @@ public class PaymentController {
                   description = "결제 시간 만료",
                   content = @Content(schema = @Schema(type = "NOT_FOUND_PAYMENT_SESSION")))
   })
-  @GetMapping(value = "/success")
+  @GetMapping(value = "/confirm")
   public ResponseEntity<PaymentResultResponse> successPayment(
           @RequestParam(value = "orderId") String orderId,
           @RequestParam(value = "amount") Integer amount,
