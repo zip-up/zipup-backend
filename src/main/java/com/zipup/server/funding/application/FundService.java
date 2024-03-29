@@ -45,9 +45,10 @@ public class FundService {
 
   @Transactional
   public SimpleDataResponse createFunding(CreateFundingRequest request) {
-    Fund targetFund = request.toEntity();
-    targetFund.setUser(userService.findById(request.getUser()));
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+    Fund targetFund = request.toEntity();
+    targetFund.setUser(userService.findById(authentication.getName()));
     Fund response = fundRepository.save(targetFund);
 
     return new SimpleDataResponse(response.getId().toString());

@@ -35,8 +35,6 @@ public class CreateFundingRequest {
   private String fundingStart;
   @Schema(description = "펀딩 종료")
   private String fundingFinish;
-  @Schema(description = "주최자 \'식별자\' (UUID) ")
-  private String user;
 
   public Fund toEntity() {
     return Fund.builder()

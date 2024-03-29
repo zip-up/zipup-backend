@@ -79,16 +79,8 @@ public class FundController {
           description = "펀딩 주최 성공",
           content = @Content(schema = @Schema(implementation = CreateFundingRequest.class)))
   @PostMapping("")
-  public ResponseEntity<CreateFundingRequest> createFunding(@RequestPart("request") CreateFundingRequest request
-  ) {
-    SimpleDataResponse response = fundService.createFunding(request);
-
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-            .path("/{id}")
-            .buildAndExpand(response.getId())
-            .toUri();
-
-    return ResponseEntity.created(location).build();
+  public ResponseEntity<SimpleDataResponse> createFunding(@RequestBody CreateFundingRequest request) {
+    return ResponseEntity.ok(fundService.createFunding(request));
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
