@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -69,4 +70,16 @@ public class AuthController {
 
         return ResponseEntity.status(CREATED).build();
     }
+
+    @Operation(summary = "로그 아웃")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "로그 아웃 성공"),
+            @ApiResponse(responseCode = "400", description = "로그 아웃 실패"),
+    })
+    @PostMapping("/sign-out")
+    public ResponseEntity<Void> signOut(final HttpServletRequest request) {
+        authService.signOut(request);
+        return ResponseEntity.ok().build();
+    }
+
 }

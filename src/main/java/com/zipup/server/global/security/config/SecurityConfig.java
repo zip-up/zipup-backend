@@ -87,11 +87,11 @@ public class SecurityConfig {
                           .successHandler(oAuth2AuthenticationSuccessHandler())
                           .failureHandler(oAuth2AuthenticationFailureHandler()))
 
-            .logout(logoutConfigurer -> logoutConfigurer
-                    .logoutUrl("/api/v1/auth/sign-out")
-                    .addLogoutHandler(logoutHandler())
-                    .logoutSuccessUrl("/")
-                    .deleteCookies(HttpHeaders.AUTHORIZATION))
+//            .logout(logoutConfigurer -> logoutConfigurer
+//                    .logoutUrl("/api/v1/auth/sign-out")
+//                    .addLogoutHandler(logoutHandler())
+//                    .logoutSuccessUrl("/")
+//                    .deleteCookies(HttpHeaders.AUTHORIZATION))
 
             .exceptionHandling(exceptionHandlingConfigurer ->
                     exceptionHandlingConfigurer
@@ -103,29 +103,29 @@ public class SecurityConfig {
     return http.build();
   }
 
-  @Bean
-  public LogoutHandler logoutHandler() {
-    return (request, response, authentication) -> {
-      try {
-          String token = jwtProvider.resolveToken(request);
-          if (!StringUtils.hasText(token))
-            request.setAttribute("exception", TOKEN_NOT_FOUND);
-
-          if (jwtProvider.validateToken(token))
-            request.setAttribute("exception", NOT_EXIST_TOKEN);
-          Authentication auth = jwtProvider.getAuthenticationByToken(token);
-
-          Set<String> keysToDelete = redisTemplate.keys(auth.getName() + "*");
-
-          if (keysToDelete != null)
-            redisTemplate.delete(keysToDelete);
-      } catch (Exception e) {
-        request.setAttribute("exception", NOT_EXIST_TOKEN);
-        log.error(e.getMessage());
-        log.error(e.getClass().getName());
-      }
-    };
-  }
+//  @Bean
+//  public LogoutHandler logoutHandler() {
+//    return (request, response, authentication) -> {
+//      try {
+//          String token = jwtProvider.resolveToken(request);
+//          if (!StringUtils.hasText(token))
+//            request.setAttribute("exception", TOKEN_NOT_FOUND);
+//
+//          if (jwtProvider.validateToken(token))
+//            request.setAttribute("exception", NOT_EXIST_TOKEN);
+//          Authentication auth = jwtProvider.getAuthenticationByToken(token);
+//
+//          Set<String> keysToDelete = redisTemplate.keys(auth.getName() + "*");
+//
+//          if (keysToDelete != null)
+//            redisTemplate.delete(keysToDelete);
+//      } catch (Exception e) {
+//        request.setAttribute("exception", NOT_EXIST_TOKEN);
+//        log.error(e.getMessage());
+//        log.error(e.getClass().getName());
+//      }
+//    };
+//  }
 
   /*
    * 암호화에 필요한 PasswordEncoder Bean 등록
