@@ -78,6 +78,7 @@ public class User extends BaseTimeEntity {
             .id(id.toString())
             .name(name)
             .email(email)
+            .profileImage(profileImage != null ? profileImage : "")
             .build();
   }
 

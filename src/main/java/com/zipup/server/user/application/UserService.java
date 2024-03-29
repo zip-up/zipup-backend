@@ -92,4 +92,10 @@ public class UserService {
             .map(User::toResponseList)
             .collect(Collectors.toList());
   }
+
+  public UserListResponse getUserInfo(String id) {
+    isValidUUID(id);
+    return findById(id).toResponseList();
+  }
+
 }
