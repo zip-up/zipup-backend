@@ -50,7 +50,8 @@ public class FundService {
     Fund targetFund = request.toEntity();
     targetFund.setUser(userService.findById(authentication.getName()));
     CrawlerResponse crawlerResponse = crawlerService.crawlingProductInfo(productUrl);
-    String imageUrl = crawlerResponse.getImageUrl() != null
+    String imageUrl = crawlerResponse == null ? ""
+            : crawlerResponse.getImageUrl() != null
             ? crawlerResponse.getImageUrl() : "";
     targetFund.setImageUrl(imageUrl);
 
