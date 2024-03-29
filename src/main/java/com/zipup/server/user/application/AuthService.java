@@ -84,14 +84,23 @@ public class AuthService {
     redisTemplate.delete(key + "_REFRESH");
   }
 
-  public void signOut(HttpServletRequest request) {
+  public boolean signOut(HttpServletRequest request) {
     String token = jwtProvider.resolveToken(request);
     if (!StringUtils.hasText(token))
       throw new BaseException(EMPTY_ACCESS_JWT);
 
     if (jwtProvider.validateToken(token))
       throw new BaseException(NOT_EXIST_TOKEN);
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    removeRedisToken(authentication.getName());
+
+    String key = SecurityContextHolder.getContext().getAuthentication().getName();
+
+    String accessTokenInRedis = redisTemplate.opsForValue().get(key);
+    String refreshTokenInRedis = redisTemplate.opsForValue().get(key + "_REFRESH");
+
+    if (accessTokenInRedis == null || refreshTokenInRedis == null)
+      throw new BaseException(DATA_NOT_FOUND);
+
+    removeRedisToken(key);
+    return true;
   }
 }
