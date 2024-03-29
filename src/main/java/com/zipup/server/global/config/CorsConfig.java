@@ -24,6 +24,7 @@ public class CorsConfig {
     configuration.addAllowedMethod("*");
     configuration.addExposedHeader("Authorization");
     configuration.addAllowedHeader("Authorization");
+    configuration.addAllowedHeader("Content-Type");
 
     configuration.setAllowCredentials(true);
     configuration.setAllowedMethods(Collections.singletonList("*"));
