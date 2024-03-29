@@ -19,7 +19,7 @@ public class CrawlerService {
   private String chromeDriver;
 
   public List<CrawlerResponse> crawlingProductInfo(String url) {
-    System.setProperty("webdriver.chrome.driver", "src/main/resources/static/chromedriver.exe");
+    System.setProperty("webdriver.chrome.driver", chromeDriver);
 
     ChromeOptions options = new ChromeOptions();
     options.addArguments("--remote-allow-origins=*");
