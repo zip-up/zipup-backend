@@ -78,7 +78,7 @@ public class PaymentController {
           @ApiResponse(
                   responseCode = "401",
                   description = "키 오류",
-                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),,
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
           @ApiResponse(
                   responseCode = "404",
                   description = "결제 시간 만료",
