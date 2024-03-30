@@ -51,8 +51,9 @@ public class FundService {
     targetFund.setUser(userService.findById(authentication.getName()));
     CrawlerResponse crawlerResponse = crawlerService.crawlingProductInfo(productUrl);
     String imageUrl = crawlerResponse == null ? ""
-            : crawlerResponse.getImageUrl() != null
-            ? crawlerResponse.getImageUrl() : "";
+            : crawlerResponse.getImageUrl() == null ? ""
+            : !crawlerResponse.getImageUrl().startsWith("https:")
+            ? "https:" + crawlerResponse.getImageUrl() : crawlerResponse.getImageUrl();
     targetFund.setImageUrl(imageUrl);
 
     Fund response = fundRepository.save(targetFund);
