@@ -42,7 +42,7 @@ public class FundService {
   }
 
   @Transactional
-  public SimpleDataResponse createFunding(CreateFundingRequest request) {
+  public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     String productUrl = request.getProductUrl();
@@ -58,7 +58,7 @@ public class FundService {
 
     Fund response = fundRepository.save(targetFund);
 
-    return new SimpleDataResponse(response.getId().toString());
+    return new SimpleFundingDataResponse(response.getId().toString(), imageUrl);
   }
 
   @Transactional(readOnly = true)
