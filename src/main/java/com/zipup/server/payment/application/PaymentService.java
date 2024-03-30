@@ -165,4 +165,11 @@ public class PaymentService {
     return connection;
   }
 
+  @Transactional(readOnly = true)
+  public List<PaymentResultResponse> getPaymentList() {
+    return paymentRepository.findAll()
+            .stream()
+            .map(Payment::toDetailResponse)
+            .collect(Collectors.toList());
+  }
 }

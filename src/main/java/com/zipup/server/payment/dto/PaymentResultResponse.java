@@ -31,4 +31,7 @@ public class PaymentResultResponse {
   private String bank;
   @Schema(description = "휴대폰 결제 시")
   private String customerMobilePhone;
+  private String orderId;
+  private String paymentKey;
+  private Integer price;
 }

@@ -1,5 +1,7 @@
 package com.zipup.server.payment.presentation;
 
+import com.zipup.server.funding.dto.FundingSummaryResponse;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -70,15 +74,15 @@ public class PaymentController {
           @ApiResponse(
                   responseCode = "200",
                   description = "저장 성공",
-                  content = @Content(schema = @Schema(type = "결제 진행!"))),
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
           @ApiResponse(
                   responseCode = "401",
                   description = "키 오류",
-                  content = @Content(schema = @Schema(type = "UNAUTHORIZED_KEY"))),
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),,
           @ApiResponse(
                   responseCode = "404",
                   description = "결제 시간 만료",
-                  content = @Content(schema = @Schema(type = "NOT_FOUND_PAYMENT_SESSION")))
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
   })
   @GetMapping(value = "/confirm")
   public ResponseEntity<PaymentResultResponse> successPayment(
@@ -89,6 +93,13 @@ public class PaymentController {
     PaymentResultResponse response = paymentService.successPayment(new PaymentRequest(orderId, amount, paymentKey));
 
     return ResponseEntity.status(response.getCode()).body(response);
+  }
+
+  @Operation(summary = "임시 데이터", description = "임시")
+  @GetMapping("/temp")
+  public ResponseEntity<List<PaymentResultResponse>> getPaymentList() {
+    List<PaymentResultResponse> response = paymentService.getPaymentList();
+    return ResponseEntity.ok(response);
   }
 
 }
