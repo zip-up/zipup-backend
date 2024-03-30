@@ -86,6 +86,13 @@ public class Fund extends BaseTimeEntity {
             .mapToInt(present -> present.getPayment().getPrice())
             .sum();
 
+<<<<<<< Updated upstream
+=======
+    System.out.println("nowPresent :: " + nowPresent + " goalPrice :: " + goalPrice);
+
+    int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
+
+>>>>>>> Stashed changes
     return FundingSummaryResponse.builder()
             .id(id.toString())
             .title(title)
