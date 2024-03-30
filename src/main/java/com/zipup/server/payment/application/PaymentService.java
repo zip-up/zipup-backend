@@ -1,5 +1,7 @@
 package com.zipup.server.payment.application;
 
+import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentRequest;
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 import java.io.*;
@@ -24,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
 import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
@@ -102,6 +106,7 @@ public class PaymentService {
     String bank = "";
     String customerMobilePhone = "";
     String message = "";
+    String resultId = "";
 
     if (method != null) {
       switch (method) {
@@ -127,7 +132,7 @@ public class PaymentService {
               .paymentMethod(method)
               .build();
 
-      paymentRepository.save(successPayment);
+      resultId = paymentRepository.save(successPayment).getId().toString();
       redisTemplate.delete(request.getOrderId());
     } else {
       code = Integer.parseInt(jsonObject.get("code").toString());
@@ -135,6 +140,7 @@ public class PaymentService {
     }
 
     return PaymentResultResponse.builder()
+            .id(resultId)
             .code(code)
             .method(method)
             .responseStr(jsonObject.toString())

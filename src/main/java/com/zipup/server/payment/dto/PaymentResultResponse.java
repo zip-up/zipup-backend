@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentResultResponse {
+  @Schema(description = "결제 식별자 값")
+  private String id;
   @Schema(description = "응답 코드")
   private Integer code;
   @Schema(description = "응답 메시지")
