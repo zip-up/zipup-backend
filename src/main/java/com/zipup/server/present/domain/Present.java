@@ -50,19 +50,17 @@ public class Present extends BaseTimeEntity {
   private Payment payment;
 
   public PresentSummaryResponse toSummaryResponse() {
-<<<<<<< Updated upstream
-=======
     int percentage = (int) Math.round(((double) payment.getPrice() / fund.getGoalPrice()) * 100);
     System.out.println("nowPresent :: " + payment.getPrice() + " goalPrice :: " + fund.getGoalPrice());
 
->>>>>>> Stashed changes
     return PresentSummaryResponse.builder()
             .id(id.toString())
             .senderName(senderName)
             .profileImage(user.getProfileImage() != null ? user.getProfileImage() : "")
             .congratsMessage(congratsMessage)
             .participantId(user.getId().toString())
-            .contributionPercent((int) ((double) payment.getPrice() / fund.getGoalPrice()) * 100)
+            .paymentId(payment.getId().toString())
+            .contributionPercent(percentage)
             .build();
   }
 
