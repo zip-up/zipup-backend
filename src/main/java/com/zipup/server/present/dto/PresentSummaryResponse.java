@@ -19,4 +19,6 @@ public class PresentSummaryResponse {
   private String participantId;
   @Schema(description = "축하 메시지")
   private String congratsMessage;
+  @Schema(description = "결제 정보 식별자")
+  private String paymentId;
 }
