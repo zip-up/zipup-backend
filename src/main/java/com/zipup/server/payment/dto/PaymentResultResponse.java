@@ -1,6 +1,7 @@
 package com.zipup.server.payment.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +32,7 @@ public class PaymentResultResponse {
   private String bank;
   @Schema(description = "휴대폰 결제 시")
   private String customerMobilePhone;
+  private String orderId;
+  private String paymentKey;
+  private Integer price;
 }

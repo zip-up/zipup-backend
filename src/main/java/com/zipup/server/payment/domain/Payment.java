@@ -2,6 +2,7 @@ package com.zipup.server.payment.domain;
 
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
+import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.present.domain.Present;
 import lombok.*;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -49,4 +50,14 @@ public class Payment extends BaseTimeEntity {
   @Transient
   private Present present;
 
+  public PaymentResultResponse toDetailResponse() {
+    return PaymentResultResponse.builder()
+            .id(id.toString())
+            .orderId(orderId)
+            .paymentKey(paymentKey)
+            .price(price)
+            .method(paymentMethod)
+            .bank(bank)
+            .build();
+  }
 }
