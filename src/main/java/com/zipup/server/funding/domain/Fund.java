@@ -119,6 +119,7 @@ public class Fund extends BaseTimeEntity {
             .isOrganizer(isOrganizer)
             .isParticipant(isParticipant)
             .organizer(user.getId().toString())
+            .organizerName(user.getName())
             .build();
   }
 
