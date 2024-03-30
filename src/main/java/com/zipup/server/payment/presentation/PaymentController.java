@@ -1,6 +1,7 @@
 package com.zipup.server.payment.presentation;
 
 import com.zipup.server.funding.dto.FundingSummaryResponse;
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
@@ -73,15 +74,15 @@ public class PaymentController {
           @ApiResponse(
                   responseCode = "200",
                   description = "저장 성공",
-                  content = @Content(schema = @Schema(type = "결제 진행!"))),
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
           @ApiResponse(
                   responseCode = "401",
                   description = "키 오류",
-                  content = @Content(schema = @Schema(type = "UNAUTHORIZED_KEY"))),
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),,
           @ApiResponse(
                   responseCode = "404",
                   description = "결제 시간 만료",
-                  content = @Content(schema = @Schema(type = "NOT_FOUND_PAYMENT_SESSION")))
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
   })
   @GetMapping(value = "/confirm")
   public ResponseEntity<PaymentResultResponse> successPayment(
