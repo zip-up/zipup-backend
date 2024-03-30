@@ -86,12 +86,14 @@ public class Fund extends BaseTimeEntity {
             .mapToInt(present -> present.getPayment().getPrice())
             .sum();
 
+    int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
+
     return FundingSummaryResponse.builder()
             .id(id.toString())
             .title(title)
             .imageUrl(!imageUrl.startsWith("https:") ? "https:" + imageUrl : imageUrl)
             .status(duration > 0 ? String.valueOf(duration) : "완료")
-            .percent((int) (((double) nowPresent / goalPrice) * 100))
+            .percent(percentage)
             .organizer(user.getId().toString())
             .build();
   }
