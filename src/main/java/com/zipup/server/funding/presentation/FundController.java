@@ -74,7 +74,7 @@ public class FundController {
   @ApiResponse(
           responseCode = "201",
           description = "펀딩 주최 성공",
-          content = @Content(schema = @Schema(implementation = SimpleDataResponse.class)))
+          content = @Content(schema = @Schema(implementation = SimpleFundingDataResponse.class)))
   @PostMapping("")
   public ResponseEntity<SimpleFundingDataResponse> createFunding(@RequestBody CreateFundingRequest request) {
     return ResponseEntity.ok(fundService.createFunding(request));
