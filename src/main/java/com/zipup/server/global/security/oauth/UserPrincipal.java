@@ -27,6 +27,7 @@ public class UserPrincipal implements OAuth2User, UserDetails, OidcUser {
 
 	private final String email;
 	private final String nickname;
+	private final String profileImage;
 	private final String password;
 	private final LoginProvider providerType;
 	private final UserRole roleType;
@@ -92,6 +93,7 @@ public class UserPrincipal implements OAuth2User, UserDetails, OidcUser {
 		return new UserPrincipal(
 						user.getEmail(),
 						user.getName(),
+						user.getProfileImage(),
 						user.getPassword(),
 						user.getLoginProvider(),
 						UserRole.USER,
