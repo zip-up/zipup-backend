@@ -27,4 +27,5 @@ public class FundingDetailResponse {
   private Boolean isOrganizer;
   private Boolean isParticipant;
   private String organizer;
+  private String organizerName;
 }
