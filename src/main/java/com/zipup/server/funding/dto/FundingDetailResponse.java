@@ -14,6 +14,7 @@ public class FundingDetailResponse {
   private String title;
   private String description;
   private String imageUrl;
+  private String productUrl;
   @Schema(description = "펀딩 만료까지 남은 기간, 만료 시 0")
   private Long expirationDate;
   @Schema(description = "완료, 진행 여부")
