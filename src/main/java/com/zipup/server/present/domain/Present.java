@@ -51,7 +51,6 @@ public class Present extends BaseTimeEntity {
 
   public PresentSummaryResponse toSummaryResponse() {
     int percentage = (int) Math.round(((double) payment.getPrice() / fund.getGoalPrice()) * 100);
-    System.out.println("myParticipate :: " + payment.getPrice() + " goalPrice :: " + fund.getGoalPrice());
 
     return PresentSummaryResponse.builder()
             .id(id.toString())

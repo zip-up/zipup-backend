@@ -86,8 +86,6 @@ public class Fund extends BaseTimeEntity {
             .mapToInt(present -> present.getPayment().getPrice())
             .sum();
 
-    System.out.println("nowPresent :: " + nowPresent + " goalPrice :: " + goalPrice);
-
     int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
     return FundingSummaryResponse.builder()
             .id(id.toString())
@@ -107,6 +105,7 @@ public class Fund extends BaseTimeEntity {
     Boolean isOrganizer = nowUserId == null ? false : nowUserId.equals(user.getId().toString());
     boolean isParticipant = presents.stream()
             .anyMatch(p -> p.getUser().getId().toString().equals(nowUserId));
+    int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
 
     return FundingDetailResponse.builder()
             .id(id.toString())
@@ -117,7 +116,7 @@ public class Fund extends BaseTimeEntity {
             .expirationDate(duration > 0 ? duration : 0)
             .isCompleted(duration <= 0)
             .goalPrice(goalPrice)
-            .percent(nowPresent / goalPrice)
+            .percent(percentage)
             .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
             .isOrganizer(isOrganizer)
             .isParticipant(isParticipant)
