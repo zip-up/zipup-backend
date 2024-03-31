@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.zipup.server.user.dto.SignInResponse;
 import com.zipup.server.user.dto.TokenAndUserInfoResponse;
+import com.zipup.server.user.dto.TokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -74,7 +75,7 @@ public class AuthController {
             @ApiResponse(responseCode = "500", description = "내부 서버 오류가 발생했습니다.")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<Void> refresh(
+    public ResponseEntity<TokenResponse> refresh(
             @CookieValue(COOKIE_TOKEN_REFRESH) final String refreshToken,
             final HttpServletResponse httpServletResponse
     ) {
@@ -82,7 +83,7 @@ public class AuthController {
         httpServletResponse.addHeader(SET_COOKIE, newToken[0].toString());
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
 
-        return ResponseEntity.status(CREATED).build();
+        return ResponseEntity.ok().body(new TokenResponse(newToken[0].toString(), newToken[1].toString()));
     }
 
     @Operation(summary = "로그 아웃")
