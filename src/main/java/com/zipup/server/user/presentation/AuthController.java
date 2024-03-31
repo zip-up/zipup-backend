@@ -52,7 +52,9 @@ public class AuthController {
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
-        response.getSignInResponse().setAccesstoken(newAccessToken);
+        String newRefreshToken = response.getRefreshToken().getValue();
+        response.getSignInResponse().setAccessToken(newAccessToken);
+        response.getSignInResponse().setRefreshToken(newRefreshToken);
 
         if (redirectUrl != null && !redirectUrl.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FOUND)
