@@ -90,7 +90,11 @@ public class Fund extends BaseTimeEntity {
     return FundingSummaryResponse.builder()
             .id(id.toString())
             .title(title)
-            .imageUrl(!imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl)
+            .imageUrl(imageUrl)
+            .imageUrl(imageUrl.length() > 0
+                    ? imageUrl.startsWith("//") ? "https:" + imageUrl
+                    : imageUrl
+                    : imageUrl)
             .status(duration > 0 ? String.valueOf(duration) : "완료")
             .percent(percentage)
             .organizer(user.getId().toString())
@@ -110,7 +114,10 @@ public class Fund extends BaseTimeEntity {
     return FundingDetailResponse.builder()
             .id(id.toString())
             .title(title)
-            .imageUrl(!imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl)
+            .imageUrl(imageUrl.length() > 0
+                    ? imageUrl.startsWith("//") ? "https:" + imageUrl
+                    : imageUrl
+                    : imageUrl)
             .productUrl(productUrl)
             .description(description)
             .expirationDate(duration > 0 ? duration : 0)
