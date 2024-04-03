@@ -17,6 +17,8 @@ public class PresentSummaryResponse {
   private String profileImage;
   @Schema(description = "\'참여자\'의 식별자 값 (UUID) ")
   private String participantId;
+  @Schema(description = "\'참여 펀딩\'의 식별자 값 (UUID) ")
+  private String fundId;
   @Schema(description = "축하 메시지")
   private String congratsMessage;
   @Schema(description = "결제 정보 식별자")
