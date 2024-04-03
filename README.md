@@ -2,6 +2,10 @@
 ## 집업 - 집들이 선물 펀딩 서비스
 [![](http://img.shields.io/badge/-서비스소개서-gray?style=flat-square&logo=notion&link=https://file.notion.so/f/f/18b15060-3725-484f-806b-77744900d59c/a4d837c6-20f1-4fc4-b81e-33e0cb714b66/Zipup_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%86%8C%EA%B0%9C%EC%84%9C_%ED%8F%AC%ED%85%90%EC%A0%A4%EB%A6%AC.pdf?id=37921faa-8c60-485f-b070-58369be92683&table=block&spaceId=18b15060-3725-484f-806b-77744900d59c&expirationTimestamp=1712210400000&signature=mhjcurHk1GeROZ-9XEDjYZt2UDZJQhy5bEuI1HC1jR8&downloadName=Zipup_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%86%8C%EA%B0%9C%EC%84%9C_%ED%8F%AC%ED%85%90%EC%A0%A4%EB%A6%AC.pdf)](https://file.notion.so/f/f/18b15060-3725-484f-806b-77744900d59c/a4d837c6-20f1-4fc4-b81e-33e0cb714b66/Zipup_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%86%8C%EA%B0%9C%EC%84%9C_%ED%8F%AC%ED%85%90%EC%A0%A4%EB%A6%AC.pdf?id=37921faa-8c60-485f-b070-58369be92683&table=block&spaceId=18b15060-3725-484f-806b-77744900d59c&expirationTimestamp=1712210400000&signature=mhjcurHk1GeROZ-9XEDjYZt2UDZJQhy5bEuI1HC1jR8&downloadName=Zipup_%EC%84%9C%EB%B9%84%EC%8A%A4%EC%86%8C%EA%B0%9C%EC%84%9C_%ED%8F%AC%ED%85%90%EC%A0%A4%EB%A6%AC.pdf)
 
+<a href="http://api.zip-up.kro.kr/swagger-ui/index.html#" style="display: inline">
+    <img src="https://img.shields.io/badge/Swagger API-009639?style=flat-square&logo=Swagger&logoColor=" width="120px" />
+</a>
+
 ## ERD
 ![image](https://github.com/zip-up/zipup-backend/assets/104782275/2c03765d-9d25-4cc9-8982-5c769255d26d)
 
@@ -53,9 +57,6 @@
 </a>
 <a href="https://github.com/spring-projects/spring-security" style="display: inline">
     <img src="https://img.shields.io/badge/Spring Security-6DB33F?style=flat-square&logo=Spring Security&logoColor=white" />
-</a>
-<a href="" style="display: inline">
-    <img src="https://img.shields.io/badge/Swagger API-white?style=flat-square&logo=Swagger&logoColor=" />
 </a>
 
 #### Storage
