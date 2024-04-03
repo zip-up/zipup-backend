@@ -48,7 +48,7 @@ public class PresentController {
   @ApiResponse(
           responseCode = "200",
           description = "조회 성공",
-          content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
+          content = @Content(schema = @Schema(implementation = PresentSummaryResponse.class)))
   @GetMapping("/list")
   public ResponseEntity<List<PresentSummaryResponse>> getMyParticipateList(@RequestParam(value = "user") String userId) {
     return ResponseEntity.ok(presentService.getMyParticipateList(userId));
