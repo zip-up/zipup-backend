@@ -1,7 +1,6 @@
 package com.zipup.server.present.domain;
 
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.payment.domain.Payment;
@@ -58,6 +57,7 @@ public class Present extends BaseTimeEntity {
             .profileImage(user.getProfileImage() != null ? user.getProfileImage() : "")
             .congratsMessage(congratsMessage)
             .participantId(user.getId().toString())
+            .fundId(fund.getId().toString())
             .paymentId(payment.getId().toString())
             .contributionPercent(percentage)
             .build();
