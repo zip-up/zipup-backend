@@ -1,6 +1,5 @@
 package com.zipup.server.present.presentation;
 
-import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.present.dto.PresentSummaryResponse;
