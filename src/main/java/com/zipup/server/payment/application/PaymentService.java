@@ -138,6 +138,7 @@ public class PaymentService {
       code = Integer.parseInt(jsonObject.get("code").toString());
       message = jsonObject.get("message").toString();
     }
+    responseStream.close();
 
     return PaymentResultResponse.builder()
             .id(resultId)
