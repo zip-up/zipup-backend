@@ -197,7 +197,7 @@ public class JwtProvider {
             throw new BaseException(UNSUPPORTED_TOKEN);
         } catch (ExpiredJwtException e) {
             throw new BaseException(EXPIRED_TOKEN);
-        } catch (SignatureException e) {
+        } catch (io.jsonwebtoken.security.SecurityException e) {
             throw new BaseException(WRONG_TYPE_TOKEN);
         }
     }

@@ -54,6 +54,7 @@ public class SecurityConfig {
           "/webjars/**",
           "/h2-console/**",
           "/api/v1/user/sign-**",
+          "/api/v1/auth/refresh",
           "/v3/api-docs/**"
   };
 
@@ -77,7 +78,7 @@ public class SecurityConfig {
             .authorizeRequests(authorizeRequests ->
                     authorizeRequests
                             .antMatchers(HttpMethod.GET).permitAll()
-                            .antMatchers(AUTH_WHITELIST).permitAll()
+                            .antMatchers(HttpMethod.POST, AUTH_WHITELIST).permitAll()
                             .anyRequest().authenticated())
 
             .oauth2Login(oauth ->

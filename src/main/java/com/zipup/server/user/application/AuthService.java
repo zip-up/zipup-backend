@@ -56,7 +56,7 @@ public class AuthService {
     if (refreshToken == null) throw new BaseException(EMPTY_REFRESH_JWT);
     jwtProvider.verifyRefreshToken(refreshToken);
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = jwtProvider.getAuthenticationByToken(refreshToken);
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
@@ -103,4 +103,5 @@ public class AuthService {
     removeRedisToken(key);
     return true;
   }
+
 }
