@@ -18,6 +18,8 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Set;
+
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.COOKIE_EXPIRE_SECONDS;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
@@ -80,8 +82,10 @@ public class AuthService {
   }
 
   private void removeRedisToken(String key) {
-    redisTemplate.delete(key);
-    redisTemplate.delete(key + "_REFRESH");
+    Set<String> keysToDelete = redisTemplate.keys(key + "*");
+
+    if (keysToDelete != null)
+      redisTemplate.delete(keysToDelete);
   }
 
   public boolean signOut(HttpServletRequest request) {
