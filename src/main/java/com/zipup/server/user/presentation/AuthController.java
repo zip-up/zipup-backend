@@ -1,7 +1,9 @@
 package com.zipup.server.user.presentation;
 
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.user.application.AuthService;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,7 +22,11 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
+import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
+import static com.zipup.server.global.security.util.CookieUtil.getCookie;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
 @RestController
@@ -73,9 +79,15 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(
-            @CookieValue(COOKIE_TOKEN_REFRESH) final String refreshToken,
+            final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
     ) {
+        Optional<Cookie> refreshTokenCookie = getCookie(httpServletRequest, COOKIE_TOKEN_REFRESH);
+        if (refreshTokenCookie.isEmpty()) throw new BaseException(TOKEN_NOT_FOUND);
+
+        String refreshToken = refreshTokenCookie.get().getValue();
+        if (refreshToken == null) throw new BaseException(TOKEN_NOT_FOUND);
+
         ResponseCookie[] newToken = authService.refresh(refreshToken);
         httpServletResponse.addHeader(SET_COOKIE, newToken[0].toString());
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());

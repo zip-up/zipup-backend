@@ -44,10 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : cookieAttribute.get(HttpHeaders.AUTHORIZATION) != null ? cookieAttribute.get(HttpHeaders.AUTHORIZATION)
             : null;
 
-    if (!StringUtils.hasText(accessToken)) {
-      log.error("has no text :: {} {} {}", NOT_EXIST_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
-      request.setAttribute("exception", NOT_EXIST_TOKEN);
-    }
+    if (!StringUtils.hasText(accessToken)) request.setAttribute("exception", NOT_EXIST_TOKEN);
 
     else if (StringUtils.hasText(accessToken)) {
       try{
