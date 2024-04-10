@@ -75,10 +75,9 @@ public class AuthController {
     })
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(
-            final HttpServletRequest httpServletRequest,
+            @CookieValue(COOKIE_TOKEN_REFRESH) final String refreshToken,
             final HttpServletResponse httpServletResponse
     ) {
-        String refreshToken = httpServletRequest.getHeader(COOKIE_TOKEN_REFRESH);
         if (refreshToken == null) throw new BaseException(TOKEN_NOT_FOUND);
 
         ResponseCookie[] newToken = authService.refresh(refreshToken);
