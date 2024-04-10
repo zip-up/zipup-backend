@@ -1,7 +1,5 @@
 package com.zipup.server.payment.application;
 
-import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentRequest;
@@ -19,14 +17,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
@@ -78,12 +73,12 @@ public class PaymentService {
 
     OutputStream outputStream = connection.getOutputStream();
 
-    JSONObject obj = new JSONObject();
-    obj.put("orderId", request.getOrderId());
-    obj.put("amount", request.getAmount());
-    obj.put("paymentKey", request.getPaymentKey());
+    Map<String, Object> data = new HashMap<>();
+    data.put("orderId", request.getOrderId());
+    data.put("amount", request.getAmount());
+    data.put("paymentKey", request.getPaymentKey());
 
-    outputStream.write(obj.toString().getBytes("UTF-8"));
+    JSONObject obj = new JSONObject(data);
 
     outputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
 
@@ -138,6 +133,7 @@ public class PaymentService {
       code = Integer.parseInt(jsonObject.get("code").toString());
       message = jsonObject.get("message").toString();
     }
+    responseStream.close();
 
     return PaymentResultResponse.builder()
             .id(resultId)

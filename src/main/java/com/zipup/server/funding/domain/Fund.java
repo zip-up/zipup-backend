@@ -106,7 +106,7 @@ public class Fund extends BaseTimeEntity {
     int nowPresent = presents.stream()
             .mapToInt(present -> present.getPayment().getPrice())
             .sum();
-    Boolean isOrganizer = nowUserId == null ? false : nowUserId.equals(user.getId().toString());
+    Boolean isOrganizer = nowUserId != null && nowUserId.equals(user.getId().toString());
     boolean isParticipant = presents.stream()
             .anyMatch(p -> p.getUser().getId().toString().equals(nowUserId));
     int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);

@@ -1,7 +1,5 @@
 package com.zipup.server.payment.presentation;
 
-import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
