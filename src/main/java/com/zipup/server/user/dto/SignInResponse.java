@@ -13,5 +13,4 @@ public class SignInResponse {
   private String email;
   private String profileImage;
   private String accessToken;
-  private String refreshToken;
 }

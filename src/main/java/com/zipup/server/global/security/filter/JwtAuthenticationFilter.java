@@ -1,7 +1,6 @@
 package com.zipup.server.global.security.filter;
 
 import com.google.common.net.HttpHeaders;
-import com.zipup.server.global.exception.CustomErrorCode;
 import com.zipup.server.global.security.util.JwtProvider;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import io.jsonwebtoken.UnsupportedJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -46,8 +44,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : cookieAttribute.get(HttpHeaders.AUTHORIZATION) != null ? cookieAttribute.get(HttpHeaders.AUTHORIZATION)
             : null;
 
-    if (!StringUtils.hasText(accessToken))
+    if (!StringUtils.hasText(accessToken)) {
+      log.error("has no text :: {} {} {}", NOT_EXIST_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
       request.setAttribute("exception", NOT_EXIST_TOKEN);
+    }
 
     else if (StringUtils.hasText(accessToken)) {
       try{
@@ -71,18 +71,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     filterChain.doFilter(request, response);
-  }
-
-  private void exceptionResponse(HttpServletRequest request, HttpServletResponse response, CustomErrorCode error, int status) throws IOException {
-    JSONObject responseJson = new JSONObject();
-    response.setStatus(status);
-    response.setContentType("application/json;charset=UTF-8");
-
-    responseJson.put("message", error.getMessage());
-    responseJson.put("code", error.getCode());
-    responseJson.put("path", request.getContextPath() + request.getServletPath());
-
-    response.getWriter().print(responseJson);
   }
 
 }

@@ -52,9 +52,7 @@ public class AuthController {
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
-        String newRefreshToken = response.getRefreshToken().getValue();
         response.getSignInResponse().setAccessToken(newAccessToken);
-        response.getSignInResponse().setRefreshToken(newRefreshToken);
 
         if (redirectUrl != null && !redirectUrl.isEmpty()) {
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -82,7 +80,7 @@ public class AuthController {
         httpServletResponse.addHeader(SET_COOKIE, newToken[0].toString());
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
 
-        return ResponseEntity.ok().body(new TokenResponse(newToken[0].toString(), newToken[1].toString()));
+        return ResponseEntity.ok().body(new TokenResponse(newToken[0].getValue()));
     }
 
     @Operation(summary = "로그 아웃")
