@@ -50,6 +50,7 @@ public class AuthService {
             .signInResponse(userService.findById(authentication.getName()).toSignInResponse())
             .accessToken(responseCookies[0])
             .refreshToken(responseCookies[1])
+            .tempToken(responseCookies[2])
             .build();
   }
 
