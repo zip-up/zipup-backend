@@ -9,5 +9,6 @@ import org.springframework.http.ResponseCookie;
 public class TokenAndUserInfoResponse {
   private ResponseCookie accessToken;
   private ResponseCookie refreshToken;
+  private ResponseCookie tempToken;
   private SignInResponse signInResponse;
 }

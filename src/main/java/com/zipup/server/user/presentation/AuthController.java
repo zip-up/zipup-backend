@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
+import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 import static com.zipup.server.global.security.util.CookieUtil.getCookie;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
@@ -51,11 +52,12 @@ public class AuthController {
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
     ) {
-        String redirectUrl = httpServletRequest.getParameter("redirect_url");
+        String redirectUrl = httpServletRequest.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest);
 
         httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
+        httpServletResponse.addHeader(SET_COOKIE, response.getTempToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
         response.getSignInResponse().setAccessToken(newAccessToken);
@@ -64,9 +66,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, redirectUrl)
                     .build();
-        } else {
-            return ResponseEntity.ok().body(response.getSignInResponse());
         }
+        else return ResponseEntity.ok().body(response.getSignInResponse());
     }
 
     @Operation(summary = "refresh token으로 신규 access token 발급")
