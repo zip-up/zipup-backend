@@ -50,7 +50,6 @@ public class AuthService {
             .signInResponse(userService.findById(authentication.getName()).toSignInResponse())
             .accessToken(responseCookies[0])
             .refreshToken(responseCookies[1])
-            .tempToken(responseCookies[2])
             .build();
   }
 
@@ -77,9 +76,8 @@ public class AuthService {
     );
 
     return new ResponseCookie[] {
-            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
-            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), COOKIE_EXPIRE_SECONDS),
-            CookieUtil.addResponseAccessCookie("access-token", newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS)
+            CookieUtil.addResponseAccessCookie("access-token", newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
+            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), COOKIE_EXPIRE_SECONDS)
     };
   }
 

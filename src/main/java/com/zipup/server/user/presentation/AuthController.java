@@ -57,7 +57,6 @@ public class AuthController {
 
         httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
-        httpServletResponse.addHeader(SET_COOKIE, response.getTempToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
         response.getSignInResponse().setAccessToken(newAccessToken);
@@ -92,7 +91,6 @@ public class AuthController {
         ResponseCookie[] newToken = authService.refresh(refreshToken);
         httpServletResponse.addHeader(SET_COOKIE, newToken[0].toString());
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
-        httpServletResponse.addHeader(SET_COOKIE, newToken[2].toString());
 
         return ResponseEntity.ok().body(new TokenResponse(newToken[0].getValue()));
     }
