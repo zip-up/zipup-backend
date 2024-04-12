@@ -85,4 +85,5 @@ public class FundService {
             .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());
   }
+
 }

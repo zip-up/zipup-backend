@@ -1,5 +1,6 @@
 package com.zipup.server.present.presentation;
 
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.present.dto.PresentSummaryResponse;
@@ -47,9 +48,9 @@ public class PresentController {
   @ApiResponse(
           responseCode = "200",
           description = "조회 성공",
-          content = @Content(schema = @Schema(implementation = PresentSummaryResponse.class)))
+          content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
-  public ResponseEntity<List<PresentSummaryResponse>> getMyParticipateList(@RequestParam(value = "user") String userId) {
+  public ResponseEntity<List<FundingSummaryResponse>> getMyParticipateList(@RequestParam(value = "user") String userId) {
     return ResponseEntity.ok(presentService.getMyParticipateList(userId));
   }
 
