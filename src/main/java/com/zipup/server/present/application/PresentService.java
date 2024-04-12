@@ -1,6 +1,7 @@
 package com.zipup.server.present.application;
 
 import com.zipup.server.funding.application.FundService;
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.present.domain.Present;
@@ -63,11 +64,12 @@ public class PresentService {
   }
 
   @Transactional(readOnly = true)
-  public List<PresentSummaryResponse> getMyParticipateList(String userId) {
+  public List<FundingSummaryResponse> getMyParticipateList(String userId) {
     isValidUUID(userId);
     return presentRepository.findAllByUser(userService.findById(userId))
             .stream()
-            .map(Present::toSummaryResponse)
+            .map(present -> present.getFund().toSummaryResponse())
             .collect(Collectors.toList());
   }
+
 }
