@@ -55,7 +55,6 @@ public class AuthController {
         String redirectUrl = httpServletRequest.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
         TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest);
 
-        httpServletResponse.addHeader(SET_COOKIE, response.getAccessToken().toString());
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
@@ -89,7 +88,6 @@ public class AuthController {
         if (refreshToken == null) throw new BaseException(TOKEN_NOT_FOUND);
 
         ResponseCookie[] newToken = authService.refresh(refreshToken);
-        httpServletResponse.addHeader(SET_COOKIE, newToken[0].toString());
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
 
         return ResponseEntity.ok().body(new TokenResponse(newToken[0].getValue()));
