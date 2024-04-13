@@ -76,7 +76,7 @@ public class AuthService {
     );
 
     return new ResponseCookie[] {
-            CookieUtil.addResponseAccessCookie("access-token", newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
+            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
             CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), COOKIE_EXPIRE_SECONDS)
     };
   }
