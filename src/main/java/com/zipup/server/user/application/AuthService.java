@@ -1,10 +1,10 @@
 package com.zipup.server.user.application;
 
-import com.zipup.server.user.dto.TokenAndUserInfoResponse;
-import com.zipup.server.user.dto.TokenResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.security.util.CookieUtil;
 import com.zipup.server.global.security.util.JwtProvider;
+import com.zipup.server.user.dto.TokenAndUserInfoResponse;
+import com.zipup.server.user.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,11 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.Set;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
-import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.COOKIE_EXPIRE_SECONDS;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 
 @Service
@@ -76,8 +74,8 @@ public class AuthService {
     );
 
     return new ResponseCookie[] {
-            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), COOKIE_EXPIRE_SECONDS),
-            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), COOKIE_EXPIRE_SECONDS)
+            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), 86400),
+            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), 604800)
     };
   }
 
