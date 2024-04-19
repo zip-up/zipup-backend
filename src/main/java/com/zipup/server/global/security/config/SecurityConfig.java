@@ -32,7 +32,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.Set;
 
-import static com.zipup.server.global.exception.CustomErrorCode.NOT_EXIST_TOKEN;
 import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
 
 @Configuration

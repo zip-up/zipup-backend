@@ -1,6 +1,7 @@
 package com.zipup.server.user.application;
 
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,25 +28,17 @@ public class UserService {
   private final UserRepository userRepository;
   private final JwtProvider jwtProvider;
 
-  private void isValidUUID(String id) {
-    try {
-      UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new BaseException(INVALID_USER_UUID);
-    }
-  }
-
   @Transactional(readOnly = true)
   public User findByEmail(String email) {
     return userRepository.findByEmail(email)
-            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
   }
 
   @Transactional(readOnly = true)
   public User findById(String id) {
     isValidUUID(id);
     return userRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
   }
 
   @SneakyThrows
@@ -77,12 +71,13 @@ public class UserService {
     return jwtProvider.setTokenHeaders(token);
   }
 
-  public String resolveToken(String tokenInHeader) {
+  public String resolveToken(String tokenInHeader, boolean isRefresh) {
 
     if (StringUtils.hasText(tokenInHeader) && tokenInHeader.startsWith(jwtProvider.getPrefix())) {
       return tokenInHeader.substring(7);
     }
-    else throw new BaseException(TOKEN_NOT_FOUND);
+    else if (isRefresh) throw new BaseException(EMPTY_REFRESH_JWT);
+    else throw new BaseException(EMPTY_ACCESS_JWT);
   }
 
   @Transactional(readOnly = true)

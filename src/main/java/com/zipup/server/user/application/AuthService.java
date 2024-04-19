@@ -40,7 +40,7 @@ public class AuthService {
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
-    if (redisRefreshToken == null) throw new BaseException(NOT_EXIST_TOKEN);
+    if (redisRefreshToken == null) throw new BaseException(TOKEN_NOT_FOUND);
 
     ResponseCookie[] responseCookies = refresh(redisRefreshToken);
 
@@ -61,7 +61,7 @@ public class AuthService {
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 
     if (redisRefreshToken == null || !redisRefreshToken.equals(refreshToken))
-      throw new BaseException(NOT_EXIST_TOKEN);
+      throw new BaseException(TOKEN_NOT_FOUND);
 
     removeRedisToken(key);
 
@@ -92,15 +92,15 @@ public class AuthService {
       throw new BaseException(EMPTY_ACCESS_JWT);
 
     if (jwtProvider.validateToken(token))
-      throw new BaseException(NOT_EXIST_TOKEN);
+      throw new BaseException(EXPIRED_TOKEN);
 
     String key = SecurityContextHolder.getContext().getAuthentication().getName();
 
     String accessTokenInRedis = redisTemplate.opsForValue().get(key);
     String refreshTokenInRedis = redisTemplate.opsForValue().get(key + "_REFRESH");
 
-    if (accessTokenInRedis == null || refreshTokenInRedis == null)
-      throw new BaseException(DATA_NOT_FOUND);
+    if (accessTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
+    if (refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
 
     removeRedisToken(key);
     return true;

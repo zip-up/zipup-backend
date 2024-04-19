@@ -1,6 +1,7 @@
 package com.zipup.server.payment.application;
 
-import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.PaymentException;
+import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
@@ -25,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
-import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -39,19 +40,11 @@ public class PaymentService {
   private final RedisTemplate<String, String> redisTemplate;
   private final PaymentRepository paymentRepository;
 
-  private void isValidUUID(String id) {
-    try {
-      UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new BaseException(INVALID_USER_UUID);
-    }
-  }
-
   @Transactional(readOnly = true)
   public Payment findById(String id) {
     isValidUUID(id);
     return paymentRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
   }
 
   public Boolean isOrderIdExist(String orderId) {
@@ -92,7 +85,7 @@ public class PaymentService {
     JSONObject jsonObject = (JSONObject) parser.parse(reader);
 
     if (!isSuccess)
-      throw new BaseException(Integer.parseInt(jsonObject.get("code").toString()), jsonObject.get("message").toString());
+      throw new PaymentException(code, jsonObject.get("code").toString(), jsonObject.get("message").toString());
 
     System.out.println(jsonObject);
     String method = jsonObject.get("method").toString();
