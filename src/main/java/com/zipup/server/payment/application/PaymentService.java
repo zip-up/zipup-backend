@@ -17,26 +17,34 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
   @Value("${toss.widget.secretKey}")
-  private String secretKey;
-  @Value("${toss.widget.api}")
-  private String tossApi;
+  private String SECRET_KEY;
+  private String AUTHORIZATION_TOSS = "Basic " + new String(Base64.getEncoder().encode((SECRET_KEY + ":").getBytes(UTF_8)));
+  @Value("${toss.widget.api.confirm}")
+  private String CONFIRM_TOSS_API;
+  @Value("${toss.widget.api.paymentKey}")
+  private String TOSS_PAYMENT_API;
+  @Value("${toss.widget.api.orderId}")
+  private String ORDER_ID_TOSS_API;
 
+  private final TossService tossService;
   private final RedisTemplate<String, String> redisTemplate;
   private final PaymentRepository paymentRepository;
 
@@ -60,9 +68,9 @@ public class PaymentService {
 
   public PaymentResultResponse successPayment(PaymentRequest request) throws IOException, ParseException {
     byte[] encodedBytes = Base64.getEncoder()
-            .encode((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+            .encode((SECRET_KEY + ":").getBytes(UTF_8));
 
-    HttpURLConnection connection = postPaymentToToss(encodedBytes);
+    HttpURLConnection connection = confirmPaymentToToss(encodedBytes);
 
     OutputStream outputStream = connection.getOutputStream();
 
@@ -73,14 +81,14 @@ public class PaymentService {
 
     JSONObject obj = new JSONObject(data);
 
-    outputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
+    outputStream.write(obj.toString().getBytes(UTF_8));
 
     int code = connection.getResponseCode();
     boolean isSuccess = code == 200;
 
     InputStream responseStream = isSuccess ? connection.getInputStream() : connection.getErrorStream();
 
-    Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
+    Reader reader = new InputStreamReader(responseStream, UTF_8);
     JSONParser parser = new JSONParser();
     JSONObject jsonObject = (JSONObject) parser.parse(reader);
 
@@ -141,12 +149,12 @@ public class PaymentService {
             .build();
   }
 
-  public HttpURLConnection postPaymentToToss(byte[] encodedBytes) throws IOException {
+  public HttpURLConnection confirmPaymentToToss(byte[] encodedBytes) throws IOException {
     String authorizations = "Basic " + new String(encodedBytes);
 
-    URL url = new URL(tossApi);
+    URL url = new URL(CONFIRM_TOSS_API);
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setRequestProperty(HttpHeaders.AUTHORIZATION, authorizations);
+    connection.setRequestProperty(AUTHORIZATION, authorizations);
     connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     connection.setRequestMethod(String.valueOf(HttpMethod.POST));
     connection.setDoOutput(true);
@@ -161,4 +169,15 @@ public class PaymentService {
             .map(Payment::toDetailResponse)
             .collect(Collectors.toList());
   }
+
+  public PaymentResultResponse fetchPaymentByPaymentKey(String paymentKey) {
+    Mono<PaymentResultResponse> response = tossService.get("/" + paymentKey, PaymentResultResponse.class);
+    return response.block();
+  }
+
+  public PaymentResultResponse fetchPaymentByOrderId(String orderId) {
+    Mono<PaymentResultResponse> response = tossService.get("/orders/" + orderId, PaymentResultResponse.class);
+    return response.block();
+  }
+
 }

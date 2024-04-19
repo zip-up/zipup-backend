@@ -34,4 +34,5 @@ public class PaymentResultResponse {
   private String orderId;
   private String paymentKey;
   private Integer price;
+  private int totalAmount;
 }

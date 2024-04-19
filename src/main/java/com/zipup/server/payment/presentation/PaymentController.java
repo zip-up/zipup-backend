@@ -1,5 +1,6 @@
 package com.zipup.server.payment.presentation;
 
+import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.dto.PaymentRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
@@ -91,6 +92,60 @@ public class PaymentController {
     PaymentResultResponse response = paymentService.successPayment(new PaymentRequest(orderId, amount, paymentKey));
 
     return ResponseEntity.status(response.getCode()).body(response);
+  }
+
+  @Operation(summary = "paymentKey로 결제 조회", description = "paymentKey로 결제 조회")
+  @Parameter(name = "paymentKey", description = "결제 키")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "조회 성공",
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
+          @ApiResponse(
+                  responseCode = "401",
+                  description = "인증되지 않은 시크릿 키 혹은 클라이언트 키",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "반복적인 요청은 허용되지 않음",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "존재하지 않는 결제 정보",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+  })
+  @GetMapping(value = "/key")
+  public ResponseEntity<PaymentResultResponse> getPaymentByPaymentKey(@RequestParam(value = "paymentKey") String paymentKey) throws Exception {
+    PaymentResultResponse response = paymentService.fetchPaymentByPaymentKey(paymentKey);
+
+    return ResponseEntity.ok().body(response);
+  }
+
+  @Operation(summary = "orderId로 결제 조회", description = "orderId로 결제 조회")
+  @Parameter(name = "orderId", description = "주문 정보 키")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "저장 성공",
+                  content = @Content(schema = @Schema(implementation = PaymentResultResponse.class))),
+          @ApiResponse(
+                  responseCode = "401",
+                  description = "인증되지 않은 시크릿 키 혹은 클라이언트 키",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "반복적인 요청은 허용되지 않음",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "존재하지 않는 결제 정보",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+  })
+  @GetMapping(value = "/order")
+  public ResponseEntity<PaymentResultResponse> getPaymentByOrderId(@RequestParam(value = "orderId") String orderId) throws Exception {
+      PaymentResultResponse response = paymentService.fetchPaymentByOrderId(orderId);
+
+    return ResponseEntity.ok().body(response);
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
