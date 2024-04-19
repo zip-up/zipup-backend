@@ -3,7 +3,7 @@ package com.zipup.server.funding.application;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
-import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.user.application.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -16,7 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
-import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,19 +26,11 @@ public class FundService {
   private final UserService userService;
   private final CrawlerService crawlerService;
 
-  private void isValidUUID(String id) {
-    try {
-      UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new BaseException(INVALID_USER_UUID);
-    }
-  }
-
   @Transactional(readOnly = true)
   public Fund findById(String id) {
     isValidUUID(id);
     return fundRepository.findById(UUID.fromString(id))
-            .orElseThrow(() -> new BaseException(DATA_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
   }
 
   @Transactional

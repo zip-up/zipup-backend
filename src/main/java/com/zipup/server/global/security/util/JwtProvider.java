@@ -120,9 +120,6 @@ public class JwtProvider {
         return refreshToken;
     }
 
-    /**
-     * 토큰으로부터 클레임을 만들고, 이를 통해 User 객체 생성해 Authentication 객체 반환
-     */
     public Authentication getAuthenticationByToken(String accessToken) {
         Claims claims = parseClaims(accessToken);
 
@@ -193,7 +190,7 @@ public class JwtProvider {
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(refreshToken);
-        } catch (DecodingException e) {
+        } catch (DecodingException | UnsupportedJwtException e) {
             throw new BaseException(UNSUPPORTED_TOKEN);
         } catch (ExpiredJwtException e) {
             throw new BaseException(EXPIRED_TOKEN);

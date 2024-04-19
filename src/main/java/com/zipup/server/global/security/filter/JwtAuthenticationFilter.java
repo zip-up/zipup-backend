@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.io.DecodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -44,20 +45,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             : cookieAttribute.get(HttpHeaders.AUTHORIZATION) != null ? cookieAttribute.get(HttpHeaders.AUTHORIZATION)
             : null;
 
-    if (!StringUtils.hasText(accessToken)) request.setAttribute("exception", NOT_EXIST_TOKEN);
+    if (!StringUtils.hasText(accessToken)) request.setAttribute("exception", EMPTY_ACCESS_JWT);
 
     else if (StringUtils.hasText(accessToken)) {
       try{
         if (jwtProvider.validateToken(accessToken)) {
-          log.error("validateToken :: {} {} {}", NOT_EXIST_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
-          request.setAttribute("exception", NOT_EXIST_TOKEN);
+          log.error("validateToken :: {} {} {}", EXPIRED_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
+          request.setAttribute("exception", EXPIRED_TOKEN);
         }
 
         Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
       } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e){
         request.setAttribute("exception", WRONG_TYPE_TOKEN);
-      } catch (UnsupportedJwtException e){
+      } catch (DecodingException | UnsupportedJwtException e){
         request.setAttribute("exception", UNSUPPORTED_TOKEN);
       } catch (JwtException e){
         request.setAttribute("exception", EXPIRED_TOKEN);

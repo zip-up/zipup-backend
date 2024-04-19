@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BaseException extends RuntimeException {
+
     private int code;
     private String message;
     private CustomErrorCode status;
@@ -14,8 +15,4 @@ public class BaseException extends RuntimeException {
         this.status = status;
     }
 
-    public BaseException(int code, String message) {
-        this.code = code;
-        this.message = message;
-    }
 }

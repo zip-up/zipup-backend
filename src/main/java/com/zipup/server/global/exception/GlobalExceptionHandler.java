@@ -1,7 +1,5 @@
 package com.zipup.server.global.exception;
 
-import javax.persistence.NoResultException;
-import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -9,10 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.NoResultException;
+import javax.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 
 @Slf4j
@@ -73,6 +73,20 @@ public class GlobalExceptionHandler {
     log.error("--- CustomException ---", ex);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse.toErrorResponse(ex.getStatus()));
+  }
+
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
+    log.error("--- ResourceNotFoundException ---", ex);
+    return ErrorResponse.toErrorResponse(ex.getStatus());
+  }
+
+  @ExceptionHandler(PaymentException.class)
+  public ResponseEntity<ErrorResponse> handlePaymentException(PaymentException ex) {
+    log.error("--- PaymentException ---", ex);
+    return ResponseEntity.status(ex.getStatus())
+            .body(new ErrorResponse(ex.getStatus(), ex.getMessage(), ex.getCode()));
   }
 
 }

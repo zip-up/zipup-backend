@@ -2,7 +2,6 @@ package com.zipup.server.present.application;
 
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
@@ -14,10 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_UUID;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -27,21 +25,14 @@ public class PresentService {
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
 
-  private void isValidUUID(String id) {
-    try {
-      UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
-      throw new BaseException(INVALID_USER_UUID);
-    }
-  }
   @Transactional
   public String participateFunding(ParticipatePresentRequest request) {
     String fundingId = request.getFundingId();
     String participateId = request.getParticipateId();
     String paymentId = request.getPaymentId();
 
-    UUID.fromString(fundingId);
-    UUID.fromString(participateId);
+    isValidUUID(fundingId);
+    isValidUUID(participateId);
 
     Present participateFunding = Present.builder()
             .fund(fundService.findById(fundingId))
