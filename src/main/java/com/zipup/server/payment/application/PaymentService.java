@@ -3,8 +3,9 @@ package com.zipup.server.payment.application;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.payment.domain.Payment;
-import com.zipup.server.payment.dto.PaymentRequest;
+import com.zipup.server.payment.dto.PaymentConfirmRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
+import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONObject;
@@ -36,13 +37,8 @@ public class PaymentService {
 
   @Value("${toss.widget.secretKey}")
   private String SECRET_KEY;
-  private String AUTHORIZATION_TOSS = "Basic " + new String(Base64.getEncoder().encode((SECRET_KEY + ":").getBytes(UTF_8)));
-  @Value("${toss.widget.api.confirm}")
-  private String CONFIRM_TOSS_API;
-  @Value("${toss.widget.api.paymentKey}")
-  private String TOSS_PAYMENT_API;
-  @Value("${toss.widget.api.orderId}")
-  private String ORDER_ID_TOSS_API;
+  @Value("${toss.widget.api.payments}")
+  private String TOSS_PAYMENTS_API;
 
   private final TossService tossService;
   private final RedisTemplate<String, String> redisTemplate;
@@ -66,7 +62,7 @@ public class PaymentService {
     return true;
   }
 
-  public PaymentResultResponse successPayment(PaymentRequest request) throws IOException, ParseException {
+  public PaymentResultResponse successPayment(PaymentConfirmRequest request) throws IOException, ParseException {
     byte[] encodedBytes = Base64.getEncoder()
             .encode((SECRET_KEY + ":").getBytes(UTF_8));
 
@@ -152,7 +148,7 @@ public class PaymentService {
   public HttpURLConnection confirmPaymentToToss(byte[] encodedBytes) throws IOException {
     String authorizations = "Basic " + new String(encodedBytes);
 
-    URL url = new URL(CONFIRM_TOSS_API);
+    URL url = new URL(TOSS_PAYMENTS_API + "/confirm");
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     connection.setRequestProperty(AUTHORIZATION, authorizations);
     connection.setRequestProperty(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -170,13 +166,13 @@ public class PaymentService {
             .collect(Collectors.toList());
   }
 
-  public PaymentResultResponse fetchPaymentByPaymentKey(String paymentKey) {
-    Mono<PaymentResultResponse> response = tossService.get("/" + paymentKey, PaymentResultResponse.class);
+  public TossPaymentResponse fetchPaymentByPaymentKey(String paymentKey) {
+    Mono<TossPaymentResponse> response = tossService.get("/" + paymentKey, TossPaymentResponse.class);
     return response.block();
   }
 
-  public PaymentResultResponse fetchPaymentByOrderId(String orderId) {
-    Mono<PaymentResultResponse> response = tossService.get("/orders/" + orderId, PaymentResultResponse.class);
+  public TossPaymentResponse fetchPaymentByOrderId(String orderId) {
+    Mono<TossPaymentResponse> response = tossService.get("/orders/" + orderId, TossPaymentResponse.class);
     return response.block();
   }
 
