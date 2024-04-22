@@ -2,6 +2,7 @@ package com.zipup.server.payment.presentation;
 
 import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.payment.application.PaymentService;
+import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentConfirmRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
@@ -77,6 +78,33 @@ public class PaymentController {
     PaymentResultResponse response = paymentService.successPayment(new PaymentConfirmRequest(orderId, amount, paymentKey));
 
     return ResponseEntity.status(response.getCode()).body(response);
+  }
+
+  @Operation(summary = "결제 취소", description = "paymentKey로 결제 취소")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "승인된 결제를 paymentKey로 취소합니다. 취소 이유를 cancelReason에 추가해야 합니다.\n" +
+          "결제 금액의 일부만 부분 취소하려면 cancelAmount에 취소할 금액을 추가해서 API를 요청합니다. cancelAmount에 값을 넣지 않으면 전액 취소됩니다.")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "저장 성공",
+                  content = @Content(schema = @Schema(implementation = TossPaymentResponse.class))),
+          @ApiResponse(
+                  responseCode = "401",
+                  description = "인증되지 않은 시크릿 키 혹은 클라이언트 키",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "403",
+                  description = "반복적인 요청은 허용되지 않음",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+          @ApiResponse(
+                  responseCode = "404",
+                  description = "존재하지 않는 결제 정보",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+  })
+  @PostMapping(value = "/cancel")
+  public ResponseEntity<TossPaymentResponse> cancelPayment(@RequestBody PaymentCancelRequest request) {
+    return ResponseEntity.ok()
+            .body(paymentService.cancelPayment(request));
   }
 
   @Operation(summary = "paymentKey로 결제 조회", description = "paymentKey로 결제 조회")

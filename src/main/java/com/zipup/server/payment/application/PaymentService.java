@@ -1,8 +1,10 @@
 package com.zipup.server.payment.application;
 
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.payment.domain.Payment;
+import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentConfirmRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
@@ -16,6 +18,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -26,6 +30,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -173,6 +178,29 @@ public class PaymentService {
 
   public TossPaymentResponse fetchPaymentByOrderId(String orderId) {
     Mono<TossPaymentResponse> response = tossService.get("/orders/" + orderId, TossPaymentResponse.class);
+    return response.block();
+  }
+
+  public TossPaymentResponse cancelPayment(PaymentCancelRequest request) {
+    Payment payment = paymentRepository.findByPaymentKey(request.getPaymentKey())
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
+    String idempotencyKey = payment.getId().toString();
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (!payment.getPresent().getUser().getId().toString().equals(authentication.getName()))
+      throw new BaseException(ACCESS_DENIED);
+
+    Map<String, Object> data = new HashMap<>();
+    data.put("idempotencyKey", idempotencyKey);
+    data.put("cancelReason", request.getCancelReason());
+    if (request.getCancelAmount() != null)
+      data.put("cancelAmount", request.getCancelAmount());
+    if (request.getRefundReceiveAccount() != null) {
+      data.put("refundReceiveAccount", request.getRefundReceiveAccount());
+    }
+
+    JSONObject obj = new JSONObject(data);
+    Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", obj, TossPaymentResponse.class);
     return response.block();
   }
 

@@ -10,9 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Schema(description = "가상 계좌 결제 상품을 결제 취소 시 사용되는 DTO")
 public class RefundReceiveAccount {
   @Schema(description = "환불받을 계좌의 은행 코드")
-  private String bankCode;
+  private String bank;
   @Schema(description = "환불받을 계좌번호")
   private String accountNumber;
   @Schema(description = "환불받을 계좌의 예금주")

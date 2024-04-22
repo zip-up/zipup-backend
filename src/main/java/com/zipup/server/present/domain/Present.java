@@ -45,7 +45,8 @@ public class Present extends BaseTimeEntity {
   @Setter
   private Fund fund;
 
-  @OneToOne(fetch = FetchType.EAGER)
+  @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+  @JoinColumn(name = "payment_id", referencedColumnName = "payment_id")
   private Payment payment;
 
   public PresentSummaryResponse toSummaryResponse() {
