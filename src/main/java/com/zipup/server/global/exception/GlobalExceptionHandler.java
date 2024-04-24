@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(UUIDException.class)
   public ErrorResponse handleUUIDException(UUIDException ex) {
     log.error("--- UUIDException ---", ex);
-    return ErrorResponse.toErrorResponse(ex.getStatus());
+    return new ErrorResponse(ex.getStatus().getCode(), ex.getMessage(), ex.getStatus().name());
   }
 
 }

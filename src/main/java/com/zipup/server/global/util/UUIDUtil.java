@@ -11,7 +11,7 @@ public class UUIDUtil {
     try {
       UUID.fromString(id);
     } catch (IllegalArgumentException e) {
-      throw new UUIDException(INVALID_USER_UUID);
+      throw new UUIDException(INVALID_USER_UUID, id);
     }
   }
 }

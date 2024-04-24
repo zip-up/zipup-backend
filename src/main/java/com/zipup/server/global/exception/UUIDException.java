@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UUIDException extends RuntimeException {
 
   private final CustomErrorCode status;
+  private final String id;
 
-  public UUIDException(CustomErrorCode status) {
+  public UUIDException(CustomErrorCode status, String id) {
+    super(status.getMessage() + id);
     this.status = status;
+    this.id = status.getMessage() + id;
   }
 
 }
