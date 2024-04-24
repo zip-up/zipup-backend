@@ -89,4 +89,11 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse(ex.getStatus(), ex.getMessage(), ex.getCode()));
   }
 
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(UUIDException.class)
+  public ErrorResponse handleUUIDException(UUIDException ex) {
+    log.error("--- UUIDException ---", ex);
+    return ErrorResponse.toErrorResponse(ex.getStatus());
+  }
+
 }
