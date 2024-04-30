@@ -3,6 +3,7 @@ package com.zipup.server.global.util.entity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @SuperBuilder
@@ -33,5 +35,5 @@ public abstract class BaseTimeEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('PRIVATE', 'PUBLIC') DEFAULT 'PUBLIC'")
-  private ColumnStatus status;
+  private ColumnStatus status = ColumnStatus.PUBLIC;
 }

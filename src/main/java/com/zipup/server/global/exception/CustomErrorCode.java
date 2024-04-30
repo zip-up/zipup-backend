@@ -18,10 +18,11 @@ public enum CustomErrorCode {
   ACCESS_DENIED(2007, "권한이 없습니다."),
 
   /**
-   * 4000 : 비즈니스 오류
+   * 3000 : 비즈니스 오류
    */
-  INVALID_USER_UUID(2101, "유효하지 않은 UUID 입니다. :: "),
-  DATA_NOT_FOUND(2102, "존재하지 않는 데이터에요."),
+  INVALID_USER_UUID(3001, "유효하지 않은 UUID 입니다. :: "),
+  DATA_NOT_FOUND(3002, "존재하지 않는 데이터에요."),
+  UNIQUE_CONSTRAINT(3003, "Unique 키가 충돌해요"),
 
   /**
    * 4000 : 연결 오류

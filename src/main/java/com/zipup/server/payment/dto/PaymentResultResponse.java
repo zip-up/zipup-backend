@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Builder
 @Data
 @AllArgsConstructor
@@ -15,23 +17,13 @@ import lombok.NoArgsConstructor;
 public class PaymentResultResponse {
   @Schema(description = "결제 식별자 값")
   private String id;
-  @Schema(description = "응답 코드")
-  private Integer code;
-  @Schema(description = "응답 메시지")
-  private String message;
   @Schema(description = "결제 방법")
   private String method;
-  @Schema(description = "결제 정보")
-  private String responseStr;
-  @Schema(description = "카드 번호")
-  private String cardNumber;
-  @Schema(description = "계좌 번호")
-  private String accountNumber;
-  @Schema(description = "은행")
-  private String bank;
-  @Schema(description = "휴대폰 결제 시")
-  private String customerMobilePhone;
   private String orderId;
   private String paymentKey;
   private Integer price;
+  @Schema(description = "결제 처리 상태")
+  private String status;
+  @Schema(description = "취소 내역")
+  private List<CancelRecord> cancels;
 }

@@ -15,6 +15,8 @@ import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 
+import static com.zipup.server.global.exception.CustomErrorCode.UNIQUE_CONSTRAINT;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -94,6 +96,13 @@ public class GlobalExceptionHandler {
   public ErrorResponse handleUUIDException(UUIDException ex) {
     log.error("--- UUIDException ---", ex);
     return new ErrorResponse(ex.getStatus().getCode(), ex.getMessage(), ex.getStatus().name());
+  }
+
+  @ResponseStatus(HttpStatus.CONFLICT)
+  @ExceptionHandler(UniqueConstraintException.class)
+  public ErrorResponse handleUniqueConstraintException(UniqueConstraintException ex) {
+    log.error("--- ResourceNotFoundException ---", ex);
+    return new ErrorResponse(UNIQUE_CONSTRAINT.getCode().intValue(), ex.getMessage(), "UNIQUE_CONSTRAINT");
   }
 
 }
