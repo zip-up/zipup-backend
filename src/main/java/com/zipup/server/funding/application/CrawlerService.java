@@ -55,14 +55,15 @@ public class CrawlerService {
   }
 
   private WebDriver setChromeDriver() {
+    String seleniumUrl = null;
     try {
-      String seleniumUrl = seleniumHost + ":" + seleniumPort + seleniumPath;
+      seleniumUrl = seleniumHost + ":" + seleniumPort + seleniumPath;
 
       DesiredCapabilities capabilities = new DesiredCapabilities();
       capabilities.setBrowserName("chrome");
       return new RemoteWebDriver(new URL(seleniumUrl), capabilities);
     } catch (Exception ex) {
-      log.info("setChromeDriver");
+      log.error(seleniumUrl);
       log.error(ex.getMessage());
       return null;
     }
