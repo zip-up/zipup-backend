@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -61,7 +62,7 @@ public class TossService {
   }
 
   public <T> Mono<T> post(String uri, Map<String, Object> request, Class<T> responseDtoClass) {
-    String idempotencyKey = request.getOrDefault("idempotencyKey", null).toString();
+    Optional<String> idempotencyKey = Optional.ofNullable((String) request.get("idempotencyKey"));
     request.remove("idempotencyKey");
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -76,7 +77,9 @@ public class TossService {
             .uri(uri)
             .body(BodyInserters.fromValue(requestBody));
 
-    if (!idempotencyKey.isEmpty()) requestSpec.header("Idempotency-Key", idempotencyKey);
+    idempotencyKey.ifPresent(key -> {
+      if (!key.isEmpty()) requestSpec.header("Idempotency-Key", key);
+    });
 
     return requestSpec.retrieve()
             .onStatus(HttpStatus::is4xxClientError, clientResponse ->

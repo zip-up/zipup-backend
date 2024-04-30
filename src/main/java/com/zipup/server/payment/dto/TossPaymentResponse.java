@@ -17,6 +17,11 @@ import java.util.List;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TossPaymentResponse {
+
+  @Schema(description = "에러 코드")
+  private Integer code;
+  @Schema(description = "에러 메시지")
+  private String message;
   @Schema(description = "Toss Payment 객체의 날짜 기반 버저닝")
   private String version;
   @Schema(description = "결제 키 값")
@@ -49,4 +54,10 @@ public class TossPaymentResponse {
   private CardInformation card;
   @Schema(description = "가상계좌로 결제하면 제공되는 가상계좌 관련 정보")
   private VirtualAccount virtualAccount;
+  @Schema(description = "계좌 이체로 결제하면 제공되는 이체 정보")
+  private Transfer transfer;
+  @Schema(description = "휴대폰으로 결제하면 제공되는 휴대폰 결제 관련 정보")
+  private MobilePhone mobilePhone;
+  @Schema(description = "간편결제 정보")
+  private EasyPay easyPay;
 }

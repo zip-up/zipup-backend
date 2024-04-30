@@ -33,7 +33,7 @@ public class PaymentServiceTest {
     payment = Payment.builder()
             .paymentKey("paymentKey")
             .paymentMethod("가상계좌")
-            .price(45000)
+            .totalAmount(45000)
             .bank("88")
             .build();
     savedEntity = paymentRepository.save(payment);

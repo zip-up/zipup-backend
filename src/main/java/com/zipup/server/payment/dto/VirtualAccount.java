@@ -22,6 +22,8 @@ public class VirtualAccount {
   private String bankCode;
   @Schema(description = "가상계좌를 발급한 구매자명")
   private String customerName;
+  @Schema(description = "정산 상태. 'INCOMPLETED', 'COMPLETED'")
+  private String settlementStatus;
   @Schema(description = "입금 기한")
   private OffsetDateTime dueDate;
   @Schema(description = "환불 처리 상태")
