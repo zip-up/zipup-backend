@@ -35,12 +35,12 @@ public class Present extends BaseTimeEntity {
   @Column
   private String congratsMessage;
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   @Setter
   private User user;
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "fund_id")
   @Setter
   private Fund fund;

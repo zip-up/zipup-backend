@@ -76,7 +76,7 @@ public class Fund extends BaseTimeEntity {
 
   @OneToMany(
           mappedBy = "fund"
-          , fetch = FetchType.EAGER)
+          , fetch = FetchType.LAZY)
   private List<Present> presents;
 
 
