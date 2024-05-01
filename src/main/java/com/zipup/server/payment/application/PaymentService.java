@@ -10,7 +10,6 @@ import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.json.simple.JSONObject;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
@@ -81,9 +77,8 @@ public class PaymentService {
     data.put("orderId", request.getOrderId());
     data.put("amount", request.getAmount());
     data.put("paymentKey", request.getPaymentKey());
-    JSONObject obj = new JSONObject(data);
 
-    Mono<TossPaymentResponse> resultResponseMono = tossService.post("/confirm", obj, TossPaymentResponse.class);
+    Mono<TossPaymentResponse> resultResponseMono = tossService.post("/confirm", data, TossPaymentResponse.class);
     TossPaymentResponse response = resultResponseMono.block();
     String method = response != null ? response.getMethod() : null;
 
@@ -171,8 +166,7 @@ public class PaymentService {
       data.put("refundReceiveAccount", request.getRefundReceiveAccount());
     }
 
-    JSONObject obj = new JSONObject(data);
-    Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", obj, TossPaymentResponse.class);
+    Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
       payment.setPaymentStatus(CANCELED);
     } else {
@@ -182,7 +176,10 @@ public class PaymentService {
       }
     }
 
-    return payment.toCancelResponse(response.block().getCancels());
+    return Optional.ofNullable(response.block())
+            .map(TossPaymentResponse::getCancels)
+            .map(payment::toCancelResponse)
+            .orElseThrow(() -> new BaseException(UNKNOWN_ERROR));
   }
 
 }
