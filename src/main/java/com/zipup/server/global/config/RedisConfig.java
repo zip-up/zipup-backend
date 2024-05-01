@@ -11,7 +11,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories(basePackages = "com.zipup.server.*.domain")
+@EnableRedisRepositories(basePackages = "com.zipup.server.global.security.domain")
 public class RedisConfig {
 
     @Value("${spring.data.redis.port}")

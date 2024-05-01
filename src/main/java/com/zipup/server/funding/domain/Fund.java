@@ -64,6 +64,7 @@ public class Fund extends BaseTimeEntity {
   private String imageUrl;
 
   @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "ENUM('CHUNSIK')")
   private GiftCard card;
 
   @Embedded
@@ -79,51 +80,49 @@ public class Fund extends BaseTimeEntity {
           , fetch = FetchType.LAZY)
   private List<Present> presents;
 
+  private String formatImageUrl() {
+    if (imageUrl.isEmpty()) return imageUrl;
+    return imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl;
+  }
 
-  public FundingSummaryResponse toSummaryResponse() {
+  private String calculateStatus() {
     long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
+    return duration > 0 ? String.valueOf(duration) : "완료";
+  }
+
+  private int calculatePercentage() {
     int nowPresent = presents.stream()
             .mapToInt(present -> present.getPayment().getBalanceAmount())
             .sum();
+    return (int) Math.round(((double) nowPresent / goalPrice) * 100);
+  }
 
-    int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
+  public FundingSummaryResponse toSummaryResponse() {
     return FundingSummaryResponse.builder()
             .id(id.toString())
             .title(title)
-            .imageUrl(imageUrl)
-            .imageUrl(imageUrl.length() > 0
-                    ? imageUrl.startsWith("//") ? "https:" + imageUrl
-                    : imageUrl
-                    : imageUrl)
-            .status(duration > 0 ? String.valueOf(duration) : "완료")
-            .percent(percentage)
+            .imageUrl(formatImageUrl())
+            .status(calculateStatus())
+            .percent(calculatePercentage())
             .organizer(user.getId().toString())
             .build();
   }
 
   public FundingDetailResponse toDetailResponse(String nowUserId) {
-    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
-    int nowPresent = presents.stream()
-            .mapToInt(present -> present.getPayment().getBalanceAmount())
-            .sum();
     Boolean isOrganizer = nowUserId != null && nowUserId.equals(user.getId().toString());
     boolean isParticipant = presents.stream()
             .anyMatch(p -> p.getUser().getId().toString().equals(nowUserId));
-    int percentage = (int) Math.round(((double) nowPresent / goalPrice) * 100);
 
     return FundingDetailResponse.builder()
             .id(id.toString())
             .title(title)
-            .imageUrl(imageUrl.length() > 0
-                    ? imageUrl.startsWith("//") ? "https:" + imageUrl
-                    : imageUrl
-                    : imageUrl)
+            .imageUrl(formatImageUrl())
             .productUrl(productUrl)
             .description(description)
-            .expirationDate(duration > 0 ? duration : 0)
-            .isCompleted(duration <= 0)
+            .expirationDate(calculateStatus().equals("완료") ? 0 : Long.parseLong(calculateStatus()))
+            .isCompleted(calculateStatus().equals("완료"))
             .goalPrice(goalPrice)
-            .percent(percentage)
+            .percent(calculatePercentage())
             .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
             .isOrganizer(isOrganizer)
             .isParticipant(isParticipant)
