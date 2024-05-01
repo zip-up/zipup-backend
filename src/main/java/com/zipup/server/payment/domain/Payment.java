@@ -30,17 +30,17 @@ public class Payment extends BaseTimeEntity {
   @Convert(converter = StringToUuidConverter.class)
   private UUID id;
 
-  @Column
+  @Column(nullable = false, unique = true)
   @Unique
   @NotNull(message = "결제 키 누락")
   private String paymentKey;
 
-  @Column
+  @Column(nullable = false, unique = true)
   @Unique
   @NotNull(message = "주문 번호 누락")
   private String orderId;
 
-  @Column
+  @Column(nullable = false)
   @NotNull(message = "결제 가격 누락")
   private Integer totalAmount;
 

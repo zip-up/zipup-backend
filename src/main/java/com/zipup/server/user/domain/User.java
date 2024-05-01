@@ -49,9 +49,11 @@ public class User extends BaseTimeEntity {
   private String email;
 
   @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "ENUM('ADMIN', 'USER', 'GUEST') DEFAULT 'USER'")
   private UserRole role;
 
   @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "ENUM('GOOGLE', 'NAVER', 'KAKAO', 'LOCAL') DEFAULT 'LOCAL'")
   private LoginProvider loginProvider;
 
   @OneToMany(
@@ -83,7 +85,6 @@ public class User extends BaseTimeEntity {
   }
 
   public SignInResponse toSignInResponse() {
-
     return SignInResponse.builder()
             .id(id.toString())
             .name(name)
