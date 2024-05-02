@@ -12,7 +12,6 @@ import com.zipup.server.payment.infrastructure.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -21,6 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
+import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 import static com.zipup.server.global.util.entity.PaymentStatus.CANCELED;
 import static com.zipup.server.global.util.entity.PaymentStatus.PARTIAL_CANCELED;
@@ -153,12 +153,12 @@ public class PaymentService {
     Payment payment = findByPaymentKey(request.getPaymentKey());
     String idempotencyKey = payment.getId().toString();
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = getZipupAuthentication();
     if (!payment.getPresent().getUser().getId().toString().equals(authentication.getName()))
       throw new BaseException(ACCESS_DENIED);
 
     Map<String, Object> data = new HashMap<>();
-    data.put("idempotencyKey", idempotencyKey+"dd");
+    data.put("idempotencyKey", idempotencyKey);
     data.put("cancelReason", request.getCancelReason());
     if (request.getCancelAmount() != null)
       data.put("cancelAmount", request.getCancelAmount());

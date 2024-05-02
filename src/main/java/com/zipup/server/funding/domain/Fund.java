@@ -81,7 +81,7 @@ public class Fund extends BaseTimeEntity {
   private List<Present> presents;
 
   private String formatImageUrl() {
-    if (imageUrl.isEmpty()) return imageUrl;
+    if (imageUrl == null || imageUrl.isEmpty()) return imageUrl;
     return imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl;
   }
 

@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
+import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 
 @Service
@@ -35,7 +36,7 @@ public class AuthService {
     String accessToken = jwtProvider.resolveToken(request);
     if (accessToken == null) throw new BaseException(EMPTY_ACCESS_JWT);
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = getZipupAuthentication();
 
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
