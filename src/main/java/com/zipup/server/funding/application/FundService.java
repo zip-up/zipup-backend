@@ -4,6 +4,7 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.ResourceNotFoundException;
+import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.user.application.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -54,6 +55,7 @@ public class FundService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getMyFundingList(String userId) {
+    if (userId == null || userId.isEmpty()) userId = getZipupAuthentication().getName();
     isValidUUID(userId);
     return fundRepository.findAllByUser(userService.findById(userId))
             .stream()

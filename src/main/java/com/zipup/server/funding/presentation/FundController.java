@@ -47,7 +47,7 @@ public class FundController {
           description = "조회 성공",
           content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
-  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user") String userId) {
+  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user", required = false) String userId) {
     return ResponseEntity.ok(fundService.getMyFundingList(userId));
   }
 

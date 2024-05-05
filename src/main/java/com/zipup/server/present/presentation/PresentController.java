@@ -64,7 +64,7 @@ public class PresentController {
           description = "조회 성공",
           content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
-  public ResponseEntity<List<FundingSummaryResponse>> getMyParticipateList(@RequestParam(value = "user") String userId) {
+  public ResponseEntity<List<FundingSummaryResponse>> getMyParticipateList(@RequestParam(value = "user", required = false) String userId) {
     return ResponseEntity.ok(presentService.getMyParticipateList(userId));
   }
 
