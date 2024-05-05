@@ -7,7 +7,6 @@ import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.user.application.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
+import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
@@ -35,8 +35,7 @@ public class FundService {
 
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
+    Authentication authentication = getZipupAuthentication();
     String productUrl = request.getProductUrl();
 
     Fund targetFund = request.toEntity();
@@ -65,7 +64,7 @@ public class FundService {
   @Transactional(readOnly = true)
   public FundingDetailResponse getFundingDetail(String fundId) {
     isValidUUID(fundId);
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = getZipupAuthentication();
 
     return findById(fundId).toDetailResponse(authentication.getName());
   }

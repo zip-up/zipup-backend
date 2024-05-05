@@ -1,11 +1,13 @@
 package com.zipup.server.present.presentation;
 
 import com.zipup.server.funding.dto.FundingSummaryResponse;
+import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.present.application.PresentService;
+import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.present.dto.PresentSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,19 +34,31 @@ public class PresentController {
           @ApiResponse(
                   responseCode = "200",
                   description = "참여 성공",
-                  content = @Content(schema = @Schema(type = "{UUID} (펀딩 참여에 대한 식별자 값)"))),
+                  content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
           @ApiResponse(
                   responseCode = "400",
                   description = "잘못된 UUID 형태",
-                  content = @Content(schema = @Schema(type = "유효하지 않은 UUID입니다: {요청 인자}")))
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
   @PostMapping("")
-  public ResponseEntity<String> participateFunding(@RequestBody ParticipatePresentRequest request) {
+  public ResponseEntity<SimpleDataResponse> participateFunding(@RequestBody ParticipatePresentRequest request) {
     return ResponseEntity.ok(presentService.participateFunding(request));
   }
 
+  @Operation(summary = "펀딩 참여 취소", description = "펀딩 결제 취소 - 참여자")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "참여자의 펀딩 결제 요청")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "참여 취소 성공",
+                  content = @Content(schema = @Schema(type = "취소 성공")))
+  })
+  @PutMapping("/cancel")
+  public ResponseEntity<String> cancelParticipate(@RequestBody ParticipateCancelRequest request) {
+    return ResponseEntity.ok(presentService.cancelParticipate(request));
+  }
+
   @Operation(summary = "내가 참여한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
-  @Parameter(name = "user", description = "마이페이지 유저의 식별자 값 (UUID)")
   @ApiResponse(
           responseCode = "200",
           description = "조회 성공",
