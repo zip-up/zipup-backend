@@ -7,6 +7,7 @@ import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
+import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
@@ -78,6 +80,7 @@ public class PresentService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getMyParticipateList(String userId) {
+    if (userId == null || userId.isEmpty()) userId = AuthenticationUtil.getZipupAuthentication().getName();
     isValidUUID(userId);
     return presentRepository.findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
             .stream()

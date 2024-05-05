@@ -1,9 +1,7 @@
-package com.zipup.server.funding.presentaion;
+package com.zipup.server.present.presentation;
 
-import com.zipup.server.funding.application.CrawlerService;
-import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.presentation.FundController;
+import com.zipup.server.present.application.PresentService;
 import com.zipup.server.user.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,19 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-public class FundControllerTest {
+public class PresentControllerTest {
 
   @Mock
-  private CrawlerService crawlerService;
-  @Mock
-  private FundService fundService;
+  private PresentService presentService;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -53,29 +47,15 @@ public class FundControllerTest {
     entityManager.flush();
     userId = user.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, crawlerService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService)).build();
   }
 
   @Test
-  @WithMockUser(authorities = {"ROLE_USER"})
-  void testCrawlingProductInfo() throws Exception {
-    String url = "https://www.apple.com/kr/shop/buy-mac/macbook-air/13%ED%98%95-%EB%AF%B8%EB%93%9C%EB%82%98%EC%9D%B4%ED%8A%B8-apple-m3-%EC%B9%A9(8%EC%BD%94%EC%96%B4-cpu-%EB%B0%8F-8%EC%BD%94%EC%96%B4-gpu)-8gb-%EB%A9%94%EB%AA%A8%EB%A6%AC-256gb";
-
-    // 요청 및 응답 확인
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/crawler")
-                    .param("product", url)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-
-    verify(crawlerService, times(1)).crawlingProductInfo(url);
-  }
-
-  @Test
-  public void testGetMyFundingList() throws Exception {
+  public void testGetMyParticipateList() throws Exception {
     List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(fundService.getMyFundingList(userId)).willReturn(mockResponses);
+    given(presentService.getMyParticipateList(userId)).willReturn(mockResponses);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/list")
+    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/present/list")
                     .param("user", userId)
                     .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
@@ -84,11 +64,11 @@ public class FundControllerTest {
 
   @Test
   @WithMockUser(authorities = {"ROLE_USER"})
-  public void testGetMyFundingList_NoUserId() throws Exception {
+  public void testGetMyParticipateList_NoUserId() throws Exception {
     List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(fundService.getMyFundingList(null)).willReturn(mockResponses);
+    given(presentService.getMyParticipateList(null)).willReturn(mockResponses);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/list")
+    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/present/list")
                     .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
