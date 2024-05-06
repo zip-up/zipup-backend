@@ -48,7 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     User targetUser = userRepository.findUserByEmail(userInfo.getEmail());
 
     if (targetUser != null) {
-      if (targetUser.getLoginProvider() == LoginProvider.LOCAL){
+      if (targetUser.getLoginProvider() == LoginProvider.LOCAL) {
         log.error("CustomOAuth2UserService process Error: 기존 회원입니다. 자체 로그인을 이용해 주세요. ");
         throw new OAuthProviderMissMatchException(ALREADY_SIGNED_UP_LOCAL);
       }
