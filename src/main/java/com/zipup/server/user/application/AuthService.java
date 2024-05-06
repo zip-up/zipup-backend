@@ -14,9 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Set;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
@@ -32,10 +30,7 @@ public class AuthService {
   private final RedisTemplate<String, String> redisTemplate;
   private final UserService userService;
 
-  public TokenAndUserInfoResponse signInWithAccessToken(HttpServletRequest request) {
-    String accessToken = jwtProvider.resolveToken(request);
-    if (accessToken == null) throw new BaseException(EMPTY_ACCESS_JWT);
-
+  public TokenAndUserInfoResponse signInWithAccessToken() {
     Authentication authentication = getZipupAuthentication();
 
     String key = authentication.getName();
@@ -75,8 +70,10 @@ public class AuthService {
     );
 
     return new ResponseCookie[] {
-            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), 86400),
-            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), 604800)
+            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION,
+                    newToken.getAccessToken(),
+                    (int) jwtProvider.getAccessExpirationTime()),
+            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), (int) jwtProvider.getRefreshExpirationTime())
     };
   }
 
@@ -87,14 +84,8 @@ public class AuthService {
       redisTemplate.delete(keysToDelete);
   }
 
-  public boolean signOut(HttpServletRequest request) {
-    String token = jwtProvider.resolveToken(request);
-    if (!StringUtils.hasText(token))
-      throw new BaseException(EMPTY_ACCESS_JWT);
-
-    if (jwtProvider.validateToken(token))
-      throw new BaseException(EXPIRED_TOKEN);
-
+  public boolean signOut(String token) {
+    if (jwtProvider.validateToken(token)) throw new BaseException(EXPIRED_TOKEN);
     String key = SecurityContextHolder.getContext().getAuthentication().getName();
 
     String accessTokenInRedis = redisTemplate.opsForValue().get(key);
@@ -104,6 +95,7 @@ public class AuthService {
     if (refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
 
     removeRedisToken(key);
+    SecurityContextHolder.clearContext();
     return true;
   }
 

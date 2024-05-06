@@ -20,12 +20,12 @@ import com.zipup.server.present.infrastructure.PresentRepository;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
@@ -66,8 +66,7 @@ public class PresentService {
             .congratsMessage(request.getCongratsMessage())
             .build();
 
-    presentRepository.save(participateFunding);
-    return new SimpleDataResponse(participateFunding.getId().toString());
+    return new SimpleDataResponse(presentRepository.save(participateFunding).getId().toString());
   }
 
   @Transactional(readOnly = true)
@@ -103,7 +102,7 @@ public class PresentService {
     Integer cancelAmount = request.getCancelAmount();
 
     if (cancelAmount != null && targetPayment.getBalanceAmount() < cancelAmount)
-      throw new PaymentException(403, "NOT_CANCELABLE_AMOUNT", "취소 할 수 없는 금액 입니다.");
+      throw new PaymentException(HttpStatus.FORBIDDEN.value(), "NOT_CANCELABLE_AMOUNT", "취소 할 수 없는 금액 입니다.");
 
     PaymentCancelRequest paymentCancelRequest = PaymentCancelRequest.builder()
             .paymentKey(paymentKey)
