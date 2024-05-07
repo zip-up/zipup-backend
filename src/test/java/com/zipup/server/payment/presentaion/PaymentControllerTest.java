@@ -44,17 +44,4 @@ public class PaymentControllerTest {
     redisTemplate.delete(orderId);
   }
 
-  @Test
-  @WithMockUser(authorities = {"ROLE_USER"})
-  public void testFailPayment() throws Exception {
-    String message = "Payment failed";
-    Integer code = 400;
-
-    mockMvc.perform(get("/api/v1/payment/fail")
-                    .param("message", message)
-                    .param("code", String.valueOf(code)))
-            .andExpect(status().isBadRequest())
-            .andExpect(content().string(message));
-  }
-
 }

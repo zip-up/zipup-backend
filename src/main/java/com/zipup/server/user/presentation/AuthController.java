@@ -1,12 +1,16 @@
 package com.zipup.server.user.presentation;
 
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.AuthService;
 import com.zipup.server.user.dto.SignInResponse;
 import com.zipup.server.user.dto.TokenAndUserInfoResponse;
 import com.zipup.server.user.dto.TokenResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Optional;
 
-import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_REFRESH_JWT;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 import static com.zipup.server.global.security.util.CookieUtil.getCookie;
@@ -38,6 +42,7 @@ import static org.springframework.http.HttpHeaders.SET_COOKIE;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtProvider jwtProvider;
 
     @Operation(summary = "최초 로그인 시 access 토큰 검증 및 회원 정보 추출")
     @Parameter(name = "redirect_url", description = "상품 URL")
@@ -54,7 +59,10 @@ public class AuthController {
             final HttpServletResponse httpServletResponse
     ) {
         String redirectUrl = httpServletRequest.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
-        TokenAndUserInfoResponse response = authService.signInWithAccessToken(httpServletRequest);
+        String accessToken = jwtProvider.resolveToken(httpServletRequest);
+        if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+
+        TokenAndUserInfoResponse response = authService.signInWithAccessToken();
 
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 
@@ -82,11 +90,10 @@ public class AuthController {
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
     ) {
-        Optional<Cookie> refreshTokenCookie = getCookie(httpServletRequest, COOKIE_TOKEN_REFRESH);
-        if (refreshTokenCookie.isEmpty()) throw new BaseException(EMPTY_REFRESH_JWT);
-
-        String refreshToken = refreshTokenCookie.get().getValue();
-        if (refreshToken == null) throw new BaseException(EMPTY_REFRESH_JWT);
+        String refreshToken = getCookie(httpServletRequest, COOKIE_TOKEN_REFRESH)
+                .map(Cookie::getValue)
+                .filter(value -> !value.isEmpty())
+                .orElseThrow(() -> new BaseException(EMPTY_REFRESH_JWT));
 
         ResponseCookie[] newToken = authService.refresh(refreshToken);
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
@@ -96,14 +103,21 @@ public class AuthController {
 
     @Operation(summary = "로그 아웃")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "로그 아웃 성공"),
-            @ApiResponse(responseCode = "400", description = "로그 아웃 실패"),
+            @ApiResponse(responseCode = "201", description = "성공",
+                    content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+            @ApiResponse(responseCode = "400", description = "실패",
+                    content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
     })
     @PostMapping("/sign-out")
-    public ResponseEntity<String> signOut(final HttpServletRequest request) {
-        return authService.signOut(request)
-                ? ResponseEntity.ok().body("로그 아웃 완료")
-                : ResponseEntity.ok().body("로그 아웃 실패");
+    public ResponseEntity<SimpleDataResponse> signOut(final HttpServletRequest request) {
+        String token = jwtProvider.resolveToken(request);
+        if (!StringUtils.hasText(token)) throw new BaseException(EMPTY_ACCESS_JWT);
+
+        boolean isSucceed = authService.signOut(token);
+        
+        return isSucceed
+                ? ResponseEntity.ok().body(new SimpleDataResponse("success"))
+                : ResponseEntity.badRequest().body(new SimpleDataResponse("fail"));
     }
 
 }

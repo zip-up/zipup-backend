@@ -2,6 +2,8 @@ package com.zipup.server.funding.presentaion;
 
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
+import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.presentation.FundController;
 import com.zipup.server.user.domain.User;
@@ -15,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ import java.util.List;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,17 +42,32 @@ public class FundControllerTest {
   private MockMvc mockMvc;
   @Autowired
   private EntityManager entityManager;
-  private User user;
+
+  private final String FUND_END_POINT = "/api/v1/fund/";
   private String userId;
+  private String fundId;
 
   @BeforeEach
   void setUp() {
-    user = User.builder()
+    User user = User.builder()
             .email("mock@mock.com")
             .build();
     entityManager.persist(user);
+
+    Fund fund = Fund.builder()
+            .title("mock")
+            .roadAddress("mockRoad")
+            .detailAddress("mockDetail")
+            .phoneNumber("010-1234-1234")
+            .goalPrice(10000)
+            .productUrl("https://mock.com")
+            .user(user)
+            .build();
+    entityManager.persist(fund);
+
     entityManager.flush();
     userId = user.getId().toString();
+    fundId = fund.getId().toString();
 
     mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, crawlerService)).build();
   }
@@ -61,8 +77,7 @@ public class FundControllerTest {
   void testCrawlingProductInfo() throws Exception {
     String url = "https://www.apple.com/kr/shop/buy-mac/macbook-air/13%ED%98%95-%EB%AF%B8%EB%93%9C%EB%82%98%EC%9D%B4%ED%8A%B8-apple-m3-%EC%B9%A9(8%EC%BD%94%EC%96%B4-cpu-%EB%B0%8F-8%EC%BD%94%EC%96%B4-gpu)-8gb-%EB%A9%94%EB%AA%A8%EB%A6%AC-256gb";
 
-    // 요청 및 응답 확인
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/crawler")
+    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT + "crawler")
                     .param("product", url)
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
@@ -71,15 +86,42 @@ public class FundControllerTest {
   }
 
   @Test
+  public void testGetFundingDetail_success() throws Exception {
+    FundingDetailResponse mockResponse = FundingDetailResponse.builder()
+            .id(fundId)
+            .title("mock")
+            .goalPrice(10000)
+            .productUrl("https://mock.com")
+            .build();
+    given(fundService.getFundingDetail(fundId)).willReturn(mockResponse);
+
+    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
+                    .param("funding", fundId)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(fundId))
+            .andExpect(jsonPath("$.title").value("mock"))
+            .andExpect(jsonPath("$.goalPrice").value(10000))
+            .andExpect(jsonPath("$.productUrl").value("https://mock.com"));
+  }
+
+  @Test
+  public void testGetFundingDetail_noFundingId() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
+                    .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+  }
+
+  @Test
   public void testGetMyFundingList() throws Exception {
     List<FundingSummaryResponse> mockResponses = new ArrayList<>();
     given(fundService.getMyFundingList(userId)).willReturn(mockResponses);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/list")
+    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT + "list")
                     .param("user", userId)
                     .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
   @Test
@@ -88,10 +130,10 @@ public class FundControllerTest {
     List<FundingSummaryResponse> mockResponses = new ArrayList<>();
     given(fundService.getMyFundingList(null)).willReturn(mockResponses);
 
-    mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/fund/list")
+    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT + "list")
                     .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
 }

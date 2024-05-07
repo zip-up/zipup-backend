@@ -56,11 +56,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e){
+      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
         request.setAttribute("exception", WRONG_TYPE_TOKEN);
-      } catch (DecodingException | UnsupportedJwtException e){
+      } catch (DecodingException | UnsupportedJwtException e) {
         request.setAttribute("exception", UNSUPPORTED_TOKEN);
-      } catch (JwtException e){
+      } catch (JwtException e) {
         request.setAttribute("exception", EXPIRED_TOKEN);
       } catch (RedisConnectionFailureException e) {
         SecurityContextHolder.clearContext();

@@ -46,7 +46,7 @@ public class CrawlerService {
       String ogImageUrl = ogImageUrlElement.getAttribute("content");
 
       return new CrawlerResponse(ogImageUrl, ogTitle);
-    } catch(Exception ex){
+    } catch(Exception ex) {
       log.error(ex.getMessage());
       return null;
     } finally {
