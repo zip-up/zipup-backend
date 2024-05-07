@@ -7,6 +7,7 @@ import com.zipup.server.user.dto.TokenAndUserInfoResponse;
 import com.zipup.server.user.dto.TokenResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -25,6 +26,11 @@ import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFR
 @Slf4j
 @RequiredArgsConstructor
 public class AuthService {
+
+  @Value("${spring.jwt.token.access-expiration-time}")
+  private long accessExpirationTime;
+  @Value("${spring.jwt.token.refresh-expiration-time}")
+  private long refreshExpirationTime;
 
   private final JwtProvider jwtProvider;
   private final RedisTemplate<String, String> redisTemplate;
@@ -70,10 +76,8 @@ public class AuthService {
     );
 
     return new ResponseCookie[] {
-            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION,
-                    newToken.getAccessToken(),
-                    (int) jwtProvider.getAccessExpirationTime()),
-            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), (int) jwtProvider.getRefreshExpirationTime())
+            CookieUtil.addResponseAccessCookie(HttpHeaders.AUTHORIZATION, newToken.getAccessToken(), (int) accessExpirationTime),
+            CookieUtil.addResponseSecureCookie(COOKIE_TOKEN_REFRESH, newToken.getRefreshToken(), (int) refreshExpirationTime)
     };
   }
 
