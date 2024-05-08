@@ -2,6 +2,7 @@ package com.zipup.server.user.facade;
 
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.security.util.JwtProvider;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
 
@@ -43,9 +45,14 @@ public class UserFundFacade implements UserFacade<Fund> {
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
     String userId = authentication.getName();
     User targetUser = userService.findById(userId);
+    List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+    List<FundingSummaryResponse> summaryList = fundList.stream()
+            .map(Fund::toSummaryResponse)
+            .filter(response -> response.getPercent() >= 100)
+            .filter(response -> response.getStatus().equals("완료"))
+            .collect(Collectors.toList());
 
-    if (findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC).size() > 0)
-      throw new UserException(ACTIVE_FUNDING, userId);
+    if (summaryList.size() > 0) throw new UserException(ACTIVE_FUNDING, userId);
 
     userService.unlinkStatusUser(targetUser);
     SecurityContextHolder.clearContext();
