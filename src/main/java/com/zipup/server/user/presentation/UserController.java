@@ -1,7 +1,12 @@
 package com.zipup.server.user.presentation;
 
+import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.ErrorResponse;
+import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.dto.*;
+import com.zipup.server.user.facade.UserFacade;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,10 +17,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
+
+import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -25,6 +35,8 @@ import java.util.List;
 public class UserController {
 
   private final UserService userService;
+  private final UserFacade userFacade;
+  private final JwtProvider jwtProvider;
 
   @Operation(summary = "회원 가입")
   @ApiResponses(value = {
@@ -57,14 +69,23 @@ public class UserController {
     return ResponseEntity.ok().headers(headers).build();
   }
 
-  @Operation(summary = "회원 정보", description = "한 명의 사용자 정보")
+  @Operation(summary = "회원 탈퇴")
   @ApiResponses(value = {
-          @ApiResponse(responseCode = "200", description = "회원 정보"),
-          @ApiResponse(responseCode = "404", description = "없는 회원입니다."),
+          @ApiResponse(responseCode = "200", description = "회원 정보",
+          content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+          @ApiResponse(responseCode = "403", description = "진행 중인 펀딩 존재",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
-  @GetMapping("")
-  public ResponseEntity<UserListResponse> getUserInfo(@RequestParam String id) {
-    return ResponseEntity.ok().body(userService.getUserInfo(id));
+  @PutMapping("/withdraw")
+  public ResponseEntity<SimpleDataResponse> unlinkUser(
+          final HttpServletRequest request,
+          final HttpServletResponse response
+  ) {
+    String accessToken = jwtProvider.resolveToken(request);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    SimpleDataResponse unlinkedUserId = userFacade.unlinkUser(accessToken);
+
+    return ResponseEntity.ok().body(unlinkedUserId);
   }
 
   @Operation(summary = "임시 데이터", description = "임시")

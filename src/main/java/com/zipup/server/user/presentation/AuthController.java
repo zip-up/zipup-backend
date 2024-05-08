@@ -62,7 +62,7 @@ public class AuthController {
         String accessToken = jwtProvider.resolveToken(httpServletRequest);
         if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
 
-        TokenAndUserInfoResponse response = authService.signInWithAccessToken();
+        TokenAndUserInfoResponse response = authService.signInWithAccessToken(accessToken);
 
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 

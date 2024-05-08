@@ -55,42 +55,35 @@ public class AuthServiceTest {
   @Test
   @DisplayName("access token 으로 로그인 성공")
   void testSignInWithAccessToken_success() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
-      testRefresh_WithValidToken_success();
+    when(jwtProvider.getAuthenticationByToken(accessToken)).thenReturn(authentication);
+    when(authentication.getName()).thenReturn(userId);
+    testRefresh_WithValidToken_success();
 
-      when(jwtProvider.generateToken(anyString(), anyString())).thenReturn(new TokenResponse(accessToken, refreshToken));
-      when(jwtProvider.getAccessExpirationTime()).thenReturn(10L);
-      when(jwtProvider.getRefreshExpirationTime()).thenReturn(10L);
-      when(userService.findById(userId)).thenReturn(user);
+    when(jwtProvider.generateToken(anyString(), anyString())).thenReturn(new TokenResponse(accessToken, refreshToken));
+    when(userService.findById(userId)).thenReturn(user);
 
-      TokenAndUserInfoResponse response = authService.signInWithAccessToken();
+    TokenAndUserInfoResponse response = authService.signInWithAccessToken(accessToken);
 
-      assertNotNull(response);
-      assertEquals(response.getAccessToken().getValue(), accessToken);
-      assertEquals(response.getAccessToken().getMaxAge().toSeconds(), 10L);
-      assertEquals(response.getAccessToken().getMaxAge(), response.getRefreshToken().getMaxAge());
-      assertEquals(response.getRefreshToken().getValue(), refreshToken);
-    }
+    assertNotNull(response);
+    assertEquals(response.getAccessToken().getValue(), accessToken);
+    assertEquals(response.getAccessToken().getMaxAge(), response.getRefreshToken().getMaxAge());
+    assertEquals(response.getRefreshToken().getValue(), refreshToken);
   }
 
   @Test
   @DisplayName("access token redis 에 없어 실패")
   void testSignInWithAccessToken_ThrowsException() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
-      when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-      when(valueOperations.get(userId + "_REFRESH")).thenReturn(null);
+    when(jwtProvider.getAuthenticationByToken(accessToken)).thenReturn(authentication);
+    when(authentication.getName()).thenReturn(userId);
+    when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+    when(valueOperations.get(userId + "_REFRESH")).thenReturn(null);
 
-      BaseException thrown = assertThrows(
-              BaseException.class,
-              () -> authService.signInWithAccessToken()
-      );
-      assertNotNull(thrown);
-      assertEquals(thrown.getStatus(), TOKEN_NOT_FOUND);
-    }
+    BaseException thrown = assertThrows(
+            BaseException.class,
+            () -> authService.signInWithAccessToken(accessToken)
+    );
+    assertNotNull(thrown);
+    assertEquals(thrown.getStatus(), TOKEN_NOT_FOUND);
   }
 
   @Test

@@ -4,9 +4,9 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.ResourceNotFoundException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.user.application.UserService;
+import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -35,6 +35,11 @@ public class FundService {
             .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
   }
 
+  @Transactional(readOnly = true)
+  public List<Fund> findAllByUserAndStatus(User user, ColumnStatus status) {
+    return fundRepository.findAllByUserAndStatus(user, status);
+  }
+
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
     Authentication authentication = getZipupAuthentication();
@@ -58,7 +63,7 @@ public class FundService {
   public List<FundingSummaryResponse> getMyFundingList(String userId) {
     if (userId == null || userId.isEmpty()) userId = getZipupAuthentication().getName();
     isValidUUID(userId);
-    return fundRepository.findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
+    return findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
             .stream()
             .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());

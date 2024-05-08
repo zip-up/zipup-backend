@@ -3,6 +3,7 @@ package com.zipup.server.user.application;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.security.util.JwtProvider;
+import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;
 import com.zipup.server.user.dto.*;
@@ -91,6 +92,10 @@ public class UserService {
   public UserListResponse getUserInfo(String id) {
     isValidUUID(id);
     return findById(id).toResponseList();
+  }
+
+  public void unlinkStatusUser(User user) {
+    user.setStatus(ColumnStatus.UNLINK);
   }
 
 }

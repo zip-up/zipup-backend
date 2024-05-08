@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum ColumnStatus implements BaseEnumCode<String> {
-  PRIVATE("비공개"), PUBLIC("공개");
+  PRIVATE("비공개"), PUBLIC("공개"), UNLINK("삭제");
 
   private final String value;
 
