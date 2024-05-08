@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/fund")
@@ -80,7 +82,11 @@ public class FundController {
   ) {
     String accessToken = jwtProvider.resolveToken(request);
     if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    List<FundingSummaryResponse> myFundingList = userFacade.findMyEntityList(accessToken);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+
+    List<FundingSummaryResponse> myFundingList = userFacade.findMyEntityList(userId);
 
     return ResponseEntity.ok(myFundingList);
   }

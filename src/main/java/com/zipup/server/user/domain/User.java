@@ -42,6 +42,10 @@ public class User extends BaseTimeEntity {
   @Column
   private String password;
 
+  @Column
+  @Setter
+  private String withdrawalReason;
+
   @Column(nullable = false, unique = true)
   @Email(message = "메일 형식에 맞춰 작성해주세요",
           regexp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$")

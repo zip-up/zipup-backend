@@ -8,6 +8,7 @@ import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
+import com.zipup.server.user.dto.WithdrawalRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class UserPresentFacade implements UserFacade<Present> {
   }
 
   @Override
-  public SimpleDataResponse unlinkUser(String accessToken) {
+  public SimpleDataResponse unlinkUser(WithdrawalRequest accessToken) {
     return null;
   }
 
