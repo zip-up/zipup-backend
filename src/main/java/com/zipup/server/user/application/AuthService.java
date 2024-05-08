@@ -64,7 +64,7 @@ public class AuthService {
     if (redisRefreshToken == null || !redisRefreshToken.equals(refreshToken))
       throw new BaseException(TOKEN_NOT_FOUND);
 
-    removeRedisToken(key);
+    removeIdInRedisToken(key);
 
     TokenResponse newToken = jwtProvider.generateToken(
             authentication.getName(),
@@ -80,7 +80,7 @@ public class AuthService {
     };
   }
 
-  private void removeRedisToken(String key) {
+  public void removeIdInRedisToken(String key) {
     Set<String> keysToDelete = redisTemplate.keys(key + "*");
 
     if (keysToDelete != null)
@@ -97,7 +97,7 @@ public class AuthService {
     if (accessTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
     if (refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
 
-    removeRedisToken(key);
+    removeIdInRedisToken(key);
     SecurityContextHolder.clearContext();
     return true;
   }
