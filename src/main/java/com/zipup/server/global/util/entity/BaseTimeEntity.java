@@ -34,6 +34,6 @@ public abstract class BaseTimeEntity {
   private LocalDateTime modifiedDate;
 
   @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "ENUM('PRIVATE', 'PUBLIC') DEFAULT 'PUBLIC'")
+  @Column(columnDefinition = "ENUM('PRIVATE', 'PUBLIC', 'UNLINK') DEFAULT 'PUBLIC'")
   private ColumnStatus status = ColumnStatus.PUBLIC;
 }

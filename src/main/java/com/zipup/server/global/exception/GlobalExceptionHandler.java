@@ -98,6 +98,13 @@ public class GlobalExceptionHandler {
     return new ErrorResponse(ex.getStatus().getCode(), ex.getMessage(), ex.getStatus().name());
   }
 
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ExceptionHandler(UserException.class)
+  public ErrorResponse handleUserException(UserException ex) {
+    log.error("--- UserException ---", ex);
+    return new ErrorResponse(ex.getStatus().getCode(), ex.getMessage(), ex.getStatus().name());
+  }
+
   @ResponseStatus(HttpStatus.CONFLICT)
   @ExceptionHandler(UniqueConstraintException.class)
   public ErrorResponse handleUniqueConstraintException(UniqueConstraintException ex) {

@@ -1,6 +1,5 @@
 package com.zipup.server.funding.dto;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +8,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Builder
 public class SimpleDataResponse {
-  @Schema(description = "펀딩 식별자 값 (UUID)")
   private final String id;
 }

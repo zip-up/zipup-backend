@@ -23,6 +23,7 @@ public enum CustomErrorCode {
   INVALID_USER_UUID(3001, "유효하지 않은 UUID 입니다. :: "),
   DATA_NOT_FOUND(3002, "존재하지 않는 데이터에요."),
   UNIQUE_CONSTRAINT(3003, "Unique 키가 충돌해요"),
+  ACTIVE_FUNDING(3004, "진행 중인 펀딩 존재"),
 
   /**
    * 4000 : 연결 오류

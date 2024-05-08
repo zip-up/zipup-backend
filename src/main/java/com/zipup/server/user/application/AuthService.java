@@ -36,9 +36,8 @@ public class AuthService {
   private final RedisTemplate<String, String> redisTemplate;
   private final UserService userService;
 
-  public TokenAndUserInfoResponse signInWithAccessToken() {
-    Authentication authentication = getZipupAuthentication();
-
+  public TokenAndUserInfoResponse signInWithAccessToken(String accessToken) {
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
     String key = authentication.getName();
     String redisRefreshToken = redisTemplate.opsForValue().get(key + "_REFRESH");
 

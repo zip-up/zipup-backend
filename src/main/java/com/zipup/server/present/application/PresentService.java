@@ -112,14 +112,19 @@ public class PresentService {
             .build();
 
     paymentService.cancelPayment(paymentCancelRequest);
-    changeStatusParticipate(targetPresent);
+    changePrivateParticipate(targetPresent);
 
     return "취소 성공";
   }
 
   @Transactional
-  public void changeStatusParticipate(Present present) {
+  public void changePrivateParticipate(Present present) {
     present.setStatus(ColumnStatus.PRIVATE);
+  }
+
+  @Transactional
+  public void changeUnlinkParticipate(Present present) {
+    present.setStatus(ColumnStatus.UNLINK);
   }
 
 }
