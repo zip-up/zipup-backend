@@ -3,6 +3,9 @@ package com.zipup.server.funding.presentation;
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.*;
+import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.security.util.JwtProvider;
+import com.zipup.server.user.facade.UserFacade;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,20 +16,34 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+
+import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
 
 @RestController
 @RequestMapping("/api/v1/fund")
-@RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Funding", description = "펀딩 주최 관련 API")
 public class FundController {
 
   private final FundService fundService;
+  private final UserFacade userFacade;
+  private final JwtProvider jwtProvider;
   private final CrawlerService crawlerService;
+
+  public FundController(FundService fundService, @Qualifier("userFundFacade") UserFacade userFacade, JwtProvider jwtProvider, CrawlerService crawlerService) {
+    this.fundService = fundService;
+    this.userFacade = userFacade;
+    this.jwtProvider = jwtProvider;
+    this.crawlerService = crawlerService;
+  }
 
   @Operation(summary = "상품 이미지 크롤링", description = "상품 URL로 이미지 크롤링")
   @Parameter(name = "product", description = "상품 URL")
@@ -40,15 +57,32 @@ public class FundController {
     return crawlerService.crawlingProductInfo(url);
   }
 
+//  @Operation(summary = "[deprecated] 내가 주최한 펀딩 목록 조회", description = "토큰 방식 조회가 문제 없으면 이 api는 삭제할 예정입니다.")
+//  @Parameter(name = "user", description = "마이페이지 유저의 식별자 값 (UUID)")
+//  @ApiResponse(
+//          responseCode = "200",
+//          description = "조회 성공",
+//          content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
+//  @GetMapping("/list")
+//  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user", required = false) String userId) {
+//    return ResponseEntity.ok(fundService.getMyFundingList(userId));
+//  }
+
   @Operation(summary = "내가 주최한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
-  @Parameter(name = "user", description = "마이페이지 유저의 식별자 값 (UUID)")
   @ApiResponse(
           responseCode = "200",
           description = "조회 성공",
           content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
-  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user", required = false) String userId) {
-    return ResponseEntity.ok(fundService.getMyFundingList(userId));
+  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(
+          final HttpServletRequest request,
+          final HttpServletResponse response
+  ) {
+    String accessToken = jwtProvider.resolveToken(request);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    List<FundingSummaryResponse> myFundingList = userFacade.findMyEntityList(accessToken);
+
+    return ResponseEntity.ok(myFundingList);
   }
 
   @Operation(summary = "펀딩 페이지 상세 조회", description = "펀딩 상세 내용")

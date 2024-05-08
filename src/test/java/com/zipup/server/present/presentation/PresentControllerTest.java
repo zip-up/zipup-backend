@@ -2,35 +2,35 @@ package com.zipup.server.present.presentation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.user.domain.User;
+import com.zipup.server.user.facade.UserFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,6 +39,11 @@ public class PresentControllerTest {
 
   @Mock
   private PresentService presentService;
+  @Mock
+  @Qualifier("userPresentFacade")
+  private UserFacade userFacade;
+  @Mock
+  private JwtProvider jwtProvider;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -82,7 +87,7 @@ public class PresentControllerTest {
     paymentId = payment.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService, userFacade, jwtProvider)).build();
   }
 
   @Test
@@ -118,30 +123,6 @@ public class PresentControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(cancelRequest)))
             .andExpect(status().isOk());
-  }
-
-  @Test
-  public void testGetMyParticipateList() throws Exception {
-    List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(presentService.getMyParticipateList(userId)).willReturn(mockResponses);
-
-    mockMvc.perform(MockMvcRequestBuilders.get(PAYMENT_END_POINT + "list")
-                    .param("user", userId)
-                    .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
-  }
-
-  @Test
-  @WithMockUser
-  public void testGetMyParticipateList_NoUserId() throws Exception {
-    List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(presentService.getMyParticipateList(null)).willReturn(mockResponses);
-
-    mockMvc.perform(MockMvcRequestBuilders.get(PAYMENT_END_POINT + "list")
-                    .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON));
   }
 
 }

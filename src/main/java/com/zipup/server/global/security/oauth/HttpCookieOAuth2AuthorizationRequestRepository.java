@@ -61,8 +61,13 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
       CookieUtil.addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, COOKIE_EXPIRE_SECONDS);
   }
 
-  @Override
+  @SuppressWarnings("deprecation")
   public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
+    return null;
+  }
+
+  @Override
+  public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request, HttpServletResponse response) {
     return this.loadAuthorizationRequest(request);
   }
 
