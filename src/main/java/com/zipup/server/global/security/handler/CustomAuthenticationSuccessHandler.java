@@ -58,11 +58,14 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
   }
 
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+    System.out.println("determineTargetUrl header referer :: " + request.getHeader("Referer"));
+
     Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_CLIENT)
             .map(Cookie::getValue);
 //    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
 //      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
     String targetUrl = redirectUri.orElse(client);
+    System.out.println("determineTarget target Url :: " + targetUrl);
 
     OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
     LoginProvider providerType = LoginProvider.valueOf(authToken.getAuthorizedClientRegistrationId().toUpperCase());
@@ -91,8 +94,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
       CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
-    return UriComponentsBuilder.fromUriString(targetUrl.substring(0, targetUrl.length() - 1))
-//    return UriComponentsBuilder.fromUriString(client)
+//    return UriComponentsBuilder.fromUriString(targetUrl.substring(0, targetUrl.length() - 1))
+    return UriComponentsBuilder.fromUriString(client)
             .query(accessToken)
 //            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)
 //            .build(false)
