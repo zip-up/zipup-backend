@@ -58,7 +58,6 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 //    Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME)
 //            .map(Cookie::getValue);
-//    String redirectUri = CookieUtil.getCookie(request, REDIRECT_URI_PARAM_COOKIE_NAME).map(Cookie::getValue).get();
 
 //    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
 //      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
@@ -78,7 +77,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     response.setStatus(HttpStatus.TEMPORARY_REDIRECT.value());
 
-    String accessToken = new String();
+    String accessToken = "";
     String refreshToken;
 
     if ((accessTokenList != null ? accessTokenList.size() : 0) > 0) {
@@ -91,7 +90,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
       CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
-//    return UriComponentsBuilder.fromUriString(authenticationUrl)
+//    return UriComponentsBuilder.fromUriString(targetUrl)
     return UriComponentsBuilder.fromUriString(client)
             .query(accessToken)
 //            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)

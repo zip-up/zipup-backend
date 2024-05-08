@@ -13,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,16 +21,9 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.util.StringUtils;
-
-import java.util.Set;
-
-import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
 
 @Configuration
 @EnableWebSecurity
@@ -43,7 +34,6 @@ public class SecurityConfig {
   private final JwtProvider jwtProvider;
   private final CustomOAuth2UserService customOAuth2UserService;
   private final UserService userService;
-  private final RedisTemplate<String, String> redisTemplate;
   private static final String[] AUTH_WHITELIST = {
           "/error",
           "/*/oauth2/code/*",
@@ -87,12 +77,6 @@ public class SecurityConfig {
                           .successHandler(oAuth2AuthenticationSuccessHandler())
                           .failureHandler(oAuth2AuthenticationFailureHandler()))
 
-//            .logout(logoutConfigurer -> logoutConfigurer
-//                    .logoutUrl("/api/v1/auth/sign-out")
-//                    .addLogoutHandler(logoutHandler())
-//                    .logoutSuccessUrl("/")
-//                    .deleteCookies(HttpHeaders.AUTHORIZATION))
-
             .exceptionHandling(exceptionHandlingConfigurer ->
                     exceptionHandlingConfigurer
                             .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
@@ -102,30 +86,6 @@ public class SecurityConfig {
 
     return http.build();
   }
-
-//  @Bean
-//  public LogoutHandler logoutHandler() {
-//    return (request, response, authentication) -> {
-//      try {
-//          String token = jwtProvider.resolveToken(request);
-//          if (!StringUtils.hasText(token))
-//            request.setAttribute("exception", TOKEN_NOT_FOUND);
-//
-//          if (jwtProvider.validateToken(token))
-//            request.setAttribute("exception", NOT_EXIST_TOKEN);
-//          Authentication auth = jwtProvider.getAuthenticationByToken(token);
-//
-//          Set<String> keysToDelete = redisTemplate.keys(auth.getName() + "*");
-//
-//          if (keysToDelete != null)
-//            redisTemplate.delete(keysToDelete);
-//      } catch (Exception e) {
-//        request.setAttribute("exception", NOT_EXIST_TOKEN);
-//        log.error(e.getMessage());
-//        log.error(e.getClass().getName());
-//      }
-//    };
-//  }
 
   /*
    * 암호화에 필요한 PasswordEncoder Bean 등록

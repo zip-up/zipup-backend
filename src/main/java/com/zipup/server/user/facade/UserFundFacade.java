@@ -7,6 +7,7 @@ import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.ColumnStatus;
+import com.zipup.server.user.application.AuthService;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
 public class UserFundFacade implements UserFacade<Fund> {
 
   private final UserService userService;
+  private final AuthService authService;
   private final FundService fundService;
   private final JwtProvider jwtProvider;
 
@@ -55,6 +57,8 @@ public class UserFundFacade implements UserFacade<Fund> {
     if (summaryList.size() > 0) throw new UserException(ACTIVE_FUNDING, userId);
 
     userService.unlinkStatusUser(targetUser);
+    authService.removeIdInRedisToken(userId);
+
     SecurityContextHolder.clearContext();
 
     return new SimpleDataResponse(userId);
