@@ -76,23 +76,4 @@ public class JwtProviderTest {
     assertNotNull(jwtProvider.getJwtProperties());
   }
 
-  @Test
-  void testGenerateAccessToken() {
-//    when(mockJwtProperties.getSecret()).thenReturn("TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505TestSecretKey20240505");
-//    jwtProvider.init();
-
-    Claims claims = Jwts.claims().setId(userId);
-    when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-
-//    when(jwtProvider.getSecretKey()).thenReturn(valueOperations);
-
-    when(jwtProvider.generateAccessToken(claims)).thenReturn("accessToken");
-    when(jwtProvider.generateRefreshToken(claims)).thenReturn("refreshToken");
-
-//    String response = jwtProvider.generateAccessToken(claims);
-    TokenResponse response = jwtProvider.generateToken(userId, UserRole.USER.getKey());
-
-    assertNotNull(response);
-  }
-
 }

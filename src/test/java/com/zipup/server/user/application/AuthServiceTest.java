@@ -1,6 +1,7 @@
 package com.zipup.server.user.application;
 
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.security.util.JwtProperties;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.domain.User;
 import com.zipup.server.user.dto.TokenAndUserInfoResponse;
@@ -38,6 +39,8 @@ public class AuthServiceTest {
   private UserService userService;
   @Mock
   private User user;
+  @Mock
+  private JwtProperties jwtProperties;
   @Mock
   private RedisTemplate<String, String> redisTemplate;
   @Mock
@@ -98,6 +101,8 @@ public class AuthServiceTest {
 
     TokenResponse newTokenResponse = new TokenResponse(accessToken, refreshToken);
     when(jwtProvider.generateToken(anyString(), anyString())).thenReturn(newTokenResponse);
+    when(jwtProperties.getRefreshExpirationTime()).thenReturn(100000L);
+    when(jwtProperties.getAccessExpirationTime()).thenReturn(100000L);
 
     ResponseCookie[] cookies = authService.refresh(refreshToken);
 

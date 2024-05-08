@@ -66,7 +66,7 @@ public class JwtProvider {
 
     public String generateAccessToken(Claims claims) {
         Date now = new Date();
-        Date expireDate = new Date(now.getTime() + jwtProperties.getTokenAccessExpirationTime());
+        Date expireDate = new Date(now.getTime() + jwtProperties.getAccessExpirationTime());
 
         String accessToken = Jwts.builder()
                 .setClaims(claims)
@@ -78,7 +78,7 @@ public class JwtProvider {
         redisTemplate.opsForValue().set(
                 claims.getId(),
                 accessToken,
-                jwtProperties.getTokenAccessExpirationTime(),
+                jwtProperties.getAccessExpirationTime(),
                 TimeUnit.MILLISECONDS
         );
 
@@ -87,7 +87,7 @@ public class JwtProvider {
 
     public String generateRefreshToken(Claims claims) {
         Date now = new Date();
-        Date expireDate = new Date(now.getTime() + jwtProperties.getTokenAccessExpirationTime());
+        Date expireDate = new Date(now.getTime() + jwtProperties.getAccessExpirationTime());
 
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
@@ -99,7 +99,7 @@ public class JwtProvider {
         redisTemplate.opsForValue().set(
                 claims.getId() + jwtProperties.getSuffix(),
                 refreshToken,
-                jwtProperties.getTokenAccessExpirationTime(),
+                jwtProperties.getAccessExpirationTime(),
                 TimeUnit.MILLISECONDS
         );
 
