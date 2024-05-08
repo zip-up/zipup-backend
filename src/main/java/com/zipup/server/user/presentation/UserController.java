@@ -13,8 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -29,7 +29,6 @@ import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT
 
 @RestController
 @RequestMapping("/api/v1/user")
-@RequiredArgsConstructor
 @Slf4j
 @Tag(name = "User", description = "유저 관련 API")
 public class UserController {
@@ -37,6 +36,12 @@ public class UserController {
   private final UserService userService;
   private final UserFacade userFacade;
   private final JwtProvider jwtProvider;
+
+  public UserController(UserService userService, @Qualifier("userFundFacade") UserFacade userFacade, JwtProvider jwtProvider) {
+    this.userService = userService;
+    this.userFacade = userFacade;
+    this.jwtProvider = jwtProvider;
+  }
 
   @Operation(summary = "회원 가입")
   @ApiResponses(value = {
@@ -86,7 +91,7 @@ public class UserController {
           @ApiResponse(responseCode = "403", description = "진행 중인 펀딩 존재",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
-  @PutMapping("/withdraw")
+  @PutMapping("/withdrawal")
   public ResponseEntity<SimpleDataResponse> unlinkUser(
           final HttpServletRequest request,
           final HttpServletResponse response

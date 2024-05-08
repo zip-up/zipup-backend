@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +33,8 @@ public class UserFundFacade implements UserFacade<Fund> {
 
   @Override
   @Transactional(readOnly = true)
-  public User findUserById(String id) {
-    return userService.findById(id);
+  public User findUserById(String userId) {
+    return userService.findById(userId);
   }
 
   @Override
@@ -44,9 +45,9 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Override
   @Transactional
   public SimpleDataResponse unlinkUser(String accessToken) {
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
+    String userId = getUserIdInToken(accessToken);
     User targetUser = userService.findById(userId);
+
     List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
     List<FundingSummaryResponse> summaryList = fundList.stream()
             .map(Fund::toSummaryResponse)
@@ -62,6 +63,24 @@ public class UserFundFacade implements UserFacade<Fund> {
     SecurityContextHolder.clearContext();
 
     return new SimpleDataResponse(userId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<FundingSummaryResponse> findMyEntityList(String accessToken) {
+    String userId = getUserIdInToken(accessToken);
+    User targetUser = findUserById(userId);
+    List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+
+    return fundList.stream()
+            .map(Fund::toSummaryResponse)
+            .collect(Collectors.toList());
+  }
+
+  private String getUserIdInToken(String accessToken) {
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+    return userId;
   }
 
 }

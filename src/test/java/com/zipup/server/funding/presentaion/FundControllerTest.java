@@ -4,9 +4,12 @@ import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingDetailResponse;
-import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.presentation.FundController;
+import com.zipup.server.global.security.util.JwtProvider;
+import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;
+import com.zipup.server.user.dto.TokenResponse;
+import com.zipup.server.user.facade.UserFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -21,13 +24,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,10 +40,18 @@ public class FundControllerTest {
   private CrawlerService crawlerService;
   @Mock
   private FundService fundService;
+  @Mock
+  private UserFacade userFacade;
+  @Mock
+  private JwtProvider jwtProvider;
+  @Mock
+  private TokenResponse tokenResponse;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
   private EntityManager entityManager;
+
+  private User user;
 
   private final String FUND_END_POINT = "/api/v1/fund/";
   private String userId;
@@ -49,8 +59,9 @@ public class FundControllerTest {
 
   @BeforeEach
   void setUp() {
-    User user = User.builder()
+    user = User.builder()
             .email("mock@mock.com")
+            .role(UserRole.USER)
             .build();
     entityManager.persist(user);
 
@@ -69,7 +80,7 @@ public class FundControllerTest {
     userId = user.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, crawlerService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, userFacade, jwtProvider, crawlerService)).build();
   }
 
   @Test
@@ -110,30 +121,6 @@ public class FundControllerTest {
     mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  public void testGetMyFundingList() throws Exception {
-    List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(fundService.getMyFundingList(userId)).willReturn(mockResponses);
-
-    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT + "list")
-                    .param("user", userId)
-                    .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-  }
-
-  @Test
-  @WithMockUser(authorities = {"ROLE_USER"})
-  public void testGetMyFundingList_NoUserId() throws Exception {
-    List<FundingSummaryResponse> mockResponses = new ArrayList<>();
-    given(fundService.getMyFundingList(null)).willReturn(mockResponses);
-
-    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT + "list")
-                    .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON));
   }
 
 }

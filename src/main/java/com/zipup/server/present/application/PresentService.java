@@ -42,6 +42,11 @@ public class PresentService {
   private final PresentRepository presentRepository;
 
   @Transactional(readOnly = true)
+  public List<Present> findAllByUserAndStatus(User user, ColumnStatus status) {
+    return presentRepository.findAllByUserAndStatus(user, status);
+  }
+
+  @Transactional(readOnly = true)
   public Present findByUserAndFund(User user, Fund fund) {
     return presentRepository.findByUserAndFund(user, fund)
             .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
@@ -81,7 +86,7 @@ public class PresentService {
   public List<FundingSummaryResponse> getMyParticipateList(String userId) {
     if (userId == null || userId.isEmpty()) userId = AuthenticationUtil.getZipupAuthentication().getName();
     isValidUUID(userId);
-    return presentRepository.findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
+    return findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
             .stream()
             .map(present -> present.getFund().toSummaryResponse())
             .collect(Collectors.toList());

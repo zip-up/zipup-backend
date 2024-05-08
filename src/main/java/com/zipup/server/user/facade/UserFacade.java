@@ -10,4 +10,5 @@ public interface UserFacade<T> {
   User findUserById(String userId);
   List<T> findAllEntityByUserAndStatus(User user, ColumnStatus status);
   SimpleDataResponse unlinkUser(String accessToken);
+  List findMyEntityList(String accessToken);
 }
