@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -87,18 +89,24 @@ public class UserController {
   @Operation(summary = "회원 탈퇴")
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "회원 정보",
-          content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+                  content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
           @ApiResponse(responseCode = "403", description = "진행 중인 펀딩 존재",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
   @PutMapping("/withdrawal")
   public ResponseEntity<SimpleDataResponse> unlinkUser(
           final HttpServletRequest request,
-          final HttpServletResponse response
+          final HttpServletResponse response,
+          final @RequestBody WithdrawalRequest withdrawalRequest
   ) {
     String accessToken = jwtProvider.resolveToken(request);
     if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    SimpleDataResponse unlinkedUserId = userFacade.unlinkUser(accessToken);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+    withdrawalRequest.setUserId(userId);
+
+    SimpleDataResponse unlinkedUserId = userFacade.unlinkUser(withdrawalRequest);
 
     return ResponseEntity.ok().body(unlinkedUserId);
   }
