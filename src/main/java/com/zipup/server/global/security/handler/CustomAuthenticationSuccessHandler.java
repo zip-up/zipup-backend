@@ -1,14 +1,12 @@
 package com.zipup.server.global.security.handler;
 
-import com.zipup.server.global.util.entity.LoginProvider;
-import com.zipup.server.user.dto.SignInRequest;
 import com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.zipup.server.global.security.oauth.info.OAuth2UserInfo;
 import com.zipup.server.global.security.oauth.info.OAuth2UserInfoFactory;
 import com.zipup.server.global.security.util.CookieUtil;
+import com.zipup.server.global.util.entity.LoginProvider;
 import com.zipup.server.user.application.UserService;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.zipup.server.user.dto.SignInRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,11 +20,12 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
-import javax.servlet.http.Cookie;
 
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.*;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
@@ -58,14 +57,10 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
   }
 
   protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-    System.out.println("determineTargetUrl header referer :: " + request.getHeader("Referer"));
-
-    Optional<String> redirectUri = CookieUtil.getCookie(request, REDIRECT_CLIENT)
-            .map(Cookie::getValue);
-//    if (redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get()))
-//      throw new IllegalArgumentException("리다이렉트 uri 에러 입니다. ::" + redirectUri);
-    String targetUrl = redirectUri.orElse(client);
-    System.out.println("determineTarget target Url :: " + targetUrl);
+    String targetUrl = CookieUtil.getCookie(request, REDIRECT_CLIENT)
+            .map(Cookie::getValue)
+            .filter(uri -> !uri.isEmpty())
+            .orElse(client);
 
     OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
     LoginProvider providerType = LoginProvider.valueOf(authToken.getAuthorizedClientRegistrationId().toUpperCase());
@@ -94,12 +89,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
       CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
-    return UriComponentsBuilder.fromUriString(targetUrl.substring(0, targetUrl.length() - 1))
-//    return UriComponentsBuilder.fromUriString(client)
+    return UriComponentsBuilder.fromUriString(targetUrl)
             .query(accessToken)
-//            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)
-//            .build(false)
-//            .encode(StandardCharsets.UTF_8)
             .toUriString();
   }
 

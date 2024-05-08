@@ -32,6 +32,7 @@ public abstract class BaseTimeEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('PRIVATE', 'PUBLIC', 'UNLINK') DEFAULT 'PUBLIC'")
+  @Setter
   @Builder.Default
   private ColumnStatus status = ColumnStatus.PUBLIC;
 }

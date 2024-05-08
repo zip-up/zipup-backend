@@ -1,7 +1,6 @@
 package com.zipup.server.user.application;
 
 import com.zipup.server.global.exception.BaseException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.domain.User;
 import com.zipup.server.user.dto.TokenAndUserInfoResponse;
@@ -11,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;

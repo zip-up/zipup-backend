@@ -46,14 +46,12 @@ public class UserFundFacade implements UserFacade<Fund> {
     User targetUser = userService.findById(userId);
 
     List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
-    List<FundingSummaryResponse> summaryList = fundList.stream()
+    boolean hasActiveFunding = fundList.stream()
             .map(Fund::toSummaryResponse)
-            .filter(response -> response.getPercent() >= 100)
-            .filter(response -> response.getStatus().equals("완료"))
-            .collect(Collectors.toList());
+            .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
 
-//    if (summaryList.size() > 0) throw new UserException(ACTIVE_FUNDING, userId);
-
+//    if (!hasActiveFunding) throw new UserException(ACTIVE_FUNDING, userId);
+    fundList.forEach(fund -> fund.setStatus(ColumnStatus.PRIVATE));
     targetUser.setWithdrawalReason(request.getWithdrawalReason());
     userService.unlinkStatusUser(targetUser);
     authService.removeIdInRedisToken(userId);
