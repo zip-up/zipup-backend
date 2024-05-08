@@ -94,8 +94,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
       CookieUtil.addResponseSecureCookie(response, COOKIE_TOKEN_REFRESH, refreshToken, COOKIE_EXPIRE_SECONDS, client);
     }
 
-//    return UriComponentsBuilder.fromUriString(targetUrl.substring(0, targetUrl.length() - 1))
-    return UriComponentsBuilder.fromUriString(client)
+    return UriComponentsBuilder.fromUriString(targetUrl.substring(0, targetUrl.length() - 1))
+//    return UriComponentsBuilder.fromUriString(client)
             .query(accessToken)
 //            .queryParam(COOKIE_TOKEN_REFRESH, refreshToken)
 //            .build(false)
