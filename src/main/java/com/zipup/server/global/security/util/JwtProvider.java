@@ -6,12 +6,9 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,6 +21,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,30 +38,17 @@ import static com.zipup.server.global.exception.CustomErrorCode.*;
 @Getter
 public class JwtProvider {
     private final RedisTemplate<String, String> redisTemplate;
-
-    @Value("${spring.jwt.secret}")
-    private String key;
-
-    @Value("${spring.jwt.token.access-expiration-time}")
-    private long accessExpirationTime;
-
-    @Value("${spring.jwt.token.refresh-expiration-time}")
-    private long refreshExpirationTime;
-
-    @Value("${spring.jwt.header}")
-    private String accessHeader;
-
-    @Value("${spring.jwt.prefix}")
-    private String prefix;
-
-    private final String refresh = "_REFRESH";
-
+    private final JwtProperties jwtProperties;
     private Key secretKey;
 
     @PostConstruct
     public void init() {
-        byte[] keyBytes = Decoders.BASE64.decode(key);
-        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.secretKey = createSecretKey(jwtProperties.getSecret());
+    }
+
+    protected Key createSecretKey(String secret) {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     public TokenResponse generateToken(String id, String role) {
@@ -80,7 +66,7 @@ public class JwtProvider {
 
     public String generateAccessToken(Claims claims) {
         Date now = new Date();
-        Date expireDate = new Date(now.getTime() + accessExpirationTime);
+        Date expireDate = new Date(now.getTime() + jwtProperties.getTokenAccessExpirationTime());
 
         String accessToken = Jwts.builder()
                 .setClaims(claims)
@@ -92,7 +78,7 @@ public class JwtProvider {
         redisTemplate.opsForValue().set(
                 claims.getId(),
                 accessToken,
-                accessExpirationTime,
+                jwtProperties.getTokenAccessExpirationTime(),
                 TimeUnit.MILLISECONDS
         );
 
@@ -101,7 +87,7 @@ public class JwtProvider {
 
     public String generateRefreshToken(Claims claims) {
         Date now = new Date();
-        Date expireDate = new Date(now.getTime() + refreshExpirationTime);
+        Date expireDate = new Date(now.getTime() + jwtProperties.getTokenAccessExpirationTime());
 
         String refreshToken = Jwts.builder()
                 .setClaims(claims)
@@ -111,9 +97,9 @@ public class JwtProvider {
                 .compact();
 
         redisTemplate.opsForValue().set(
-                claims.getId() + refresh,
+                claims.getId() + jwtProperties.getSuffix(),
                 refreshToken,
-                refreshExpirationTime,
+                jwtProperties.getTokenAccessExpirationTime(),
                 TimeUnit.MILLISECONDS
         );
 
@@ -136,9 +122,9 @@ public class JwtProvider {
     }
 
     public String resolveToken(HttpServletRequest request) {
-        String accessToken = request.getHeader(accessHeader);
+        String accessToken = request.getHeader(jwtProperties.getHeader());
         if (StringUtils.hasText(accessToken)) {
-          if (accessToken.startsWith(prefix)) {
+          if (accessToken.startsWith(jwtProperties.getPrefix())) {
               return accessToken.substring(7);
           }
             return accessToken;
@@ -167,8 +153,8 @@ public class JwtProvider {
 
     public HttpHeaders setTokenHeaders(TokenResponse tokenResponse) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(accessHeader, prefix + " " + tokenResponse.getAccessToken());
-        headers.add(accessHeader + refresh, prefix + " " + tokenResponse.getRefreshToken());
+        headers.add(jwtProperties.getHeader(), jwtProperties.getPrefix() + " " + tokenResponse.getAccessToken());
+        headers.add(jwtProperties.getHeader() + jwtProperties.getSuffix(), jwtProperties.getPrefix() + " " + tokenResponse.getRefreshToken());
         return headers;
     }
 

@@ -2,6 +2,7 @@ package com.zipup.server.user.application;
 
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
+import com.zipup.server.global.security.util.JwtProperties;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.UserRole;
@@ -28,6 +29,7 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final JwtProvider jwtProvider;
+  private final JwtProperties jwtProperties;
 
   @Transactional(readOnly = true)
   public User findByEmail(String email) {
@@ -74,7 +76,7 @@ public class UserService {
 
   public String resolveToken(String tokenInHeader, boolean isRefresh) {
 
-    if (StringUtils.hasText(tokenInHeader) && tokenInHeader.startsWith(jwtProvider.getPrefix())) {
+    if (StringUtils.hasText(tokenInHeader) && tokenInHeader.startsWith(jwtProperties.getPrefix())) {
       return tokenInHeader.substring(7);
     }
     else if (isRefresh) throw new BaseException(EMPTY_REFRESH_JWT);

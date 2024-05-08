@@ -3,6 +3,7 @@ package com.zipup.server.user.presentation;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ErrorResponse;
+import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.dto.*;
@@ -91,7 +92,7 @@ public class UserController {
           @ApiResponse(responseCode = "200", description = "회원 정보",
                   content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
           @ApiResponse(responseCode = "403", description = "진행 중인 펀딩 존재",
-                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+                  content = @Content(schema = @Schema(implementation = UserException.class))),
   })
   @PutMapping("/withdrawal")
   public ResponseEntity<SimpleDataResponse> unlinkUser(
