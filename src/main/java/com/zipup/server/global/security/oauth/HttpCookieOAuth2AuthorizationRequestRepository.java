@@ -19,12 +19,12 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
   public final static String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
   public final static String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
+  public final static String REDIRECT_CLIENT = "client_uri";
   public final static String REFRESH_TOKEN = HttpHeaders.AUTHORIZATION + "_REFRESH";
   public static final int COOKIE_EXPIRE_SECONDS = 180;
 
   @Override
   public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-    System.out.println("loadAuthorizationRequest :: " + request.getHeader("Origin"));
     System.out.println("loadAuthorizationRequest :: " + request.getHeader("Referer"));
 
     return CookieUtil.getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
@@ -42,7 +42,6 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
   @Override
   public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request, HttpServletResponse response) {
-    System.out.println("saveAuthorizationRequest :: " + request.getHeader("Origin"));
     System.out.println("saveAuthorizationRequest :: " + request.getHeader("Referer"));
 
     if (authorizationRequest == null) {
@@ -55,6 +54,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
     CookieUtil.addCookie(response, HttpHeaders.AUTHORIZATION, CookieUtil.serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
     CookieUtil.addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, CookieUtil.serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
+    CookieUtil.addCookie(response, REDIRECT_CLIENT, request.getHeader("Referer"), COOKIE_EXPIRE_SECONDS);
     String redirectUriAfterLogin = authorizationRequest.getRedirectUri();
 
     if (StringUtils.isNotBlank(redirectUriAfterLogin))
