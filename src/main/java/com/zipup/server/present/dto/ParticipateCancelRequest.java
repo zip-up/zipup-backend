@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ParticipateCancelRequest {
+  @Schema(description = "참여자 식별자")
+  private String participateId;
   @Schema(description = "펀딩 식별자")
   private String fundingId;
   @Schema(description = "취소 사유", required = true)

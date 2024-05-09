@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,7 @@ import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 import static com.zipup.server.global.security.util.CookieUtil.getCookie;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
 @RestController
@@ -59,25 +61,29 @@ public class AuthController {
             final HttpServletResponse httpServletResponse
     ) {
         String redirectUrl = httpServletRequest.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
+
         String accessToken = jwtProvider.resolveToken(httpServletRequest);
         if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+        if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+        Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+        String userId = authentication.getName();
+        isValidUUID(userId);
 
-        TokenAndUserInfoResponse response = authService.signInWithAccessToken(accessToken);
+        TokenAndUserInfoResponse response = authService.signInWithAccessToken(userId);
 
         httpServletResponse.addHeader(SET_COOKIE, response.getRefreshToken().toString());
 
         String newAccessToken = response.getAccessToken().getValue();
         response.getSignInResponse().setAccessToken(newAccessToken);
 
-        if (redirectUrl != null && !redirectUrl.isEmpty()) {
+        if (redirectUrl != null && !redirectUrl.isEmpty())
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, redirectUrl)
                     .build();
-        }
         else return ResponseEntity.ok().body(response.getSignInResponse());
     }
 
-    @Operation(summary = "refresh token으로 신규 access token 발급")
+    @Operation(summary = "refresh token 으로 신규 access token 발급")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "리프레시 토큰이 성공적으로 발급되었습니다."),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 형식입니다."),
@@ -109,11 +115,15 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
     })
     @PostMapping("/sign-out")
-    public ResponseEntity<SimpleDataResponse> signOut(final HttpServletRequest request) {
-        String token = jwtProvider.resolveToken(request);
-        if (!StringUtils.hasText(token)) throw new BaseException(EMPTY_ACCESS_JWT);
+    public ResponseEntity<SimpleDataResponse> signOut(final HttpServletRequest httpServletRequest) {
+        String accessToken = jwtProvider.resolveToken(httpServletRequest);
+        if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+        if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+        Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+        String userId = authentication.getName();
+        isValidUUID(userId);
 
-        boolean isSucceed = authService.signOut(token);
+        boolean isSucceed = authService.signOut(userId);
         
         return isSucceed
                 ? ResponseEntity.ok().body(new SimpleDataResponse("success"))

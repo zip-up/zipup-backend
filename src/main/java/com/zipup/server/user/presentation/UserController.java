@@ -2,7 +2,6 @@ package com.zipup.server.user.presentation;
 
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
-import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.UserService;
@@ -28,6 +27,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
+import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
@@ -83,8 +83,18 @@ public class UserController {
           @ApiResponse(responseCode = "404", description = "없는 회원입니다."),
   })
   @GetMapping("")
-  public ResponseEntity<UserListResponse> getUserInfo(@RequestParam String id) {
-    return ResponseEntity.ok().body(userService.getUserInfo(id));
+  public ResponseEntity<UserListResponse> getUserInfo(
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse
+  ) {
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+
+    return ResponseEntity.ok().body(userService.getUserInfo(userId));
   }
 
   @Operation(summary = "회원 탈퇴")
@@ -96,17 +106,18 @@ public class UserController {
   })
   @PutMapping("/withdrawal")
   public ResponseEntity<SimpleDataResponse> unlinkUser(
-          final HttpServletRequest request,
-          final HttpServletResponse response,
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse,
           final @RequestBody WithdrawalRequest withdrawalRequest
   ) {
-    String accessToken = jwtProvider.resolveToken(request);
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
     if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
     String userId = authentication.getName();
     isValidUUID(userId);
-    withdrawalRequest.setUserId(userId);
 
+    withdrawalRequest.setUserId(userId);
     SimpleDataResponse unlinkedUserId = userFacade.unlinkUser(withdrawalRequest);
 
     return ResponseEntity.ok().body(unlinkedUserId);

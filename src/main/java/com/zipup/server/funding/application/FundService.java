@@ -4,11 +4,11 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.ResourceNotFoundException;
+import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +17,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
-import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
@@ -42,11 +41,11 @@ public class FundService {
 
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
-    Authentication authentication = getZipupAuthentication();
     String productUrl = request.getProductUrl();
 
     Fund targetFund = request.toEntity();
-    targetFund.setUser(userService.findById(authentication.getName()));
+    targetFund.setUser(userService.findById(request.getUserId()));
+
     CrawlerResponse crawlerResponse = crawlerService.crawlingProductInfo(productUrl);
     String imageUrl = crawlerResponse == null ? ""
             : crawlerResponse.getImageUrl() == null ? ""
@@ -61,7 +60,7 @@ public class FundService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getMyFundingList(String userId) {
-    if (userId == null || userId.isEmpty()) userId = getZipupAuthentication().getName();
+    if (userId == null || userId.isEmpty()) userId = AuthenticationUtil.getZipupAuthentication().getName();
     isValidUUID(userId);
     return findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
             .stream()
@@ -70,11 +69,10 @@ public class FundService {
   }
 
   @Transactional(readOnly = true)
-  public FundingDetailResponse getFundingDetail(String fundId) {
+  public FundingDetailResponse getFundingDetail(String fundId, String userId) {
     isValidUUID(fundId);
-    Authentication authentication = getZipupAuthentication();
 
-    return findById(fundId).toDetailResponse(authentication.getName());
+    return findById(fundId).toDetailResponse(userService.findById(userId));
   }
 
   @Transactional(readOnly = true)

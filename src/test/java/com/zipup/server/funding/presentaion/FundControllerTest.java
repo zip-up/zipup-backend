@@ -8,9 +8,9 @@ import com.zipup.server.funding.presentation.FundController;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;
-import com.zipup.server.user.dto.TokenResponse;
 import com.zipup.server.user.facade.UserFacade;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +44,6 @@ public class FundControllerTest {
   private UserFacade userFacade;
   @Mock
   private JwtProvider jwtProvider;
-  @Mock
-  private TokenResponse tokenResponse;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -84,7 +82,8 @@ public class FundControllerTest {
   }
 
   @Test
-  @WithMockUser(authorities = {"ROLE_USER"})
+  @WithMockUser
+  @DisplayName("크롤링 요청 시 crawlerService 호출 테스트 성공")
   void testCrawlingProductInfo() throws Exception {
     String url = "https://www.apple.com/kr/shop/buy-mac/macbook-air/13%ED%98%95-%EB%AF%B8%EB%93%9C%EB%82%98%EC%9D%B4%ED%8A%B8-apple-m3-%EC%B9%A9(8%EC%BD%94%EC%96%B4-cpu-%EB%B0%8F-8%EC%BD%94%EC%96%B4-gpu)-8gb-%EB%A9%94%EB%AA%A8%EB%A6%AC-256gb";
 
@@ -104,7 +103,7 @@ public class FundControllerTest {
             .goalPrice(10000)
             .productUrl("https://mock.com")
             .build();
-    given(fundService.getFundingDetail(fundId)).willReturn(mockResponse);
+    given(fundService.getFundingDetail(fundId, user.getId().toString())).willReturn(mockResponse);
 
     mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
                     .param("funding", fundId)
@@ -117,6 +116,7 @@ public class FundControllerTest {
   }
 
   @Test
+  @DisplayName("펀딩 상세 페이지 조회 시 funding id 없을 때 400 에러")
   public void testGetFundingDetail_noFundingId() throws Exception {
     mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
                     .contentType(MediaType.APPLICATION_JSON))

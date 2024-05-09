@@ -56,14 +56,12 @@ public class AuthServiceTest {
   @Test
   @DisplayName("access token 으로 로그인 성공")
   void testSignInWithAccessToken_success() {
-    when(jwtProvider.getAuthenticationByToken(accessToken)).thenReturn(authentication);
-    when(authentication.getName()).thenReturn(userId);
     testRefresh_WithValidToken_success();
 
     when(jwtProvider.generateToken(anyString(), anyString())).thenReturn(new TokenResponse(accessToken, refreshToken));
     when(userService.findById(userId)).thenReturn(user);
 
-    TokenAndUserInfoResponse response = authService.signInWithAccessToken(accessToken);
+    TokenAndUserInfoResponse response = authService.signInWithAccessToken(userId);
 
     assertNotNull(response);
     assertEquals(response.getAccessToken().getValue(), accessToken);
@@ -74,14 +72,12 @@ public class AuthServiceTest {
   @Test
   @DisplayName("access token redis 에 없어 실패")
   void testSignInWithAccessToken_ThrowsException() {
-    when(jwtProvider.getAuthenticationByToken(accessToken)).thenReturn(authentication);
-    when(authentication.getName()).thenReturn(userId);
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(valueOperations.get(userId + "_REFRESH")).thenReturn(null);
 
     BaseException thrown = assertThrows(
             BaseException.class,
-            () -> authService.signInWithAccessToken(accessToken)
+            () -> authService.signInWithAccessToken(userId)
     );
     assertNotNull(thrown);
     assertEquals(thrown.getStatus(), TOKEN_NOT_FOUND);

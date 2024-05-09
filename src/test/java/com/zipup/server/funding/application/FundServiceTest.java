@@ -61,6 +61,7 @@ public class FundServiceTest {
   @BeforeEach
   void setUp() {
     createFundingRequest = new CreateFundingRequest(
+            null,
             "Title",
             "Road Address",
             "Detail Address",
@@ -210,7 +211,6 @@ public class FundServiceTest {
   @DisplayName("funding 개인 조회 시 데이터 없는 경우")
   void testGetMyParticipateList_noData() {
     // given
-//    String invalidId = UUID.randomUUID().toString();
     when(userService.findById(userId)).thenReturn(user);
 
     // when
@@ -242,25 +242,18 @@ public class FundServiceTest {
   @Test
   @DisplayName("funding 주최 성공")
   public void testCreatFunding_success() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    CrawlerResponse crawlerResponse = mock(CrawlerResponse.class);
 
-      CrawlerResponse crawlerResponse = mock(CrawlerResponse.class);
+    when(crawlerResponse.getImageUrl()).thenReturn("https://ImageURL");
+    when(crawlerService.crawlingProductInfo("https://ProductURL")).thenReturn(crawlerResponse);
+    when(fundRepository.save(any(Fund.class))).thenReturn(mockFund1);
 
-      when(userService.findById(userId)).thenReturn(user);
-      when(crawlerResponse.getImageUrl()).thenReturn("https://ImageURL");
-      when(crawlerService.crawlingProductInfo("https://ProductURL")).thenReturn(crawlerResponse);
-      when(fundRepository.save(any(Fund.class))).thenReturn(mockFund1);
+    SimpleFundingDataResponse response = fundService.createFunding(createFundingRequest);
 
-      SimpleFundingDataResponse response = fundService.createFunding(createFundingRequest);
-
-      assertNotNull(response);
-      assertEquals(response.getId(), mockFund1.getId().toString());
-      assertEquals(response.getImageUrl(), mockFund1.getImageUrl());
-      verify(fundRepository).save(isA(Fund.class));
-    }
+    assertNotNull(response);
+    assertEquals(response.getId(), mockFund1.getId().toString());
+    assertEquals(response.getImageUrl(), mockFund1.getImageUrl());
+    verify(fundRepository).save(isA(Fund.class));
   }
 
 }
