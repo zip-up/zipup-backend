@@ -41,21 +41,13 @@ public class UserPresentFacade implements UserFacade<Present> {
   }
 
   @Override
-  public List<FundingSummaryResponse> findMyEntityList(String accessToken) {
-    String userId = getUserIdInToken(accessToken);
+  public List<FundingSummaryResponse> findMyEntityList(String userId) {
     User targetUser = findUserById(userId);
     List<Present> presentList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
 
     return presentList.stream()
             .map(present -> present.getFund().toSummaryResponse())
             .collect(Collectors.toList());
-  }
-
-  private String getUserIdInToken(String accessToken) {
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-    return userId;
   }
 
 }

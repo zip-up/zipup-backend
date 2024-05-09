@@ -108,10 +108,10 @@ public class Fund extends BaseTimeEntity {
             .build();
   }
 
-  public FundingDetailResponse toDetailResponse(String nowUserId) {
-    Boolean isOrganizer = nowUserId != null && nowUserId.equals(user.getId().toString());
+  public FundingDetailResponse toDetailResponse(User nowUser) {
+    Boolean isOrganizer = nowUser != null && nowUser.equals(user);
     boolean isParticipant = presents.stream()
-            .anyMatch(p -> p.getUser().getId().toString().equals(nowUserId));
+            .anyMatch(p -> p.getUser().equals(nowUser));
 
     return FundingDetailResponse.builder()
             .id(id.toString())

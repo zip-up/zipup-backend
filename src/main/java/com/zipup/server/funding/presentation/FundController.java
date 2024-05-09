@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
+import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
@@ -59,17 +59,6 @@ public class FundController {
     return crawlerService.crawlingProductInfo(url);
   }
 
-//  @Operation(summary = "[deprecated] 내가 주최한 펀딩 목록 조회", description = "토큰 방식 조회가 문제 없으면 이 api는 삭제할 예정입니다.")
-//  @Parameter(name = "user", description = "마이페이지 유저의 식별자 값 (UUID)")
-//  @ApiResponse(
-//          responseCode = "200",
-//          description = "조회 성공",
-//          content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
-//  @GetMapping("/list")
-//  public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(@RequestParam(value = "user", required = false) String userId) {
-//    return ResponseEntity.ok(fundService.getMyFundingList(userId));
-//  }
-
   @Operation(summary = "내가 주최한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
   @ApiResponse(
           responseCode = "200",
@@ -77,18 +66,19 @@ public class FundController {
           content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @GetMapping("/list")
   public ResponseEntity<List<FundingSummaryResponse>> getMyFundingList(
-          final HttpServletRequest request,
-          final HttpServletResponse response
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse
   ) {
-    String accessToken = jwtProvider.resolveToken(request);
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
     if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
     String userId = authentication.getName();
     isValidUUID(userId);
 
     List<FundingSummaryResponse> myFundingList = userFacade.findMyEntityList(userId);
 
-    return ResponseEntity.ok(myFundingList);
+    return ResponseEntity.ok().body(myFundingList);
   }
 
   @Operation(summary = "펀딩 페이지 상세 조회", description = "펀딩 상세 내용")
@@ -105,9 +95,18 @@ public class FundController {
   })
   @GetMapping("")
   public ResponseEntity<FundingDetailResponse> getFundingDetail(
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse,
           @RequestParam(value = "funding") String fundId
   ) {
-    return ResponseEntity.ok(fundService.getFundingDetail(fundId));
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+
+    return ResponseEntity.ok().body(fundService.getFundingDetail(fundId, userId));
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")
@@ -116,15 +115,27 @@ public class FundController {
           description = "펀딩 주최 성공",
           content = @Content(schema = @Schema(implementation = SimpleFundingDataResponse.class)))
   @PostMapping("")
-  public ResponseEntity<SimpleFundingDataResponse> createFunding(@RequestBody CreateFundingRequest request) {
-    return ResponseEntity.ok(fundService.createFunding(request));
+  public ResponseEntity<SimpleFundingDataResponse> createFunding(
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse,
+          @RequestBody CreateFundingRequest request
+  ) {
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+
+    request.setUserId(userId);
+    return ResponseEntity.ok().body(fundService.createFunding(request));
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
   @GetMapping("/temp")
   public ResponseEntity<List<FundingSummaryResponse>> getFundList() {
     List<FundingSummaryResponse> response = fundService.getFundList();
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok().body(response);
   }
 
 }

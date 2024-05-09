@@ -21,7 +21,6 @@ import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +29,6 @@ import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
-import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
@@ -54,14 +52,12 @@ public class PresentService {
 
   @Transactional
   public SimpleDataResponse participateFunding(ParticipatePresentRequest request) {
-    Authentication authentication = getZipupAuthentication();
-    String participateId = authentication.getName();
-
+    String participateId = request.getParticipateId();
     String fundingId = request.getFundingId();
     String paymentId = request.getPaymentId();
 
     isValidUUID(fundingId);
-    isValidUUID(participateId);
+    isValidUUID(paymentId);
 
     Present participateFunding = Present.builder()
             .fund(fundService.findById(fundingId))
@@ -94,12 +90,11 @@ public class PresentService {
 
   @Transactional
   public String cancelParticipate(ParticipateCancelRequest request) {
-    Authentication authentication = getZipupAuthentication();
-    User targetUser = userService.findById(authentication.getName());
+    User targetUser = userService.findById(request.getParticipateId());
     Fund targetFunding = fundService.findById(request.getFundingId());
     Present targetPresent = findByUserAndFund(targetUser, targetFunding);
 
-    if (!targetPresent.getUser().getId().toString().equals(authentication.getName())) throw new BaseException(ACCESS_DENIED);
+    if (!targetPresent.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
 
     Payment targetPayment = targetPresent.getPayment();
 

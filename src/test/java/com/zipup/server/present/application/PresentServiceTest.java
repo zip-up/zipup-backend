@@ -90,6 +90,7 @@ public class PresentServiceTest {
             .build();
 
     cancelRequest = ParticipateCancelRequest.builder()
+            .participateId(userId)
             .fundingId(fundId)
             .cancelAmount(1000)
             .cancelReason("mock-reason")
@@ -248,180 +249,126 @@ public class PresentServiceTest {
   @Test
   @DisplayName("펀딩 참여 성공")
   public void testParticipateFunding_success() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    when(fundService.findById(fundId)).thenReturn(fund);
+    when(userService.findById(userId)).thenReturn(user);
+    when(paymentService.findById(paymentId)).thenReturn(payment);
+    when(presentRepository.save(any(Present.class))).thenReturn(mockPresent1);
+    SimpleDataResponse response = presentService.participateFunding(participateRequest);
 
-      when(fundService.findById(fundId)).thenReturn(fund);
-      when(userService.findById(userId)).thenReturn(user);
-      when(paymentService.findById(paymentId)).thenReturn(payment);
-      when(presentRepository.save(any(Present.class))).thenReturn(mockPresent1);
-      SimpleDataResponse response = presentService.participateFunding(participateRequest);
-
-      assertNotNull(response);
-      assertEquals(response.getId(), mockPresent1.getId().toString());
-      verify(presentRepository).save(isA(Present.class));
-    }
-  }
-
-  @Test
-  @DisplayName("펀딩 참여 시도 시 Spring Context에 데이터 없을 때")
-  public void testParticipateFunding_NoContext() {
-    lenient().when(fundService.findById(fundId)).thenReturn(fund);
-    lenient().when(userService.findById(userId)).thenReturn(user);
-    lenient().when(paymentService.findById(paymentId)).thenReturn(payment);
-
-    NullPointerException thrown = assertThrows(
-            NullPointerException.class,
-            () -> presentService.participateFunding(participateRequest)
-    );
-    assertNotNull(thrown);
-    verify(fundService, times(0)).findById(fundId);
-    verify(userService, times(0)).findById(userId);
+    assertNotNull(response);
+    assertEquals(response.getId(), mockPresent1.getId().toString());
+    verify(presentRepository).save(isA(Present.class));
   }
 
   @Test
   @DisplayName("펀딩 참여 시도 시 invalid uuid")
   public void testParticipateFunding_InvalidUUID() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    participateRequest = ParticipatePresentRequest.builder()
+            .participateId(userId)
+            .paymentId(paymentId)
+            .fundingId("invalidId")
+            .congratsMessage("mock-congrats")
+            .senderName("mock-sender")
+            .build();
 
-      participateRequest = ParticipatePresentRequest.builder()
-              .participateId(userId)
-              .paymentId(paymentId)
-              .fundingId("invalidId")
-              .congratsMessage("mock-congrats")
-              .senderName("mock-sender")
-              .build();
+    lenient().when(fundService.findById("invalidId")).thenThrow(new UUIDException(INVALID_USER_UUID, "invalidId"));
 
-      lenient().when(fundService.findById("invalidId")).thenThrow(new UUIDException(INVALID_USER_UUID, "invalidId"));
-
-      UUIDException thrown = assertThrows(
-              UUIDException.class,
-              () -> presentService.participateFunding(participateRequest)
-      );
-      assertNotNull(thrown);
-      assertEquals(thrown.getStatus(), INVALID_USER_UUID);
-      verify(fundService, times(0)).findById("invalidId");
-      verify(userService, times(0)).findById(userId);
-    }
+    UUIDException thrown = assertThrows(
+            UUIDException.class,
+            () -> presentService.participateFunding(participateRequest)
+    );
+    assertNotNull(thrown);
+    assertEquals(thrown.getStatus(), INVALID_USER_UUID);
+    verify(fundService, times(0)).findById("invalidId");
+    verify(userService, times(0)).findById(userId);
   }
 
   @Test
   @DisplayName("펀딩 참여 시도 시 funding resource not found")
   public void testParticipateFunding_ResourceNotFound() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    String invalidId = UUID.randomUUID().toString();
 
-      String invalidId = UUID.randomUUID().toString();
+    participateRequest = ParticipatePresentRequest.builder()
+            .participateId(userId)
+            .paymentId(paymentId)
+            .fundingId(invalidId)
+            .congratsMessage("mock-congrats")
+            .senderName("mock-sender")
+            .build();
 
-      participateRequest = ParticipatePresentRequest.builder()
-              .participateId(userId)
-              .paymentId(paymentId)
-              .fundingId(invalidId)
-              .congratsMessage("mock-congrats")
-              .senderName("mock-sender")
-              .build();
+    when(fundService.findById(invalidId)).thenThrow(new ResourceNotFoundException(DATA_NOT_FOUND));
 
-      when(fundService.findById(invalidId)).thenThrow(new ResourceNotFoundException(DATA_NOT_FOUND));
-
-      ResourceNotFoundException thrown = assertThrows(
-              ResourceNotFoundException.class,
-              () -> presentService.participateFunding(participateRequest)
-      );
-      assertNotNull(thrown);
-      assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
-      verify(fundService).findById(invalidId);
-      verify(userService, times(0)).findById(userId);
-    }
+    ResourceNotFoundException thrown = assertThrows(
+            ResourceNotFoundException.class,
+            () -> presentService.participateFunding(participateRequest)
+    );
+    assertNotNull(thrown);
+    assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
+    verify(fundService).findById(invalidId);
+    verify(userService, times(0)).findById(userId);
   }
 
   @Test
   @DisplayName("펀딩 참여 취소 성공")
   public void testCancelParticipate_success() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    when(userService.findById(userId)).thenReturn(user);
+    when(fundService.findById(fundId)).thenReturn(fund);
+    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(mockPresent2.getUser()).thenReturn(user);
+    when(mockPresent2.getPayment()).thenReturn(payment);
+    when(payment.getPaymentKey()).thenReturn("payment_key");
+    when(payment.getBalanceAmount()).thenReturn(10000);
 
-      when(userService.findById(userId)).thenReturn(user);
-      when(user.getId()).thenReturn(UUID.fromString(userId));
-      when(fundService.findById(fundId)).thenReturn(fund);
-      when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
-      when(mockPresent2.getUser()).thenReturn(user);
-      when(mockPresent2.getPayment()).thenReturn(payment);
-      when(payment.getPaymentKey()).thenReturn("payment_key");
-      when(payment.getBalanceAmount()).thenReturn(10000);
+    String response = presentService.cancelParticipate(cancelRequest);
 
-      String response = presentService.cancelParticipate(cancelRequest);
-
-      assertNotNull(response);
-      assertEquals(response, "취소 성공");
-      verify(presentRepository).findByUserAndFund(user, fund);
-      verify(mockPresent2).setStatus(ColumnStatus.PRIVATE);
-    }
+    assertNotNull(response);
+    assertEquals(response, "취소 성공");
+    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(mockPresent2).setStatus(ColumnStatus.PRIVATE);
   }
 
   @Test
   @DisplayName("펀딩 참여 취소 실패 - 자신의 참여 펀딩이 아닐 경우")
   public void testCancelParticipate_AccessDenied() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    when(userService.findById(userId)).thenReturn(user);
+    when(fundService.findById(fundId)).thenReturn(fund);
+    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(mockPresent2.getUser()).thenReturn(User.builder().id(UUID.randomUUID()).build());
 
-      when(userService.findById(userId)).thenReturn(user);
-      when(fundService.findById(fundId)).thenReturn(fund);
-      when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
-      when(mockPresent2.getUser()).thenReturn(User.builder().id(UUID.randomUUID()).build());
-
-      BaseException thrown = assertThrows(
-              BaseException.class,
-              () -> presentService.cancelParticipate(cancelRequest)
-      );
-      assertNotNull(thrown);
-      assertEquals(thrown.getStatus(), ACCESS_DENIED);
-      verify(fundService).findById(fundId);
-      verify(presentRepository).findByUserAndFund(user, fund);
-      verify(mockPresent2, times(0)).getPayment();
-    }
+    BaseException thrown = assertThrows(
+            BaseException.class,
+            () -> presentService.cancelParticipate(cancelRequest)
+    );
+    assertNotNull(thrown);
+    assertEquals(thrown.getStatus(), ACCESS_DENIED);
+    verify(fundService).findById(fundId);
+    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(mockPresent2, times(0)).getPayment();
   }
 
   @Test
   @DisplayName("펀딩 참여 취소 실패 - 금액 초과")
   public void testCancelParticipate_NotCancelableAmount() {
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
+    when(fundService.findById(fundId)).thenReturn(fund);
+    when(userService.findById(userId)).thenReturn(user);
+    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(mockPresent2.getUser()).thenReturn(user);
+    when(mockPresent2.getPayment()).thenReturn(payment);
+    when(payment.getPaymentKey()).thenReturn("payment_key");
+    when(payment.getBalanceAmount()).thenReturn(1);
 
-      when(userService.findById(userId)).thenReturn(user);
-      when(user.getId()).thenReturn(UUID.fromString(userId));
-      when(fundService.findById(fundId)).thenReturn(fund);
-      when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
-      when(mockPresent2.getUser()).thenReturn(user);
-      when(mockPresent2.getPayment()).thenReturn(payment);
-      when(payment.getPaymentKey()).thenReturn("payment_key");
-      when(payment.getBalanceAmount()).thenReturn(1);
-
-      PaymentException thrown = assertThrows(
-              PaymentException.class,
-              () -> presentService.cancelParticipate(cancelRequest)
-      );
-      assertNotNull(thrown);
-      assertEquals(thrown.getStatus(), HttpStatus.FORBIDDEN.value());
-      assertEquals(thrown.getCode(), "NOT_CANCELABLE_AMOUNT");
-      assertEquals(thrown.getMessage(), "취소 할 수 없는 금액 입니다.");
-      verify(fundService).findById(fundId);
-      verify(presentRepository).findByUserAndFund(user, fund);
-      verify(paymentService, times(0)).cancelPayment(any(PaymentCancelRequest.class));
-      verify(mockPresent2, times(0)).setStatus(ColumnStatus.PRIVATE);
-    }
+    PaymentException thrown = assertThrows(
+            PaymentException.class,
+            () -> presentService.cancelParticipate(cancelRequest)
+    );
+    assertNotNull(thrown);
+    assertEquals(thrown.getStatus(), HttpStatus.FORBIDDEN.value());
+    assertEquals(thrown.getCode(), "NOT_CANCELABLE_AMOUNT");
+    assertEquals(thrown.getMessage(), "취소 할 수 없는 금액 입니다.");
+    verify(fundService).findById(fundId);
+    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(paymentService, times(0)).cancelPayment(any(PaymentCancelRequest.class));
+    verify(mockPresent2, times(0)).setStatus(ColumnStatus.PRIVATE);
   }
 
 }
