@@ -135,14 +135,13 @@ public class JwtProvider {
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey) // 비밀키를 설정하여 파싱한다.
+                    .setSigningKey(secretKey)
                     .build()
-                    .parseClaimsJws(token);  // 주어진 토큰을 파싱하여 Claims 객체를 얻는다.
+                    .parseClaimsJws(token);
 
-            // 토큰의 만료 시간과 현재 시간비교
             return !claims.getBody()
                     .getExpiration()
-                    .after(new Date());  // 만료 시간이 현재 시간 이후인지 확인하여 유효성 검사 결과를 반환
+                    .after(new Date());
         } catch (ExpiredJwtException e) {
             log.error("토큰 이슈 = {}", token);
             log.error("메시지 = {}", e.getMessage());

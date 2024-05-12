@@ -100,11 +100,13 @@ public class FundController {
           @RequestParam(value = "funding") String fundId
   ) {
     String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
+    String userId = null;
+    if (accessToken != null) {
+      if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+      Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+      userId = authentication.getName();
+      isValidUUID(userId);
+    }
 
     return ResponseEntity.ok().body(fundService.getFundingDetail(fundId, userId));
   }
