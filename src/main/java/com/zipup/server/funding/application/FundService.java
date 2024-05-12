@@ -72,7 +72,7 @@ public class FundService {
   public FundingDetailResponse getFundingDetail(String fundId, String userId) {
     isValidUUID(fundId);
 
-    return findById(fundId).toDetailResponse(userService.findById(userId));
+    return findById(fundId).toDetailResponse(userId != null ? userService.findById(userId) : null);
   }
 
   @Transactional(readOnly = true)
