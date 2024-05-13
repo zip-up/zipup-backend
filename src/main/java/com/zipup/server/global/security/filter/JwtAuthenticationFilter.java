@@ -61,15 +61,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-        log.error("jwt authentication filter :: {} {} {}", WRONG_TYPE_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
-        request.setAttribute("exception", WRONG_TYPE_TOKEN);
-        errorJson = objectMapper.writeValueAsString(ErrorResponse.toErrorResponse(WRONG_TYPE_TOKEN));
+//      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+//        log.error("jwt authentication filter :: {} {} {}", WRONG_TYPE_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
+//        request.setAttribute("exception", WRONG_TYPE_TOKEN);
+//        errorJson = objectMapper.writeValueAsString(ErrorResponse.toErrorResponse(WRONG_TYPE_TOKEN));
 
-        response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(errorJson);
-        return;
+//        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//        response.setContentType("application/json;charset=UTF-8");
+//        response.getWriter().write(errorJson);
+//        return;
       } catch (DecodingException | UnsupportedJwtException e) {
         log.error("jwt authentication filter :: {} {} {}", UNSUPPORTED_TOKEN.getMessage(), StringUtils.hasText(accessToken), requestURI);
         request.setAttribute("exception", UNSUPPORTED_TOKEN);
