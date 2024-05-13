@@ -119,11 +119,13 @@ public class PresentService {
     return "취소 성공";
   }
 
+  @Transactional(readOnly = true)
   public List<PaymentHistoryResponse> getMyPaymentList(String userId) {
     User targetUser = userService.findById(userId);
     List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
-    Boolean refundable = presentList.stream()
-            .map(Present::getFund)
+    List<Fund> fundList = presentList.stream().map(Present::getFund).collect(Collectors.toList());
+
+    Boolean refundable = fundList.stream()
             .map(Fund::toSummaryResponse)
             .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
 
