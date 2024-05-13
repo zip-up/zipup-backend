@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
+import static com.zipup.server.global.util.entity.ColumnStatus.PRIVATE;
 import static com.zipup.server.global.util.entity.PaymentStatus.CANCELED;
 import static com.zipup.server.global.util.entity.PaymentStatus.PARTIAL_CANCELED;
 
@@ -138,14 +139,26 @@ public class PaymentService {
             .collect(Collectors.toList());
   }
 
+  @Transactional
   public TossPaymentResponse fetchPaymentByPaymentKey(String paymentKey) {
-    Mono<TossPaymentResponse> response = tossService.get("/" + paymentKey, TossPaymentResponse.class);
-    return response.block();
+    TossPaymentResponse response = tossService.get("/" + paymentKey, TossPaymentResponse.class).block();
+    if (response != null) {
+      Payment payment = findByPaymentKey(paymentKey);
+      payment.setPaymentStatus(response.getStatus());
+    }
+
+    return response;
   }
 
+  @Transactional
   public TossPaymentResponse fetchPaymentByOrderId(String orderId) {
-    Mono<TossPaymentResponse> response = tossService.get("/orders/" + orderId, TossPaymentResponse.class);
-    return response.block();
+    TossPaymentResponse response = tossService.get("/orders/" + orderId, TossPaymentResponse.class).block();
+    if (response != null) {
+      Payment payment = findByPaymentKey(response.getPaymentKey());
+      payment.setPaymentStatus(response.getStatus());
+    }
+
+    return response;
   }
 
   @Transactional
@@ -169,6 +182,7 @@ public class PaymentService {
     Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
       payment.setPaymentStatus(CANCELED);
+      payment.setStatus(PRIVATE);
     } else {
       if (request.getCancelAmount() < payment.getBalanceAmount()) {
         payment.setBalanceAmount(payment.getBalanceAmount() - request.getCancelAmount());

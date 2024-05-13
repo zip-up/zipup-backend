@@ -40,9 +40,6 @@ public class PresentControllerTest {
   @Mock
   private PresentService presentService;
   @Mock
-  @Qualifier("userPresentFacade")
-  private UserFacade userFacade;
-  @Mock
   private JwtProvider jwtProvider;
   @Autowired
   private MockMvc mockMvc;
@@ -87,7 +84,7 @@ public class PresentControllerTest {
     paymentId = payment.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService, userFacade, jwtProvider)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService, jwtProvider)).build();
   }
 
   @Test

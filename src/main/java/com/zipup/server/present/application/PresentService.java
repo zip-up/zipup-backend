@@ -7,11 +7,11 @@ import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentCancelRequest;
+import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
@@ -80,10 +80,12 @@ public class PresentService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getMyParticipateList(String userId) {
-    if (userId == null || userId.isEmpty()) userId = AuthenticationUtil.getZipupAuthentication().getName();
-    isValidUUID(userId);
-    return findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
-            .stream()
+    User targetUser = userService.findById(userId);
+    List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+
+    presentList.forEach(present -> present.getFund().getId());
+
+    return presentList.stream()
             .map(present -> present.getFund().toSummaryResponse())
             .collect(Collectors.toList());
   }
@@ -115,6 +117,23 @@ public class PresentService {
     changePrivateParticipate(targetPresent);
 
     return "취소 성공";
+  }
+
+  public List<PaymentHistoryResponse> getMyPaymentList(String userId) {
+    User targetUser = userService.findById(userId);
+    List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+    Boolean refundable = presentList.stream()
+            .map(Present::getFund)
+            .map(Fund::toSummaryResponse)
+            .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
+
+    List<Payment> paymentList = presentList.stream()
+            .map(Present::getPayment)
+            .collect(Collectors.toList());
+
+    return paymentList.stream()
+            .map(payment -> payment.toHistoryResponse(refundable))
+            .collect(Collectors.toList());
   }
 
   @Transactional
