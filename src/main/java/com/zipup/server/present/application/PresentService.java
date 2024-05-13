@@ -127,7 +127,7 @@ public class PresentService {
 
     Boolean refundable = fundList.stream()
             .map(Fund::toSummaryResponse)
-            .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
+            .noneMatch(response -> response.getPercent() < 100);
 
     List<Payment> paymentList = presentList.stream()
             .map(Present::getPayment)
