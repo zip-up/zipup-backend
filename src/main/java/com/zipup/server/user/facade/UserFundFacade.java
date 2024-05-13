@@ -41,8 +41,8 @@ public class UserFundFacade implements UserFacade<Fund> {
 
   @Override
   @Transactional
-  public SimpleDataResponse unlinkUser(WithdrawalRequest request) {
-    String userId = request.getUserId();
+  public SimpleDataResponse unlinkUser(WithdrawalRequest withdrawalRequest) {
+    String userId = withdrawalRequest.getUserId();
     User targetUser = userService.findById(userId);
 
     List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
@@ -52,7 +52,7 @@ public class UserFundFacade implements UserFacade<Fund> {
 
     if (!hasActiveFunding) throw new UserException(ACTIVE_FUNDING, userId);
     fundList.forEach(fund -> fund.setStatus(ColumnStatus.PRIVATE));
-    targetUser.setWithdrawalReason(request.getWithdrawalReason());
+    targetUser.setWithdrawalReason(withdrawalRequest.getWithdrawalReason());
     userService.unlinkStatusUser(targetUser);
     authService.removeIdInRedisToken(userId);
 

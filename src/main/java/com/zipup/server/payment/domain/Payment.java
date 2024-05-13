@@ -4,6 +4,7 @@ import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
 import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.dto.CancelRecord;
+import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.present.domain.Present;
 import lombok.*;
@@ -12,7 +13,9 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Entity
@@ -64,6 +67,10 @@ public class Payment extends BaseTimeEntity {
   private String easyPay;
 
   @Column
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long paymentNumber;
+
+  @Column
   @NotNull(message = "결제 수단 누락")
   private String paymentMethod;
 
@@ -96,4 +103,46 @@ public class Payment extends BaseTimeEntity {
             .cancels(cancels)
             .build();
   }
+
+  public PaymentHistoryResponse toHistoryResponse(Boolean refundable) {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    String historyStatus = getStatusText(paymentStatus);
+
+    Random RANDOM = new Random();
+    String ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char randomAlphabet = ALPHABET.charAt(RANDOM.nextInt(ALPHABET.length()));
+    String paddedNumber = paymentNumber != null ? getPadNumber(paymentNumber) : "0";
+
+    return PaymentHistoryResponse.builder()
+            .id(id.toString())
+            .fundingName(present.getFund().getTitle())
+            .fundingImage(present.getFund().getImageUrl())
+            .paymentDate(getCreatedDate().format(formatter))
+            .status(historyStatus)
+            .amount(balanceAmount)
+            .paymentNumber(randomAlphabet + paddedNumber)
+            .refundable(refundable)
+            .build();
+  }
+
+  private String getStatusText(PaymentStatus status) {
+    switch (status) {
+      case DONE:
+        return "결제완료";
+      case CANCELED:
+      case PARTIAL_CANCELED:
+        return "취소 완료";
+      default:
+        return "취소요청";
+    }
+  }
+
+  private String getPadNumber(Long number) {
+    String numberString = String.valueOf(number);
+    int NUM_DIGITS = 14;
+    int paddingLength = NUM_DIGITS - numberString.length();
+    if (paddingLength < 0) throw new IllegalArgumentException("Number is too large to pad");
+    return String.format("%0" + NUM_DIGITS + "d", number);
+  }
+
 }
