@@ -3,7 +3,6 @@ package com.zipup.server.payment.application;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UniqueConstraintException;
-import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentConfirmRequest;
@@ -142,7 +141,7 @@ public class PaymentService {
   @Transactional
   public void updatePaymentStatus() {
     getPaymentList().stream()
-            .filter(payment -> payment.getStatus().startsWith(READY.name()))
+            .filter(payment -> !payment.getStatus().startsWith(INVALID_PAYMENT_STATUS.name()))
             .peek(payment -> System.out.println(payment.getStatus()))
             .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
   }
