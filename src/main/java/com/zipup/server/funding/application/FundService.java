@@ -51,7 +51,7 @@ public class FundService {
             : crawlerResponse.getImageUrl() == null ? ""
             : !crawlerResponse.getImageUrl().startsWith("https:")
             ? "https:" + crawlerResponse.getImageUrl() : crawlerResponse.getImageUrl();
-    targetFund.setImageUrl(imageUrl);
+    setImageUrl(targetFund, imageUrl);
 
     Fund response = fundRepository.save(targetFund);
 
@@ -81,6 +81,26 @@ public class FundService {
             .stream()
             .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());
+  }
+
+  @Transactional
+  public void changePrivateFunding(Fund fund) {
+    fund.setStatus(ColumnStatus.PRIVATE);
+  }
+
+  @Transactional
+  public void changeUnlinkFunding(Fund fund) {
+    fund.setStatus(ColumnStatus.UNLINK);
+  }
+
+  @Transactional
+  public void setFundCancelReason(Fund fund, String cancelReason) {
+    fund.setCancelReason(cancelReason);
+  }
+
+  @Transactional
+  public void setImageUrl(Fund fund, String imageUrl) {
+    fund.setImageUrl(imageUrl);
   }
 
 }

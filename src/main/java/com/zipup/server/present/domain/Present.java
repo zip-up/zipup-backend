@@ -35,6 +35,10 @@ public class Present extends BaseTimeEntity {
   @Column
   private String congratsMessage;
 
+  @Column
+  @Setter
+  private String cancelReason;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   @Setter
