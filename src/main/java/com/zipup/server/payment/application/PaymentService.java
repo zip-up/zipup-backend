@@ -139,6 +139,7 @@ public class PaymentService {
             .collect(Collectors.toList());
   }
 
+  @Transactional
   public void updatePaymentStatus() {
     getPaymentList().stream()
             .filter(payment -> payment.getStatus().startsWith(READY.name()))
@@ -146,6 +147,7 @@ public class PaymentService {
             .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
   }
 
+  @Transactional
   public TossPaymentResponse fetchPaymentByPaymentKey(String paymentKey) {
     TossPaymentResponse response = tossService.get("/" + paymentKey, TossPaymentResponse.class).block();
     if (response != null) {
