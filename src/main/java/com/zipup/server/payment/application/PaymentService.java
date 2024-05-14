@@ -24,8 +24,7 @@ import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 import static com.zipup.server.global.util.entity.ColumnStatus.PRIVATE;
-import static com.zipup.server.global.util.entity.PaymentStatus.CANCELED;
-import static com.zipup.server.global.util.entity.PaymentStatus.PARTIAL_CANCELED;
+import static com.zipup.server.global.util.entity.PaymentStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -142,10 +141,13 @@ public class PaymentService {
 
   @Transactional
   public void updatePaymentStatus() {
-    getPaymentList()
-            .stream()
-            .filter(payment -> payment.getStatus().equals(PaymentStatus.READY))
-            .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
+    getPaymentList().stream()
+            .filter(payment -> payment.getStatus().equals(READY))
+            .forEach(payment -> {
+              System.out.println(READY);
+              System.out.println(payment.getStatus());
+              fetchPaymentByPaymentKey(payment.getPaymentKey());
+            });
   }
 
   @Transactional
