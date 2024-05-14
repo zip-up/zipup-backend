@@ -99,7 +99,7 @@ public class Payment extends BaseTimeEntity {
             .build();
   }
 
-  public PaymentHistoryResponse toHistoryResponse(Boolean refundable) {
+  public PaymentHistoryResponse toHistoryResponse(Boolean isVirtualAccountAndDepositCompleted, Boolean refundable) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String historyStatus = getStatusText(paymentStatus);
     String paymentNumber = id.toString().replaceAll("-", "");
@@ -113,6 +113,7 @@ public class Payment extends BaseTimeEntity {
             .amount(balanceAmount)
             .paymentNumber(paymentNumber.substring(0, Math.min(15, paymentNumber.length())))
             .refundable(refundable)
+            .isVirtualAccountAndDepositCompleted(isVirtualAccountAndDepositCompleted)
             .build();
   }
 
