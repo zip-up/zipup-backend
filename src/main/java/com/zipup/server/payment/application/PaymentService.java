@@ -140,6 +140,11 @@ public class PaymentService {
   }
 
   @Transactional
+  public void updatePaymentStatus() {
+    getPaymentList().forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
+  }
+
+  @Transactional
   public TossPaymentResponse fetchPaymentByPaymentKey(String paymentKey) {
     TossPaymentResponse response = tossService.get("/" + paymentKey, TossPaymentResponse.class).block();
     if (response != null) {
