@@ -100,4 +100,9 @@ public class UserService {
     user.setStatus(ColumnStatus.UNLINK);
   }
 
+  @Transactional
+  public void setWithdrawalReason(User user, String withdrawalReason) {
+    user.setWithdrawalReason(withdrawalReason);
+  }
+
 }

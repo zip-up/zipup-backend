@@ -116,6 +116,7 @@ public class PresentService {
 
     paymentService.cancelPayment(paymentCancelRequest);
     changePrivateParticipate(targetPresent);
+    setPresentCancelReason(targetPresent, request.getCancelReason());
 
     return "취소 성공";
   }
@@ -148,6 +149,11 @@ public class PresentService {
   @Transactional
   public void changeUnlinkParticipate(Present present) {
     present.setStatus(ColumnStatus.UNLINK);
+  }
+
+  @Transactional
+  public void setPresentCancelReason(Present present, String cancelReason) {
+    present.setCancelReason(cancelReason);
   }
 
 }

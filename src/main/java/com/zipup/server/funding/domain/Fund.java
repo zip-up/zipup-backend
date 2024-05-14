@@ -63,6 +63,10 @@ public class Fund extends BaseTimeEntity {
   @Setter
   private String imageUrl;
 
+  @Column
+  @Setter
+  private String cancelReason;
+
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('CHUNSIK')")
   private GiftCard card;

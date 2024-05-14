@@ -2,10 +2,15 @@ package com.zipup.server.user.facade;
 
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.dto.FundingCancelRequest;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.util.entity.ColumnStatus;
+import com.zipup.server.present.application.PresentService;
+import com.zipup.server.present.domain.Present;
+import com.zipup.server.present.dto.PresentSummaryResponse;
 import com.zipup.server.user.application.AuthService;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
@@ -18,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
 import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
 
 @Service
@@ -27,6 +33,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   private final UserService userService;
   private final AuthService authService;
   private final FundService fundService;
+  private final PresentService presentService;
 
   @Override
   @Transactional(readOnly = true)
@@ -51,8 +58,15 @@ public class UserFundFacade implements UserFacade<Fund> {
             .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
 
     if (!hasActiveFunding) throw new UserException(ACTIVE_FUNDING, userId);
-    fundList.forEach(fund -> fund.setStatus(ColumnStatus.PRIVATE));
-    targetUser.setWithdrawalReason(withdrawalRequest.getWithdrawalReason());
+
+    fundList.forEach(fund -> {
+      fundService.changeUnlinkFunding(fund);
+
+      List<Present> presentList = fund.getPresents();
+      presentList.forEach(presentService::changeUnlinkParticipate);
+    });
+
+    userService.setWithdrawalReason(targetUser, withdrawalRequest.getWithdrawalReason());
     userService.unlinkStatusUser(targetUser);
     authService.removeIdInRedisToken(userId);
 
@@ -68,6 +82,24 @@ public class UserFundFacade implements UserFacade<Fund> {
 
     return fundList.stream()
             .map(Fund::toSummaryResponse)
+            .collect(Collectors.toList());
+  }
+
+  @Transactional
+  public List<PresentSummaryResponse> deleteEntity(FundingCancelRequest request) {
+    User targetUser = findUserById(request.getUserId());
+    Fund targetFund = fundService.findById(request.getFundingId());
+
+    if (!targetFund.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
+
+    fundService.setFundCancelReason(targetFund, request.getCancelReason());
+    fundService.changePrivateFunding(targetFund);
+
+    List<Present> presentList = targetFund.getPresents();
+    presentList.forEach(presentService::changePrivateParticipate);
+
+    return presentList.stream()
+            .map(Present::toSummaryResponse)
             .collect(Collectors.toList());
   }
 

@@ -5,6 +5,7 @@ import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.security.util.JwtProvider;
+import com.zipup.server.present.dto.PresentSummaryResponse;
 import com.zipup.server.user.facade.UserFacade;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,6 +132,31 @@ public class FundController {
 
     request.setUserId(userId);
     return ResponseEntity.ok().body(fundService.createFunding(request));
+  }
+
+  @Operation(summary = "주최자 - 펀딩 삭제", description = "주최자 - 펀딩 삭제")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "펀딩 취소 요청. 주최자 id는 비워서 요청하시면 됩니다.")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "펀딩 삭제 성공",
+                  content = @Content(schema = @Schema(type = "펀딩 삭제 성공", implementation = PresentSummaryResponse.class)))
+  })
+  @PutMapping("/cancel")
+  public ResponseEntity<List<PresentSummaryResponse>> cancelFunding(
+          final HttpServletRequest httpServletRequest,
+          final HttpServletResponse httpServletResponse,
+          @RequestBody FundingCancelRequest request
+  ) {
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+    String userId = authentication.getName();
+    isValidUUID(userId);
+
+    request.setUserId(userId);
+    return ResponseEntity.ok(userFacade.deleteEntity(request));
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
