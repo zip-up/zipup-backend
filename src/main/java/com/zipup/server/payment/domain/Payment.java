@@ -119,6 +119,8 @@ public class Payment extends BaseTimeEntity {
   private String getStatusText(PaymentStatus status) {
     switch (status) {
       case DONE:
+      case READY:
+      case WAITING_FOR_DEPOSIT:
         return "결제완료";
       case CANCELED:
       case PARTIAL_CANCELED:

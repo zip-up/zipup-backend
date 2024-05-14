@@ -126,7 +126,11 @@ public class PresentService {
     List<Fund> fundList = presentList.stream().map(Present::getFund).collect(Collectors.toList());
 
     Boolean refundable = fundList.stream()
-            .map(Fund::toSummaryResponse)
+            .map(fund -> {
+              FundingSummaryResponse response = fund.toSummaryResponse();
+              System.out.println("Percent: " + response.getPercent());
+              return response;
+            })
             .noneMatch(response -> response.getPercent() < 100);
 
     List<Payment> paymentList = presentList.stream()
