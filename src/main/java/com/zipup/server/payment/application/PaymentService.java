@@ -139,14 +139,8 @@ public class PaymentService {
             .collect(Collectors.toList());
   }
 
-  @Transactional
   public void updatePaymentStatus() {
-    getPaymentList().stream()
-            .filter(payment -> payment.getStatus().startsWith(READY.name()))
-            .peek(payment -> {
-              System.out.println(payment.getStatus());
-            })
-            .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
+    getPaymentList().forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
   }
 
   @Transactional
