@@ -224,4 +224,17 @@ public class PaymentController {
     return ResponseEntity.ok(response);
   }
 
+  @Operation(summary = "임시 데이터", description = "임시")
+  @PutMapping("/setting")
+  public ResponseEntity<Void> updatePaymentStatus(
+          final HttpServletRequest httpServletRequest
+  ) {
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
+
+    paymentService.updatePaymentStatus();
+    return ResponseEntity.ok().build();
+  }
+
 }

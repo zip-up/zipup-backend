@@ -124,19 +124,15 @@ public class PresentService {
     User targetUser = userService.findById(userId);
     List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
 
-    List<PaymentHistoryResponse> historyResponseList = presentList.stream()
+    return presentList.stream()
             .map(Present::getPayment)
             .map(payment -> {
               Fund fund = payment.getPresent().getFund();
               FundingSummaryResponse response = fund.toSummaryResponse();
-              System.out.println("id: " + response.getId());
-              System.out.println("Percent: " + response.getPercent());
               boolean refundable = response.getPercent() < 100;
               return payment.toHistoryResponse(refundable);
             })
             .collect(Collectors.toList());
-
-    return historyResponseList;
   }
 
   @Transactional
