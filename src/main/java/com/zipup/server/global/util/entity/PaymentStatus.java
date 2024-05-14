@@ -13,6 +13,7 @@ public enum PaymentStatus implements BaseEnumCode<String> {
   DONE("요청한 결제가 승인된 상태."),
   CANCELED("승인된 결제가 취소된 상태."),
   PARTIAL_CANCELED("승인된 결제가 부분 취소된 상태."),
+  INVALID_PAYMENT_STATUS("사용 불가한 결제 상태."),
   ABORTED("결제 승인이 실패한 상태.");
 
   private final String value;
