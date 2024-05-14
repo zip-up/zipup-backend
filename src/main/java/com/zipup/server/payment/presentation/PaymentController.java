@@ -224,7 +224,7 @@ public class PaymentController {
     return ResponseEntity.ok(response);
   }
 
-  @Operation(summary = "임시 데이터", description = "임시")
+  @Operation(summary = "결제 데이터 업데이트", description = "결제 데이터 업데이트")
   @PutMapping("/setting")
   public ResponseEntity<Void> updatePaymentStatus(
           final HttpServletRequest httpServletRequest
