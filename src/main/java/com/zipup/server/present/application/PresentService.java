@@ -8,6 +8,7 @@ import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.util.entity.ColumnStatus;
+import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentCancelRequest;
@@ -126,13 +127,17 @@ public class PresentService {
 
     return presentList.stream()
             .map(Present::getPayment)
-            .map(payment -> {
-              Fund fund = payment.getPresent().getFund();
-              FundingSummaryResponse response = fund.toSummaryResponse();
-              boolean refundable = response.getPercent() < 100;
-              return payment.toHistoryResponse(refundable);
-            })
+            .map(this::createPaymentHistoryResponse)
             .collect(Collectors.toList());
+  }
+
+  private PaymentHistoryResponse createPaymentHistoryResponse(Payment payment) {
+    Fund fund = payment.getPresent().getFund();
+    FundingSummaryResponse response = fund.toSummaryResponse();
+    boolean isVirtualAccountAndDepositCompleted = payment.getPaymentMethod().equals("가상계좌") && payment.getPaymentStatus().equals(PaymentStatus.DONE);
+    boolean refundable = response.getPercent() < 100;
+
+    return payment.toHistoryResponse(isVirtualAccountAndDepositCompleted, refundable);
   }
 
   @Transactional

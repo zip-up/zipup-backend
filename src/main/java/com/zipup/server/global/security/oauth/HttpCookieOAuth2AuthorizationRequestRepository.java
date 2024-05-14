@@ -25,8 +25,6 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
   @Override
   public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-    System.out.println("loadAuthorizationRequest :: " + request.getHeader("Referer"));
-
     return CookieUtil.getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
             .map(cookie -> {
               try {
@@ -42,8 +40,6 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
   @Override
   public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request, HttpServletResponse response) {
-    System.out.println("saveAuthorizationRequest :: " + request.getHeader("Referer"));
-
     if (authorizationRequest == null) {
       CookieUtil.deleteCookie(request, response, HttpHeaders.AUTHORIZATION);
       CookieUtil.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
