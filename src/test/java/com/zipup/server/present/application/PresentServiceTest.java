@@ -8,7 +8,6 @@ import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UUIDException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;

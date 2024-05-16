@@ -23,7 +23,7 @@ public class PaymentHistoryResponse {
   private Integer amount;
   @Schema(description = "결제 번호")
   private String paymentNumber;
-  @Schema(description = "결제 상태")
+  @Schema(description = "결제 상태", example = "결제완료 || 취소완료 || 취소요청")
   private String status;
   @Schema(description = "결제 취소 가능 여부")
   private Boolean refundable;

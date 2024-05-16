@@ -8,7 +8,6 @@ import com.zipup.server.funding.dto.SimpleFundingDataResponse;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UUIDException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.FundingPeriod;
 import com.zipup.server.user.application.UserService;

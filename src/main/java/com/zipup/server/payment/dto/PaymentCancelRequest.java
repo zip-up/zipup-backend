@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentCancelRequest {
+  @Schema(description = "유저 식별자")
+  private String userId;
   @Schema(description = "결제 키 값 ", required = true)
   private String paymentKey;
   @Schema(description = "취소 사유", required = true)

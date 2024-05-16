@@ -125,7 +125,7 @@ public class Payment extends BaseTimeEntity {
         return "결제완료";
       case CANCELED:
       case PARTIAL_CANCELED:
-        return "취소 완료";
+        return "취소완료";
       default:
         return "취소요청";
     }
