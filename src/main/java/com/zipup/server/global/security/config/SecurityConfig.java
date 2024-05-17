@@ -30,6 +30,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 @Slf4j
 public class SecurityConfig {
+
   private final CorsConfig corsConfig;
   private final JwtProvider jwtProvider;
   private final CustomOAuth2UserService customOAuth2UserService;
@@ -40,6 +41,7 @@ public class SecurityConfig {
           "/favicon.ico",
           "/configuration/security",
           "/swagger-ui/**",
+          "/api-docs/**",
           "/webjars/**",
           "/h2-console/**",
           "/api/v1/user/sign-**",

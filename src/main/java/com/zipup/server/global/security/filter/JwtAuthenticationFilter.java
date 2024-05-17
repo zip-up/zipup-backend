@@ -22,6 +22,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
@@ -30,6 +31,19 @@ import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
+  private String[] AUTH_WHITELIST = {
+          "/error",
+          "/*/oauth2/code/*",
+          "/favicon.ico",
+          "/configuration/security",
+          "/swagger-ui/**",
+          "/api-docs/**",
+          "/webjars/**",
+          "/h2-console/**",
+          "/api/v1/user/sign-**",
+          "/api/v1/auth/refresh",
+          "/v3/api-docs/**"
+  };
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -37,40 +51,48 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String accessToken = jwtProvider.resolveToken(request);
     boolean hasToken = StringUtils.hasText(accessToken);
 
-    if (!hasToken) {
-      handleTokenException(request, response, false, EMPTY_ACCESS_JWT);
-      return;
-    }
+    boolean isWhiteList = Arrays.stream(AUTH_WHITELIST).noneMatch(request.getRequestURI()::contains);
 
-    else {
-      try{
-        if (jwtProvider.validateToken(accessToken)) {
+    if (!isWhiteList) {
+
+      if (!hasToken) {
+        handleEmptyAccessTokenException(request, response, false, EMPTY_ACCESS_JWT);
+        return;
+      } else {
+        try{
+          if (jwtProvider.validateToken(accessToken)) {
+            handleTokenException(request, response, true, EXPIRED_TOKEN);
+            return;
+          }
+          Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+          isValidUUID(authentication.getName());
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+          handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
+          return;
+        } catch (DecodingException | UnsupportedJwtException e) {
+          handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
+          return;
+        } catch (JwtException e) {
           handleTokenException(request, response, true, EXPIRED_TOKEN);
           return;
+        } catch (RedisConnectionFailureException e) {
+          handleConnectionException(request, response, true, REDIS_ERROR);
+          return;
         }
-        Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-        isValidUUID(authentication.getName());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-        handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
-        return;
-      } catch (DecodingException | UnsupportedJwtException e) {
-        handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
-        return;
-      } catch (JwtException e) {
-        handleTokenException(request, response, true, EXPIRED_TOKEN);
-        return;
-      } catch (RedisConnectionFailureException e) {
-        handleConnectionException(request, response, true, REDIS_ERROR);
-        return;
       }
     }
 
     filterChain.doFilter(request, response);
   }
 
+  private void handleEmptyAccessTokenException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
+    log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
+    request.setAttribute("exception", code);
+  }
+
   private void handleTokenException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
-    log.error("jwt-authentication-filter :: uri :: {}, hasToken {}, reason {}", request.getRequestURI(), hasToken, code.getMessage());
+    log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
 
     String errorJson;
     ObjectMapper objectMapper = new ObjectMapper();
@@ -82,7 +104,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private void handleConnectionException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
-    log.error("jwt-authentication-filter :: uri :: {}, hasToken {}, reason {}", request.getRequestURI(), hasToken, code.getMessage());
+    log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
     SecurityContextHolder.clearContext();
 
     String errorJson;
