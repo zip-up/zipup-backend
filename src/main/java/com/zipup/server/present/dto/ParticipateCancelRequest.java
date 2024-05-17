@@ -13,11 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ParticipateCancelRequest {
   @Schema(description = "참여자 식별자")
-  private String participateId;
+  private String userId;
   @Schema(description = "결제 식별자 값")
   private String paymentId;
-  @Schema(description = "펀딩 식별자")
-  private String fundingId;
   @Schema(description = "취소 사유", required = true)
   private String cancelReason;
   @Schema(description = "부분 취소할 금액, 값이 없으면 전액 취소. 입금 전엔 전체 금액 취소만 가능")

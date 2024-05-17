@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
@@ -39,6 +40,19 @@ public class PresentService {
   private final FundService fundService;
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
+
+  @Transactional(readOnly = true)
+  public Present findById(String id) {
+    isValidUUID(id);
+    return presentRepository.findById(UUID.fromString(id))
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
+  }
+
+  @Transactional(readOnly = true)
+  public Present findByPayment(Payment payment) {
+    return presentRepository.findByPayment(payment)
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
+  }
 
   @Transactional(readOnly = true)
   public List<Present> findAllByUserAndStatus(User user, ColumnStatus status) {
@@ -93,13 +107,11 @@ public class PresentService {
 
   @Transactional
   public String cancelParticipate(ParticipateCancelRequest request) {
-    User targetUser = userService.findById(request.getParticipateId());
-    Fund targetFunding = fundService.findById(request.getFundingId());
-    Present targetPresent = findByUserAndFund(targetUser, targetFunding);
+    User targetUser = userService.findById(request.getUserId());
+    Payment targetPayment = paymentService.findById(request.getPaymentId());
+    Present targetPresent = findByPayment(targetPayment);
 
     if (!targetPresent.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
-
-    Payment targetPayment = targetPresent.getPayment();
 
     String paymentKey = targetPayment.getPaymentKey();
     Integer cancelAmount = request.getCancelAmount();

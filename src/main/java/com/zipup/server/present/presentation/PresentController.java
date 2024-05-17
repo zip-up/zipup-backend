@@ -68,7 +68,7 @@ public class PresentController {
           final @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipateCancelRequest request
   ) {
-    request.setParticipateId(user.getUsername());
+    request.setUserId(user.getUsername());
     return presentService.cancelParticipate(request);
   }
 
