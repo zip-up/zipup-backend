@@ -11,7 +11,6 @@ import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -20,7 +19,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
-import static com.zipup.server.global.security.util.AuthenticationUtil.getZipupAuthentication;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 import static com.zipup.server.global.util.entity.ColumnStatus.PRIVATE;
 import static com.zipup.server.global.util.entity.PaymentStatus.*;
@@ -172,9 +170,7 @@ public class PaymentService {
   public PaymentResultResponse cancelPayment(PaymentCancelRequest request) {
     Payment payment = findByPaymentKey(request.getPaymentKey());
     String idempotencyKey = payment.getId().toString();
-
-    Authentication authentication = getZipupAuthentication();
-    if (!payment.getPresent().getUser().getId().toString().equals(authentication.getName()))
+    if (!payment.getPresent().getUser().getId().toString().equals(request.getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
     Map<String, Object> data = new HashMap<>();

@@ -135,10 +135,11 @@ public class PresentService {
   private PaymentHistoryResponse createPaymentHistoryResponse(Payment payment) {
     Fund fund = payment.getPresent().getFund();
     FundingSummaryResponse response = fund.toSummaryResponse();
-    boolean isVirtualAccountAndDepositCompleted = payment.getPaymentMethod().equals("가상계좌") && payment.getPaymentStatus().equals(PaymentStatus.DONE);
+    boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
+    boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
     boolean refundable = response.getPercent() < 100;
 
-    return payment.toHistoryResponse(isVirtualAccountAndDepositCompleted, refundable);
+    return payment.toHistoryResponse(isVirtualAccount, isDepositCompleted, refundable);
   }
 
   @Transactional

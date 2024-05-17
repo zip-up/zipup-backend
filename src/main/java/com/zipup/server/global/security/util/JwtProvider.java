@@ -127,7 +127,6 @@ public class JwtProvider {
           if (accessToken.startsWith(jwtProperties.getPrefix())) {
               return accessToken.substring(7);
           }
-            return accessToken;
         }
         return null;
     }

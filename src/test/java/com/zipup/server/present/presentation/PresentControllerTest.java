@@ -3,18 +3,15 @@ package com.zipup.server.present.presentation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.SimpleDataResponse;
-import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.user.domain.User;
-import com.zipup.server.user.facade.UserFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -39,8 +36,6 @@ public class PresentControllerTest {
 
   @Mock
   private PresentService presentService;
-  @Mock
-  private JwtProvider jwtProvider;
   @Autowired
   private MockMvc mockMvc;
   @Autowired
@@ -84,7 +79,7 @@ public class PresentControllerTest {
     paymentId = payment.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService, jwtProvider)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new PresentController(presentService)).build();
   }
 
   @Test

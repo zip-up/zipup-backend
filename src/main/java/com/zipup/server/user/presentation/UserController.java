@@ -1,9 +1,7 @@
 package com.zipup.server.user.presentation;
 
 import com.zipup.server.funding.dto.SimpleDataResponse;
-import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ErrorResponse;
-import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.dto.*;
 import com.zipup.server.user.facade.UserFacade;
@@ -16,19 +14,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.List;
-
-import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
-import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
-import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -37,13 +30,13 @@ import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 public class UserController {
 
   private final UserService userService;
+  @SuppressWarnings("rawtypes")
   private final UserFacade userFacade;
-  private final JwtProvider jwtProvider;
 
-  public UserController(UserService userService, @Qualifier("userFundFacade") UserFacade userFacade, JwtProvider jwtProvider) {
+  @SuppressWarnings("rawtypes")
+  public UserController(UserService userService, @Qualifier("userFundFacade") UserFacade userFacade) {
     this.userService = userService;
     this.userFacade = userFacade;
-    this.jwtProvider = jwtProvider;
   }
 
   @Operation(summary = "회원 가입")
@@ -82,19 +75,10 @@ public class UserController {
           @ApiResponse(responseCode = "200", description = "회원 정보"),
           @ApiResponse(responseCode = "404", description = "없는 회원입니다."),
   })
+  @ResponseStatus(HttpStatus.OK)
   @GetMapping("")
-  public ResponseEntity<UserListResponse> getUserInfo(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse
-  ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    return ResponseEntity.ok().body(userService.getUserInfo(userId));
+  public UserListResponse getUserInfo(final @AuthenticationPrincipal UserDetails user) {
+    return userFacade.findUserById(user.getUsername()).toResponseList();
   }
 
   @Operation(summary = "회원 탈퇴")
@@ -104,23 +88,14 @@ public class UserController {
           @ApiResponse(responseCode = "403", description = "진행 중인 펀딩 존재",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
+  @ResponseStatus(HttpStatus.OK)
   @PutMapping("/withdrawal")
-  public ResponseEntity<SimpleDataResponse> unlinkUser(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
+  public SimpleDataResponse unlinkUser(
+          final @AuthenticationPrincipal UserDetails user,
           final @RequestBody WithdrawalRequest withdrawalRequest
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    withdrawalRequest.setUserId(userId);
-    SimpleDataResponse unlinkedUserId = userFacade.unlinkUser(withdrawalRequest);
-
-    return ResponseEntity.ok().body(unlinkedUserId);
+    withdrawalRequest.setUserId(user.getUsername());
+    return userFacade.unlinkUser(withdrawalRequest);
   }
 
   @Operation(summary = "임시 데이터", description = "임시")

@@ -23,10 +23,12 @@ public class PaymentHistoryResponse {
   private Integer amount;
   @Schema(description = "결제 번호")
   private String paymentNumber;
-  @Schema(description = "결제 상태")
+  @Schema(description = "결제 상태", example = "결제완료 || 취소완료 || 취소요청")
   private String status;
   @Schema(description = "결제 취소 가능 여부")
   private Boolean refundable;
-  @Schema(description = "결제 수단이 가상계좌이면서 입금 처리까지 완료됐는지 여부")
-  private Boolean isVirtualAccountAndDepositCompleted;
+  @Schema(description = "결제 수단 가상계좌 여부")
+  private Boolean isVirtualAccount;
+  @Schema(description = "입금 처리 완료 여부")
+  private Boolean isDepositCompleted;
 }

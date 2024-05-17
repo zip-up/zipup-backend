@@ -5,6 +5,7 @@ import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.dto.*;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -130,6 +131,7 @@ public class PaymentController {
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
   @PostMapping(value = "/cancel")
+  @Hidden
   public ResponseEntity<PaymentResultResponse> cancelPayment(
           final HttpServletRequest httpServletRequest,
           final HttpServletResponse httpServletResponse,
@@ -141,6 +143,7 @@ public class PaymentController {
     Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
     String userId = authentication.getName();
     isValidUUID(userId);
+    request.setUserId(userId);
 
     return ResponseEntity.ok().body(paymentService.cancelPayment(request));
   }

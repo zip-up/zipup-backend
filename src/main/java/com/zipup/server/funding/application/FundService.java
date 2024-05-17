@@ -4,7 +4,6 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
 import com.zipup.server.global.exception.ResourceNotFoundException;
-import com.zipup.server.global.security.util.AuthenticationUtil;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
@@ -56,16 +55,6 @@ public class FundService {
     Fund response = fundRepository.save(targetFund);
 
     return new SimpleFundingDataResponse(response.getId().toString(), imageUrl);
-  }
-
-  @Transactional(readOnly = true)
-  public List<FundingSummaryResponse> getMyFundingList(String userId) {
-    if (userId == null || userId.isEmpty()) userId = AuthenticationUtil.getZipupAuthentication().getName();
-    isValidUUID(userId);
-    return findAllByUserAndStatus(userService.findById(userId), ColumnStatus.PUBLIC)
-            .stream()
-            .map(Fund::toSummaryResponse)
-            .collect(Collectors.toList());
   }
 
   @Transactional(readOnly = true)

@@ -63,6 +63,7 @@ public class PaymentServiceTest {
     confirmRequest = new PaymentConfirmRequest(orderId, 10000, paymentKey);
 
     cancelRequest = new PaymentCancelRequest(
+            UUID.randomUUID().toString(),
             paymentKey,
             "cancelReason",
             10000,
@@ -228,6 +229,7 @@ public class PaymentServiceTest {
     String paymentKey = mockPayment1.getPaymentKey();
     TossPaymentResponse expectedResponse = TossPaymentResponse.builder().paymentKey(paymentKey).build();
 
+    when(paymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(mockPayment1));
     when(tossService.get("/" + paymentKey, TossPaymentResponse.class)).thenReturn(Mono.just(expectedResponse));
 
     TossPaymentResponse actualResponse = paymentService.fetchPaymentByPaymentKey(paymentKey);
