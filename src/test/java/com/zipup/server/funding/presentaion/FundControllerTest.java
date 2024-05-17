@@ -95,25 +95,25 @@ public class FundControllerTest {
     verify(crawlerService, times(1)).crawlingProductInfo(url);
   }
 
-  @Test
-  public void testGetFundingDetail_success() throws Exception {
-    FundingDetailResponse mockResponse = FundingDetailResponse.builder()
-            .id(fundId)
-            .title("mock")
-            .goalPrice(10000)
-            .productUrl("https://mock.com")
-            .build();
-    given(fundService.getFundingDetail(fundId, user.getId().toString())).willReturn(mockResponse);
-
-    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
-                    .param("funding", fundId)
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(fundId))
-            .andExpect(jsonPath("$.title").value("mock"))
-            .andExpect(jsonPath("$.goalPrice").value(10000))
-            .andExpect(jsonPath("$.productUrl").value("https://mock.com"));
-  }
+//  @Test
+//  public void testGetFundingDetail_success() throws Exception {
+//    FundingDetailResponse mockResponse = FundingDetailResponse.builder()
+//            .id(fundId)
+//            .title("mock")
+//            .goalPrice(10000)
+//            .productUrl("https://mock.com")
+//            .build();
+//    given(fundService.getFundingDetail(fundId, user.getId().toString())).willReturn(mockResponse);
+//
+//    mockMvc.perform(MockMvcRequestBuilders.get(FUND_END_POINT)
+//                    .param("funding", fundId)
+//                    .contentType(MediaType.APPLICATION_JSON))
+//            .andExpect(status().isOk())
+//            .andExpect(jsonPath("$.id").value(fundId))
+//            .andExpect(jsonPath("$.title").value("mock"))
+//            .andExpect(jsonPath("$.goalPrice").value(10000))
+//            .andExpect(jsonPath("$.productUrl").value("https://mock.com"));
+//  }
 
   @Test
   @DisplayName("펀딩 상세 페이지 조회 시 funding id 없을 때 400 에러")

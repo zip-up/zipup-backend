@@ -71,6 +71,7 @@ public class Payment extends BaseTimeEntity {
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('READY', 'IN_PROGRESS', 'WAITING_FOR_DEPOSIT', 'DONE', 'CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED', 'INVALID_PAYMENT_STATUS') DEFAULT 'READY'")
+  @NotNull(message = "결제 status 누락")
   @Setter
   private PaymentStatus paymentStatus;
 
@@ -99,7 +100,7 @@ public class Payment extends BaseTimeEntity {
             .build();
   }
 
-  public PaymentHistoryResponse toHistoryResponse(Boolean isVirtualAccountAndDepositCompleted, Boolean refundable) {
+  public PaymentHistoryResponse toHistoryResponse(Boolean isVirtualAccount, Boolean isDepositCompleted, Boolean refundable) {
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     String historyStatus = getStatusText(paymentStatus);
     String paymentNumber = id.toString().replaceAll("-", "");
@@ -113,7 +114,8 @@ public class Payment extends BaseTimeEntity {
             .amount(balanceAmount)
             .paymentNumber(paymentNumber.substring(0, Math.min(15, paymentNumber.length())))
             .refundable(refundable)
-            .isVirtualAccountAndDepositCompleted(isVirtualAccountAndDepositCompleted)
+            .isVirtualAccount(isVirtualAccount)
+            .isDepositCompleted(isDepositCompleted)
             .build();
   }
 

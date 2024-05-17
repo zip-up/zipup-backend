@@ -10,7 +10,7 @@ public class UUIDUtil {
   public static UUID isValidUUID(String id) {
     try {
       return UUID.fromString(id);
-    } catch (IllegalArgumentException e) {
+    } catch (Exception e) {
       throw new UUIDException(INVALID_USER_UUID, id);
     }
   }

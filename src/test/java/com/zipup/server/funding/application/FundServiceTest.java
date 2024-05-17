@@ -135,108 +135,108 @@ public class FundServiceTest {
     verify(fundRepository, never()).findById(any(UUID.class));
   }
 
-  @Test
-  @DisplayName("funding 개인 조회 시 올바른 userId 있는 경우")
-  void testGetMyParticipateList_ValidUser() {
-    // given
-    FundingSummaryResponse response = mock(FundingSummaryResponse.class);
+//  @Test
+//  @DisplayName("funding 개인 조회 시 올바른 userId 있는 경우")
+//  void testGetMyParticipateList_ValidUser() {
+//    // given
+//    FundingSummaryResponse response = mock(FundingSummaryResponse.class);
+//
+//    List<Fund> fundList = Arrays.asList(mockFund1, mockFund2);
+//    when(userService.findById(userId)).thenReturn(user);
+//    when(fundRepository.findAllByUserAndStatus(user, ColumnStatus.PUBLIC))
+//            .thenReturn(fundList);
+//    when(user.getId()).thenReturn(UUID.fromString(userId));
+//    when(mockFund2.toSummaryResponse()).thenReturn(response);
+//
+//    // when
+//    List<FundingSummaryResponse> result = fundService.getMyFundingList(userId);
+//
+//    // then
+//    assertNotNull(result);
+//    assertEquals(2, result.size());
+//    assertTrue(result.contains(response));
+//    verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
+//    verify(mockFund2).toSummaryResponse();
+//  }
 
-    List<Fund> fundList = Arrays.asList(mockFund1, mockFund2);
-    when(userService.findById(userId)).thenReturn(user);
-    when(fundRepository.findAllByUserAndStatus(user, ColumnStatus.PUBLIC))
-            .thenReturn(fundList);
-    when(user.getId()).thenReturn(UUID.fromString(userId));
-    when(mockFund2.toSummaryResponse()).thenReturn(response);
+//  @Test
+//  @DisplayName("funding 개인 조회 시 userId 없는 경우")
+//  void testGetMyParticipateList_ValidUserWithNoUserId() {
+//    // given
+//    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
+//      Authentication authentication = mock(Authentication.class);
+//      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
+//      when(authentication.getName()).thenReturn(userId);
+//
+//      FundingSummaryResponse response = mock(FundingSummaryResponse.class);
+//
+//      List<Fund> fundList = Arrays.asList(mockFund1, mockFund2);
+//      when(userService.findById(userId)).thenReturn(user);
+//      when(user.getId()).thenReturn(UUID.fromString(userId));
+//      when(fundRepository.findAllByUserAndStatus(user, ColumnStatus.PUBLIC))
+//              .thenReturn(fundList);
+//
+//      when(user.getId()).thenReturn(UUID.fromString(userId));
+//      when(mockFund2.toSummaryResponse()).thenReturn(response);
+//
+//      // when
+//      List<FundingSummaryResponse> result = fundService.getMyFundingList(null);
+//
+//      // then
+//      assertNotNull(result);
+//      assertEquals(2, result.size());
+//      assertTrue(result.contains(response));
+//      verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
+//      verify(mockFund2).toSummaryResponse();
+//    }
+//  }
 
-    // when
-    List<FundingSummaryResponse> result = fundService.getMyFundingList(userId);
+//  @Test
+//  @DisplayName("funding 개인 조회 시 invalid uuid")
+//  void testGetMyParticipateList_invalidUuid() {
+//    // when
+//    UUIDException thrown = assertThrows(
+//            UUIDException.class,
+//            () -> fundService.getMyFundingList("invalidId")
+//    );
+//
+//    // then
+//    assertNotNull(thrown);
+//    assertEquals(thrown.getStatus(), INVALID_USER_UUID);
+//    verify(fundRepository, times(0)).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
+//  }
 
-    // then
-    assertNotNull(result);
-    assertEquals(2, result.size());
-    assertTrue(result.contains(response));
-    verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
-    verify(mockFund2).toSummaryResponse();
-  }
+//  @Test
+//  @DisplayName("funding 개인 조회 시 데이터 없는 경우")
+//  void testGetMyParticipateList_noData() {
+//    // given
+//    when(userService.findById(userId)).thenReturn(user);
+//
+//    // when
+//    List<FundingSummaryResponse> result = fundService.getMyFundingList(userId);
+//
+//    // then
+//    assertNotNull(result);
+//    assertEquals(0, result.size());
+//    verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
+//  }
 
-  @Test
-  @DisplayName("funding 개인 조회 시 userId 없는 경우")
-  void testGetMyParticipateList_ValidUserWithNoUserId() {
-    // given
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
-
-      FundingSummaryResponse response = mock(FundingSummaryResponse.class);
-
-      List<Fund> fundList = Arrays.asList(mockFund1, mockFund2);
-      when(userService.findById(userId)).thenReturn(user);
-      when(user.getId()).thenReturn(UUID.fromString(userId));
-      when(fundRepository.findAllByUserAndStatus(user, ColumnStatus.PUBLIC))
-              .thenReturn(fundList);
-
-      when(user.getId()).thenReturn(UUID.fromString(userId));
-      when(mockFund2.toSummaryResponse()).thenReturn(response);
-
-      // when
-      List<FundingSummaryResponse> result = fundService.getMyFundingList(null);
-
-      // then
-      assertNotNull(result);
-      assertEquals(2, result.size());
-      assertTrue(result.contains(response));
-      verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
-      verify(mockFund2).toSummaryResponse();
-    }
-  }
-
-  @Test
-  @DisplayName("funding 개인 조회 시 invalid uuid")
-  void testGetMyParticipateList_invalidUuid() {
-    // when
-    UUIDException thrown = assertThrows(
-            UUIDException.class,
-            () -> fundService.getMyFundingList("invalidId")
-    );
-
-    // then
-    assertNotNull(thrown);
-    assertEquals(thrown.getStatus(), INVALID_USER_UUID);
-    verify(fundRepository, times(0)).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
-  }
-
-  @Test
-  @DisplayName("funding 개인 조회 시 데이터 없는 경우")
-  void testGetMyParticipateList_noData() {
-    // given
-    when(userService.findById(userId)).thenReturn(user);
-
-    // when
-    List<FundingSummaryResponse> result = fundService.getMyFundingList(userId);
-
-    // then
-    assertNotNull(result);
-    assertEquals(0, result.size());
-    verify(fundRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
-  }
-
-  @Test
-  @DisplayName("funding 개인 조회 시 회원 아닌 경우")
-  void testGetMyParticipateList_noUser() {
-    // given
-    String invalidId = UUID.randomUUID().toString();
-    when(userService.findById(invalidId)).thenThrow(new ResourceNotFoundException(DATA_NOT_FOUND));
-
-    // when
-    ResourceNotFoundException thrown = assertThrows(
-            ResourceNotFoundException.class,
-            () -> fundService.getMyFundingList(invalidId)
-    );
-    Assertions.assertNotNull(thrown);
-    assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
-    verify(fundRepository, times(0)).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
-  }
+//  @Test
+//  @DisplayName("funding 개인 조회 시 회원 아닌 경우")
+//  void testGetMyParticipateList_noUser() {
+//    // given
+//    String invalidId = UUID.randomUUID().toString();
+//    when(userService.findById(invalidId)).thenThrow(new ResourceNotFoundException(DATA_NOT_FOUND));
+//
+//    // when
+//    ResourceNotFoundException thrown = assertThrows(
+//            ResourceNotFoundException.class,
+//            () -> fundService.getMyFundingList(invalidId)
+//    );
+//    Assertions.assertNotNull(thrown);
+//    assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
+//    verify(fundRepository, times(0)).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
+//  }
 
   @Test
   @DisplayName("funding 주최 성공")

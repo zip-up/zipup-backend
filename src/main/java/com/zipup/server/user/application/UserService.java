@@ -91,11 +91,6 @@ public class UserService {
             .collect(Collectors.toList());
   }
 
-  public UserListResponse getUserInfo(String id) {
-    isValidUUID(id);
-    return findById(id).toResponseList();
-  }
-
   public void unlinkStatusUser(User user) {
     user.setStatus(ColumnStatus.UNLINK);
   }

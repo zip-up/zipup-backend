@@ -25,10 +25,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 
 import java.util.Arrays;
 import java.util.List;
@@ -170,11 +168,6 @@ public class PresentServiceTest {
   @DisplayName("present 개인 조회 시 userId 없는 경우")
   void testGetMyParticipateList_ValidUserWithNoUserId() {
     // given
-    try (MockedStatic<AuthenticationUtil> mocked = mockStatic(AuthenticationUtil.class)) {
-      Authentication authentication = mock(Authentication.class);
-      mocked.when(AuthenticationUtil::getZipupAuthentication).thenReturn(authentication);
-      when(authentication.getName()).thenReturn(userId);
-
       FundingSummaryResponse response1 = FundingSummaryResponse.builder().build();
       FundingSummaryResponse response2 = FundingSummaryResponse.builder().build();
 
@@ -195,7 +188,6 @@ public class PresentServiceTest {
       assertTrue(result.contains(response2));
       verify(presentRepository).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
       verify(fund, times(2)).toSummaryResponse();
-    }
   }
 
   @Test
