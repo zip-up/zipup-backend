@@ -31,7 +31,7 @@ import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
-  private String[] AUTH_WHITELIST = {
+  private final String[] AUTH_WHITELIST = {
           "/error",
           "/*/oauth2/code/*",
           "/favicon.ico",
@@ -53,11 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     boolean isWhiteList = Arrays.stream(AUTH_WHITELIST).noneMatch(request.getRequestURI()::contains);
 
-    if (!isWhiteList) {
+//    if (!isWhiteList) {
 
       if (!hasToken) {
-        handleEmptyAccessTokenException(request, response, false, EMPTY_ACCESS_JWT);
-        return;
+//        handleEmptyAccessTokenException(request, false, EMPTY_ACCESS_JWT);
+//        return;
       } else {
         try{
           if (jwtProvider.validateToken(accessToken)) {
@@ -81,12 +81,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           return;
         }
       }
-    }
+//    }
 
     filterChain.doFilter(request, response);
   }
 
-  private void handleEmptyAccessTokenException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
+  private void handleEmptyAccessTokenException(HttpServletRequest request, boolean hasToken, CustomErrorCode code) {
     log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
     request.setAttribute("exception", code);
   }
