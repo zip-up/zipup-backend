@@ -38,6 +38,11 @@ public class FundService {
     return fundRepository.findAllByUserAndStatus(user, status);
   }
 
+  @Transactional(readOnly = true)
+  public List<FundingSummaryResponse> findByStatus(ColumnStatus status) {
+    return fundRepository.findPopularFundingByStatus(status.name());
+  }
+
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
     String productUrl = request.getProductUrl();
@@ -70,6 +75,11 @@ public class FundService {
             .stream()
             .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());
+  }
+
+  @Transactional(readOnly = true)
+  public List<FundingSummaryResponse> getPopularFundingList() {
+    return findByStatus(ColumnStatus.PUBLIC);
   }
 
   @Transactional

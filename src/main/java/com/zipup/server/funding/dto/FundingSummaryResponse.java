@@ -10,6 +10,7 @@ public class FundingSummaryResponse {
   private String title;
   private String imageUrl;
   private String status;
+  private int dDay;
   private Integer percent;
   private String organizer;
 }

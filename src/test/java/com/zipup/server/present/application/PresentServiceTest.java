@@ -87,8 +87,7 @@ public class PresentServiceTest {
             .build();
 
     cancelRequest = ParticipateCancelRequest.builder()
-            .participateId(userId)
-            .fundingId(fundId)
+            .userId(userId)
             .cancelAmount(1000)
             .cancelReason("mock-reason")
             .build();

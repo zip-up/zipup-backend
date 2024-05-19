@@ -106,7 +106,6 @@ public class PresentControllerTest {
   @WithMockUser
   public void testCancelParticipateFunding_success() throws Exception {
     ParticipateCancelRequest cancelRequest = ParticipateCancelRequest.builder()
-            .fundingId(fundId)
             .cancelReason("mock-reason")
             .cancelAmount(1000)
             .build();
