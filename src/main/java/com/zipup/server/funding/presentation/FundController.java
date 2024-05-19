@@ -159,6 +159,13 @@ public class FundController {
     return ResponseEntity.ok(userFacade.deleteEntity(request));
   }
 
+  @Operation(summary = "인기 펀딩 목록 api", description = "진행 중인 펀딩 + 기간이 적게 남은 펀딩 + 참여도 퍼센트 높은 펀딩 순")
+  @GetMapping("/popular")
+  @Hidden
+  public List<FundingSummaryResponse> getPopularFundingList() {
+    return fundService.getPopularFundingList();
+  }
+
   @Operation(summary = "임시 데이터", description = "임시")
   @GetMapping("/temp")
   public ResponseEntity<List<FundingSummaryResponse>> getFundList() {
