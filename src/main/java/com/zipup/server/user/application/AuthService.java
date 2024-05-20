@@ -81,15 +81,14 @@ public class AuthService {
       redisTemplate.delete(keysToDelete);
   }
 
-  public boolean signOut(String userId) {
+  public void signOut(String userId) {
     String accessTokenInRedis = redisTemplate.opsForValue().get(userId);
     String refreshTokenInRedis = redisTemplate.opsForValue().get(userId + "_REFRESH");
 
-    if (accessTokenInRedis == null || refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
+    if (accessTokenInRedis == null && refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
 
     removeIdInRedisToken(userId);
     SecurityContextHolder.clearContext();
-    return true;
   }
 
 }

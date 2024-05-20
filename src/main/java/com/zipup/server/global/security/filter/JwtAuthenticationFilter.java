@@ -11,6 +11,7 @@ import io.jsonwebtoken.io.DecodingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,16 +34,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
   private final String[] AUTH_WHITELIST = {
           "/error",
-          "/*/oauth2/code/*",
+          "/.*/oauth2/code/.*",
           "/favicon.ico",
-          "/configuration/security",
-          "/swagger-ui/**",
-          "/api-docs/**",
-          "/webjars/**",
-          "/h2-console/**",
-          "/api/v1/user/sign-**",
-          "/api/v1/auth/refresh",
-          "/v3/api-docs/**"
+          "/swagger-ui/.*",
+          "/api-docs/.*",
+          "/api/v1/fund",
+          "/api/v1/auth/.*",
+  };
+  private final String[] AUTH_FILTER_LIST = {
+          "/api/v1/.*/list",
+          "/api/v1/user",
+          "/api/v1/payment/.*",
+          "/api/v1/fund/crawler",
   };
 
   @Override
@@ -50,49 +53,51 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           throws ServletException, IOException {
     String accessToken = jwtProvider.resolveToken(request);
     boolean hasToken = StringUtils.hasText(accessToken);
+    String requestUri = request.getRequestURI();
 
-    boolean isWhiteList = Arrays.stream(AUTH_WHITELIST).noneMatch(request.getRequestURI()::contains);
+    boolean isGetRequest = request.getMethod().equals(HttpMethod.GET.name());
+    boolean isWhiteList = Arrays.stream(AUTH_WHITELIST).anyMatch(requestUri::matches);
+    boolean isFilterList = Arrays.stream(AUTH_FILTER_LIST)
+            .anyMatch(requestUri::matches);
 
-//    if (!isWhiteList) {
-
-      if (!hasToken) {
-//        handleEmptyAccessTokenException(request, false, EMPTY_ACCESS_JWT);
-//        return;
-      } else {
-        try{
-          if (jwtProvider.validateToken(accessToken)) {
+    if (!requestUri.contains("/refresh") && (!isWhiteList || !isGetRequest)) {
+      if (isFilterList || !isGetRequest) {
+        if (!hasToken) {
+          handleTokenException(request, response, false, EMPTY_ACCESS_JWT);
+          return;
+        } else {
+          try {
+            if (jwtProvider.validateToken(accessToken)) {
+              handleTokenException(request, response, true, EXPIRED_TOKEN);
+              return;
+            }
+            Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+            isValidUUID(authentication.getName());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+          } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
+            return;
+          } catch (DecodingException | UnsupportedJwtException e) {
+            handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
+            return;
+          } catch (JwtException e) {
             handleTokenException(request, response, true, EXPIRED_TOKEN);
             return;
+          } catch (RedisConnectionFailureException e) {
+            handleConnectionException(request, response, true, REDIS_ERROR);
+            return;
           }
-          Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-          isValidUUID(authentication.getName());
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-          handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
-          return;
-        } catch (DecodingException | UnsupportedJwtException e) {
-          handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
-          return;
-        } catch (JwtException e) {
-          handleTokenException(request, response, true, EXPIRED_TOKEN);
-          return;
-        } catch (RedisConnectionFailureException e) {
-          handleConnectionException(request, response, true, REDIS_ERROR);
-          return;
         }
       }
-//    }
+    }
+
 
     filterChain.doFilter(request, response);
   }
 
-  private void handleEmptyAccessTokenException(HttpServletRequest request, boolean hasToken, CustomErrorCode code) {
-    log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
-    request.setAttribute("exception", code);
-  }
-
   private void handleTokenException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
     log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
+    request.setAttribute("exception", code);
 
     String errorJson;
     ObjectMapper objectMapper = new ObjectMapper();
@@ -105,6 +110,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private void handleConnectionException(HttpServletRequest request, HttpServletResponse response, boolean hasToken, CustomErrorCode code) throws IOException {
     log.error("jwt-authentication-filter uri :: {}, hasToken :: {}, reason :: {}", request.getRequestURI(), hasToken, code.getMessage());
+    request.setAttribute("exception", code);
     SecurityContextHolder.clearContext();
 
     String errorJson;

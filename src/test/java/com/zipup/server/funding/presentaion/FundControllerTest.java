@@ -3,7 +3,6 @@ package com.zipup.server.funding.presentaion;
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.presentation.FundController;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.UserRole;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -78,7 +76,7 @@ public class FundControllerTest {
     userId = user.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, userFacade, jwtProvider, crawlerService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, userFacade, crawlerService)).build();
   }
 
   @Test

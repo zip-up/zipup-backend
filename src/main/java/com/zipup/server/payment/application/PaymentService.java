@@ -54,22 +54,21 @@ public class PaymentService {
     return paymentRepository.existsByOrderId(orderId);
   }
 
-  public Boolean isOrderIdExistInRedis(String orderId) {
-    return redisTemplate.opsForValue().get(orderId) != null;
+  public Boolean isOrderIdExistInRedis(String orderId, Integer amount, String userId) {
+    return Objects.equals(redisTemplate.opsForValue().get(orderId + userId), String.valueOf(amount));
   }
 
-  public Boolean checkPaymentInfo(String orderId, Integer amount) {
-    if (isOrderIdExistInRedis(orderId)) return false;
-
-    redisTemplate.opsForValue().set(orderId, String.valueOf(amount));
-    return true;
+  public void checkPaymentInfo(String orderId, Integer amount, String userId) {
+    if (isOrderIdExistInRedis(orderId, amount, userId))
+      throw new UniqueConstraintException("OrderId, UserId", orderId + " " + userId);
+    redisTemplate.opsForValue().set(orderId + userId, String.valueOf(amount));
   }
 
   @Transactional
-  public PaymentResultResponse confirmPayment(PaymentConfirmRequest request) {
+  public PaymentResultResponse confirmPayment(PaymentConfirmRequest request, String userId) {
     if (existsByPaymentKey(request.getPaymentKey())) throw new UniqueConstraintException("PaymentKey", request.getPaymentKey());
     if (existsByOrderId(request.getOrderId())) throw new UniqueConstraintException("OrderId", request.getOrderId());
-    if (!isOrderIdExistInRedis(request.getOrderId())) throw new ResourceNotFoundException(DATA_NOT_FOUND);
+    if (!isOrderIdExistInRedis(request.getOrderId(), request.getAmount(), userId)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
 
     Map<String, Object> data = new HashMap<>();
     data.put("orderId", request.getOrderId());
@@ -123,7 +122,7 @@ public class PaymentService {
             .build();
 
     paymentRepository.save(paymentResult);
-    redisTemplate.delete(request.getOrderId());
+    redisTemplate.delete(request.getOrderId() + userId);
 
     return paymentResult.toDetailResponse();
   }

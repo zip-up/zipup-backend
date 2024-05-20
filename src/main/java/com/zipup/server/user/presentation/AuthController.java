@@ -20,11 +20,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -91,8 +90,9 @@ public class AuthController {
             @ApiResponse(responseCode = "403", description = "리프레시 토큰이 만료되었거나 유효하지 않습니다."),
             @ApiResponse(responseCode = "500", description = "내부 서버 오류가 발생했습니다.")
     })
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(
+    public TokenResponse refresh(
             final HttpServletRequest httpServletRequest,
             final HttpServletResponse httpServletResponse
     ) {
@@ -104,7 +104,7 @@ public class AuthController {
         ResponseCookie[] newToken = authService.refresh(refreshToken);
         httpServletResponse.addHeader(SET_COOKIE, newToken[1].toString());
 
-        return ResponseEntity.ok().body(new TokenResponse(newToken[0].getValue()));
+        return new TokenResponse(newToken[0].getValue());
     }
 
     @Operation(summary = "로그 아웃")
@@ -114,20 +114,10 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "실패",
                     content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
     })
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/sign-out")
-    public ResponseEntity<SimpleDataResponse> signOut(final HttpServletRequest httpServletRequest) {
-        String accessToken = jwtProvider.resolveToken(httpServletRequest);
-        if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-        if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-        Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-        String userId = authentication.getName();
-        isValidUUID(userId);
-
-        boolean isSucceed = authService.signOut(userId);
-        
-        return isSucceed
-                ? ResponseEntity.ok().body(new SimpleDataResponse("success"))
-                : ResponseEntity.badRequest().body(new SimpleDataResponse("fail"));
+    public void signOut(final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user) {
+        authService.signOut(user.getUsername());
     }
 
 }

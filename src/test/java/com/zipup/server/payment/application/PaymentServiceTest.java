@@ -171,7 +171,7 @@ public class PaymentServiceTest {
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(valueOperations.get(orderId)).thenReturn(orderId);
 
-    Boolean exists = paymentService.isOrderIdExistInRedis(orderId);
+    Boolean exists = paymentService.isOrderIdExistInRedis(orderId, 10000, UUID.randomUUID().toString());
 
     assertTrue(exists);
     verify(redisTemplate.opsForValue()).get(orderId);
@@ -183,7 +183,7 @@ public class PaymentServiceTest {
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(valueOperations.get(orderId)).thenReturn(null);
 
-    Boolean exists = paymentService.isOrderIdExistInRedis(orderId);
+    Boolean exists = paymentService.isOrderIdExistInRedis(orderId, 10000, UUID.randomUUID().toString());
 
     assertFalse(exists);
     verify(redisTemplate.opsForValue()).get(orderId);
@@ -194,15 +194,15 @@ public class PaymentServiceTest {
   void testCheckPaymentInfoAlreadyExists() {
     // given
     Integer amount = 1000;
+    String userId = UUID.randomUUID().toString();
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(valueOperations.get(orderId)).thenReturn(orderId);
 
     // when
-    Boolean result = paymentService.checkPaymentInfo(orderId, amount);
+    paymentService.checkPaymentInfo(orderId, amount, userId);
 
     // then
-    assertFalse(result);
-    verify(redisTemplate.opsForValue()).get(orderId);
+    verify(redisTemplate.opsForValue()).get(orderId + userId);
   }
 
   @Test
@@ -210,17 +210,17 @@ public class PaymentServiceTest {
   void testCheckPaymentInfoSuccess() {
     // given
     Integer amount = 1000;
+    String userId = UUID.randomUUID().toString();
     when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     when(valueOperations.get(orderId)).thenReturn(null);
     doNothing().when(valueOperations).set(orderId, String.valueOf(amount));
 
     // when
-    Boolean result = paymentService.checkPaymentInfo(orderId, amount);
+    paymentService.checkPaymentInfo(orderId, amount, userId);
 
     // then
-    assertTrue(result);
-    verify(redisTemplate.opsForValue()).get(orderId);
-    verify(redisTemplate.opsForValue()).set(orderId, String.valueOf(amount));
+    verify(redisTemplate.opsForValue()).get(orderId + userId);
+    verify(redisTemplate.opsForValue()).set(orderId + userId, String.valueOf(amount));
   }
 
   @Test
