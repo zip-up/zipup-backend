@@ -38,12 +38,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           "/favicon.ico",
           "/swagger-ui/.*",
           "/api-docs/.*",
-          "/api/v1/fund",
           "/api/v1/auth/.*",
   };
   private final String[] AUTH_FILTER_LIST = {
           "/api/v1/.*/list",
           "/api/v1/user",
+          "/api/v1/fund",
           "/api/v1/payment/.*",
           "/api/v1/fund/crawler",
   };
@@ -60,37 +60,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     boolean isFilterList = Arrays.stream(AUTH_FILTER_LIST)
             .anyMatch(requestUri::matches);
 
-    if (!requestUri.contains("/refresh") && (isWhiteList || !isGetRequest)) {
-      if (isFilterList || !isGetRequest) {
-        if (!hasToken) {
-          handleTokenException(request, response, false, EMPTY_ACCESS_JWT);
-          return;
-        } else {
-          try {
-            if (jwtProvider.validateToken(accessToken)) {
+    if (!isWhiteList || (!isGetRequest && !requestUri.contains("/refresh"))) {
+      if (!(requestUri.equals("/api/v1/fund") && isGetRequest)) {
+        if (isFilterList || !isGetRequest) {
+          if (!hasToken) {
+            handleTokenException(request, response, false, EMPTY_ACCESS_JWT);
+            return;
+          } else {
+            try {
+              if (jwtProvider.validateToken(accessToken)) {
+                handleTokenException(request, response, true, EXPIRED_TOKEN);
+                return;
+              }
+              Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+              isValidUUID(authentication.getName());
+              SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+              handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
+              return;
+            } catch (DecodingException | UnsupportedJwtException e) {
+              handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
+              return;
+            } catch (JwtException e) {
               handleTokenException(request, response, true, EXPIRED_TOKEN);
               return;
+            } catch (RedisConnectionFailureException e) {
+              handleConnectionException(request, response, true, REDIS_ERROR);
+              return;
             }
-            Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-            isValidUUID(authentication.getName());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-          } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            handleTokenException(request, response, true, WRONG_TYPE_TOKEN);
-            return;
-          } catch (DecodingException | UnsupportedJwtException e) {
-            handleTokenException(request, response, true, UNSUPPORTED_TOKEN);
-            return;
-          } catch (JwtException e) {
-            handleTokenException(request, response, true, EXPIRED_TOKEN);
-            return;
-          } catch (RedisConnectionFailureException e) {
-            handleConnectionException(request, response, true, REDIS_ERROR);
-            return;
           }
         }
       }
     }
-
 
     filterChain.doFilter(request, response);
   }
