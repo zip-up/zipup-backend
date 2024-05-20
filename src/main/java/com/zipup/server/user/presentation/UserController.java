@@ -99,7 +99,7 @@ public class UserController {
       Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
       String userId = authentication.getName();
       isValidUUID(userId);
-    return userFacade.findUserById(user.getUsername()).toResponseList();
+    return userFacade.findUserById(userId).toResponseList();
   }
 
   @Operation(summary = "회원 탈퇴")
