@@ -38,11 +38,6 @@ public class FundService {
     return fundRepository.findAllByUserAndStatus(user, status);
   }
 
-  @Transactional(readOnly = true)
-  public List<FundingSummaryResponse> findByStatus(ColumnStatus status) {
-    return fundRepository.findPopularFundingByStatus(status.name());
-  }
-
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
     String productUrl = request.getProductUrl();
@@ -79,7 +74,12 @@ public class FundService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getPopularFundingList() {
-    return findByStatus(ColumnStatus.PUBLIC);
+    List<Fund> fundList = fundRepository.findAllByStatus(ColumnStatus.PUBLIC);
+    return fundList.stream()
+            .map(Fund::toSummaryResponse)
+            .sorted((f1, f2) -> Double.compare(f2.getPercent(), f1.getPercent()))
+            .limit(10)
+            .collect(Collectors.toList());
   }
 
   @Transactional
