@@ -180,6 +180,11 @@ public class PaymentService {
             .equals(request.getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
+    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
+      payment.setPaymentStatus(CANCELED);
+      return payment.toCancelResponse(null);
+    }
+
     Map<String, Object> data = new HashMap<>();
     data.put("idempotencyKey", idempotencyKey);
     data.put("cancelReason", request.getCancelReason());
