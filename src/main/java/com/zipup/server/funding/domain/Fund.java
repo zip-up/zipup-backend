@@ -108,6 +108,7 @@ public class Fund extends BaseTimeEntity {
             .imageUrl(formatImageUrl())
             .status(calculateStatus())
             .percent(calculatePercentage())
+            .dDay(Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays())
             .organizer(user.getId().toString())
             .build();
   }
