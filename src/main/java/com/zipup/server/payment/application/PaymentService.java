@@ -175,10 +175,12 @@ public class PaymentService {
     Present targetPresent = presentRepository.findByPayment(payment)
             .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
 
+    System.out.println("target" + targetPresent.getUser().getId());
+    System.out.println("userId" + request.getUserId());
+
     if (!targetPresent.getUser()
             .getId().toString()
-            .equals(request
-                    .getUserId()))
+            .equals(request.getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
     Map<String, Object> data = new HashMap<>();
