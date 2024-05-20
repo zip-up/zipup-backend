@@ -181,7 +181,7 @@ public class PaymentService {
       throw new BaseException(ACCESS_DENIED);
 
     if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
-      payment.setPaymentStatus(CANCELED);
+      changePrivatePayment(payment);
       return payment.toCancelResponse(null);
     }
 
