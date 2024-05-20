@@ -114,6 +114,7 @@ public class PresentService {
       throw new PaymentException(HttpStatus.FORBIDDEN.value(), "NOT_CANCELABLE_AMOUNT", "취소 할 수 없는 금액 입니다.");
 
     PaymentCancelRequest paymentCancelRequest = PaymentCancelRequest.builder()
+            .userId(request.getUserId())
             .paymentKey(paymentKey)
             .cancelReason(request.getCancelReason())
             .cancelAmount(cancelAmount)
