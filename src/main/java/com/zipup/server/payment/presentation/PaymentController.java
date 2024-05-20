@@ -1,10 +1,11 @@
 package com.zipup.server.payment.presentation;
 
-import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ErrorResponse;
-import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.payment.application.PaymentService;
-import com.zipup.server.payment.dto.*;
+import com.zipup.server.payment.dto.PaymentCancelRequest;
+import com.zipup.server.payment.dto.PaymentConfirmRequest;
+import com.zipup.server.payment.dto.PaymentResultResponse;
+import com.zipup.server.payment.dto.TossPaymentResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,17 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-
-import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
-import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
-import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/payment")
@@ -37,7 +32,6 @@ import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 public class PaymentController {
 
   private final PaymentService paymentService;
-  private final JwtProvider jwtProvider;
 
   @Operation(summary = "결제 정보 저장", description = "클라이언트에서 결제 요청하기 전에 결제 정보를 서버에 저장")
   @Parameter(name = "orderId", description = "주문 번호")
@@ -45,30 +39,20 @@ public class PaymentController {
   @ApiResponses(value = {
           @ApiResponse(
                   responseCode = "200",
-                  description = "저장 성공",
-                  content = @Content(schema = @Schema(type = "결제 진행!"))),
+                  description = "저장 성공"),
           @ApiResponse(
                   responseCode = "409",
                   description = "동일한 주문 번호가 존재하는 경우",
-                  content = @Content(schema = @Schema(type = "동일한 주문 번호가 존재해요.")))
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
   })
+  @ResponseStatus(HttpStatus.OK)
   @PostMapping("/")
-  public ResponseEntity<String> checkPaymentInfo(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
-          @RequestParam(value = "orderId") String orderId,
-          @RequestParam(value = "amount") Integer amount
+  public void checkPaymentInfo(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
+          final @RequestParam(value = "orderId") String orderId,
+          final @RequestParam(value = "amount") Integer amount
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    return paymentService.checkPaymentInfo(orderId, amount)
-            ? ResponseEntity.ok("결제 진행!")
-            : ResponseEntity.status(HttpStatus.CONFLICT).body("동일한 주문 번호가 존재해요.");
+    paymentService.checkPaymentInfo(orderId, amount, user.getUsername());
   }
 
   @Operation(summary = "결제 승인", description = "서버에서 토스페이먼츠로 결제 승인 요청")
@@ -89,24 +73,15 @@ public class PaymentController {
                   description = "결제 시간 만료",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
+  @ResponseStatus(HttpStatus.OK)
   @GetMapping(value = "/confirm")
-  public ResponseEntity<PaymentResultResponse> successPayment(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
-          @RequestParam(value = "orderId") String orderId,
-          @RequestParam(value = "amount") Integer amount,
-          @RequestParam(value = "paymentKey") String paymentKey
+  public PaymentResultResponse successPayment(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
+          final @RequestParam(value = "orderId") String orderId,
+          final @RequestParam(value = "amount") Integer amount,
+          final @RequestParam(value = "paymentKey") String paymentKey
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    PaymentResultResponse response = paymentService.confirmPayment(new PaymentConfirmRequest(orderId, amount, paymentKey));
-
-    return ResponseEntity.ok().body(response);
+    return paymentService.confirmPayment(new PaymentConfirmRequest(orderId, amount, paymentKey), user.getUsername());
   }
 
   @Operation(summary = "결제 취소", description = "paymentKey 로 결제 취소")
@@ -130,22 +105,16 @@ public class PaymentController {
                   description = "존재하지 않는 결제 정보",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
+  @ResponseStatus(HttpStatus.OK)
   @PostMapping(value = "/cancel")
   @Hidden
-  public ResponseEntity<PaymentResultResponse> cancelPayment(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
+  public PaymentResultResponse cancelPayment(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody PaymentCancelRequest request
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-    request.setUserId(userId);
+    request.setUserId(user.getUsername());
 
-    return ResponseEntity.ok().body(paymentService.cancelPayment(request));
+    return paymentService.cancelPayment(request);
   }
 
   @Operation(summary = "paymentKey 로 결제 조회", description = "paymentKey 로 결제 조회")
@@ -168,20 +137,12 @@ public class PaymentController {
                   description = "존재하지 않는 결제 정보",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
+  @ResponseStatus(HttpStatus.OK)
   @GetMapping(value = "/key")
-  public ResponseEntity<TossPaymentResponse> getPaymentByPaymentKey(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
-          @RequestParam(value = "paymentKey") String paymentKey
+  public TossPaymentResponse getPaymentByPaymentKey(
+          final @RequestParam(value = "paymentKey") String paymentKey
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    return ResponseEntity.ok().body(paymentService.fetchPaymentByPaymentKey(paymentKey));
+    return paymentService.fetchPaymentByPaymentKey(paymentKey);
   }
 
   @Operation(summary = "orderId로 결제 조회", description = "orderId로 결제 조회")
@@ -204,20 +165,12 @@ public class PaymentController {
                   description = "존재하지 않는 결제 정보",
                   content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
+  @ResponseStatus(HttpStatus.OK)
   @GetMapping(value = "/order")
-  public ResponseEntity<TossPaymentResponse> getPaymentByOrderId(
-          final HttpServletRequest httpServletRequest,
-          final HttpServletResponse httpServletResponse,
-          @RequestParam(value = "orderId") String orderId
+  public TossPaymentResponse getPaymentByOrderId(
+          final @RequestParam(value = "orderId") String orderId
   ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-    Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-    String userId = authentication.getName();
-    isValidUUID(userId);
-
-    return ResponseEntity.ok().body(paymentService.fetchPaymentByOrderId(orderId));
+    return paymentService.fetchPaymentByOrderId(orderId);
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
@@ -229,13 +182,7 @@ public class PaymentController {
 
   @Operation(summary = "결제 데이터 업데이트", description = "결제 데이터 업데이트")
   @PutMapping("/setting")
-  public ResponseEntity<Void> updatePaymentStatus(
-          final HttpServletRequest httpServletRequest
-  ) {
-    String accessToken = jwtProvider.resolveToken(httpServletRequest);
-    if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-    if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-
+  public ResponseEntity<Void> updatePaymentStatus() {
     paymentService.updatePaymentStatus();
     return ResponseEntity.ok().build();
   }

@@ -6,6 +6,7 @@ import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.dto.*;
 import com.zipup.server.user.facade.UserFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -77,7 +78,7 @@ public class UserController {
   })
   @ResponseStatus(HttpStatus.OK)
   @GetMapping("")
-  public UserListResponse getUserInfo(final @AuthenticationPrincipal UserDetails user) {
+  public UserListResponse getUserInfo(final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user) {
     return userFacade.findUserById(user.getUsername()).toResponseList();
   }
 
@@ -91,7 +92,7 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   @PutMapping("/withdrawal")
   public SimpleDataResponse unlinkUser(
-          final @AuthenticationPrincipal UserDetails user,
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           final @RequestBody WithdrawalRequest withdrawalRequest
   ) {
     withdrawalRequest.setUserId(user.getUsername());

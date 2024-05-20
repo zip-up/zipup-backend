@@ -68,7 +68,6 @@ public class SecurityConfig {
 
             .authorizeRequests(authorizeRequests ->
                     authorizeRequests
-                            .antMatchers(HttpMethod.GET, "/api/v1/payment/confirm").authenticated()
                             .antMatchers(HttpMethod.GET).permitAll()
                             .antMatchers(AUTH_WHITELIST).permitAll()
                             .anyRequest().authenticated())

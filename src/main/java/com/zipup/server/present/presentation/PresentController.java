@@ -9,10 +9,12 @@ import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
 import com.zipup.server.present.dto.PresentSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +49,7 @@ public class PresentController {
   @ResponseStatus(HttpStatus.OK)
   @PostMapping("")
   public SimpleDataResponse participateFunding(
-          final @AuthenticationPrincipal UserDetails user,
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipatePresentRequest request
   ) {
     request.setParticipateId(user.getUsername());
@@ -65,21 +67,25 @@ public class PresentController {
   @ResponseStatus(HttpStatus.OK)
   @PutMapping("/cancel")
   public String cancelParticipate(
-          final @AuthenticationPrincipal UserDetails user,
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipateCancelRequest request
   ) {
     request.setUserId(user.getUsername());
     return presentService.cancelParticipate(request);
   }
 
-  @Operation(summary = "내가 참여한 펀딩 목록 조회", description = "마이페이지에 있는 펀딩 목록")
+  @Operation(summary = "내가 참여한 펀딩 목록 조회",
+          description = "마이페이지에 있는 펀딩 목록",
+          security = @SecurityRequirement(name = "JWT-Auth"))
   @ApiResponse(
           responseCode = "200",
           description = "조회 성공",
           content = @Content(schema = @Schema(implementation = FundingSummaryResponse.class)))
   @ResponseStatus(HttpStatus.OK)
   @GetMapping("/list")
-  public List<FundingSummaryResponse> getMyParticipateList(final @AuthenticationPrincipal UserDetails user) {
+  public List<FundingSummaryResponse> getMyParticipateList(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
+  ) {
     return presentService.getMyParticipateList(user.getUsername());
   }
 
@@ -90,7 +96,9 @@ public class PresentController {
           content = @Content(schema = @Schema(implementation = PaymentHistoryResponse.class)))
   @ResponseStatus(HttpStatus.OK)
   @GetMapping("/payment/list")
-  public List<PaymentHistoryResponse> getMyPaymentList(final @AuthenticationPrincipal UserDetails user) {
+  public List<PaymentHistoryResponse> getMyPaymentList(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
+  ) {
     return presentService.getMyPaymentList(user.getUsername());
   }
 
