@@ -10,6 +10,8 @@ import com.zipup.server.payment.dto.PaymentConfirmRequest;
 import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
+import com.zipup.server.present.domain.Present;
+import com.zipup.server.present.infrastructure.PresentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class PaymentService {
   private final TossService tossService;
   private final RedisTemplate<String, String> redisTemplate;
   private final PaymentRepository paymentRepository;
+  private final PresentRepository presentRepository;
 
   @Transactional(readOnly = true)
   public Payment findById(String id) {
@@ -169,7 +172,13 @@ public class PaymentService {
   public PaymentResultResponse cancelPayment(PaymentCancelRequest request) {
     Payment payment = findByPaymentKey(request.getPaymentKey());
     String idempotencyKey = payment.getId().toString();
-    if (!payment.getPresent().getUser().getId().toString().equals(request.getUserId()))
+    Present targetPresent = presentRepository.findByPayment(payment)
+            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
+
+    if (!targetPresent.getUser()
+            .getId().toString()
+            .equals(request
+                    .getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
     Map<String, Object> data = new HashMap<>();
