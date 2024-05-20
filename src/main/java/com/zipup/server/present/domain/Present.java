@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Entity
-@Table(name = "presents", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "fund_id"}))
+@Table(name = "presents")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
