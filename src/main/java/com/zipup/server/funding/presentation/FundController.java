@@ -3,6 +3,8 @@ package com.zipup.server.funding.presentation;
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.dto.*;
+import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.present.dto.PresentSummaryResponse;
 import com.zipup.server.user.facade.UserFacade;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -17,11 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+
+import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/fund")
@@ -31,14 +39,16 @@ public class FundController {
 
   private final FundService fundService;
   private final CrawlerService crawlerService;
+  private final JwtProvider jwtProvider;
   @SuppressWarnings("rawtypes")
   private final UserFacade userFacade;
 
   @SuppressWarnings("rawtypes")
-  public FundController(FundService fundService, @Qualifier("userFundFacade") UserFacade userFacade, CrawlerService crawlerService) {
+  public FundController(FundService fundService, @Qualifier("userFundFacade") UserFacade userFacade, JwtProvider jwtProvider, CrawlerService crawlerService) {
     this.fundService = fundService;
     this.userFacade = userFacade;
     this.crawlerService = crawlerService;
+    this.jwtProvider = jwtProvider;
   }
 
   @Operation(summary = "상품 이미지 크롤링", description = "상품 URL로 이미지 크롤링")
@@ -83,10 +93,20 @@ public class FundController {
   @ResponseStatus(HttpStatus.OK)
   @GetMapping("")
   public FundingDetailResponse getFundingDetail(
+          final HttpServletRequest httpServletRequest,
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestParam(value = "funding") String fundId
   ) {
-    return fundService.getFundingDetail(fundId, user == null ? null : user.getUsername());
+    String accessToken = jwtProvider.resolveToken(httpServletRequest);
+    String userId = null;
+    if (accessToken != null) {
+      if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
+      Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
+      userId = authentication.getName();
+      isValidUUID(userId);
+    }
+
+    return fundService.getFundingDetail(fundId, userId);
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")
