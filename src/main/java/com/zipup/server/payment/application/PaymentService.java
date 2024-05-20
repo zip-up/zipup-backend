@@ -3,6 +3,7 @@ package com.zipup.server.payment.application;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UniqueConstraintException;
+import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentConfirmRequest;
@@ -20,7 +21,6 @@ import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
-import static com.zipup.server.global.util.entity.ColumnStatus.PRIVATE;
 import static com.zipup.server.global.util.entity.PaymentStatus.*;
 
 @Service
@@ -184,7 +184,7 @@ public class PaymentService {
     Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
       payment.setPaymentStatus(CANCELED);
-      payment.setStatus(PRIVATE);
+      changePrivatePayment(payment);
     } else {
       if (request.getCancelAmount() < payment.getBalanceAmount()) {
         payment.setBalanceAmount(payment.getBalanceAmount() - request.getCancelAmount());
@@ -196,6 +196,16 @@ public class PaymentService {
             .map(TossPaymentResponse::getCancels)
             .map(payment::toCancelResponse)
             .orElseThrow(() -> new BaseException(UNKNOWN_ERROR));
+  }
+
+  @Transactional
+  public void changePrivatePayment(Payment payment) {
+    payment.setStatus(ColumnStatus.PRIVATE);
+  }
+
+  @Transactional
+  public void changeUnlinkPayment(Payment payment) {
+    payment.setStatus(ColumnStatus.UNLINK);
   }
 
 }

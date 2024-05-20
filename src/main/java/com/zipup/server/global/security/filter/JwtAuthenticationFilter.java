@@ -60,7 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     boolean isFilterList = Arrays.stream(AUTH_FILTER_LIST)
             .anyMatch(requestUri::matches);
 
-    if (!requestUri.contains("/refresh") && (!isWhiteList || !isGetRequest)) {
+    if (!requestUri.contains("/refresh") && (isWhiteList || !isGetRequest)) {
       if (isFilterList || !isGetRequest) {
         if (!hasToken) {
           handleTokenException(request, response, false, EMPTY_ACCESS_JWT);

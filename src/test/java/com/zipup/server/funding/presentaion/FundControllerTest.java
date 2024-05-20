@@ -26,7 +26,6 @@ import javax.persistence.EntityManager;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -76,7 +75,7 @@ public class FundControllerTest {
     userId = user.getId().toString();
     fundId = fund.getId().toString();
 
-    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, userFacade, crawlerService)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new FundController(fundService, userFacade, jwtProvider, crawlerService)).build();
   }
 
   @Test

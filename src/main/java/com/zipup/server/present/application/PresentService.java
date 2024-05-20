@@ -59,12 +59,6 @@ public class PresentService {
     return presentRepository.findAllByUserAndStatus(user, status);
   }
 
-  @Transactional(readOnly = true)
-  public Present findByUserAndFund(User user, Fund fund) {
-    return presentRepository.findByUserAndFund(user, fund)
-            .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
-  }
-
   @Transactional
   public SimpleDataResponse participateFunding(ParticipatePresentRequest request) {
     String participateId = request.getParticipateId();
@@ -162,6 +156,7 @@ public class PresentService {
   @Transactional
   public void changeUnlinkParticipate(Present present) {
     present.setStatus(ColumnStatus.UNLINK);
+    paymentService.changeUnlinkPayment(present.getPayment());
   }
 
   @Transactional
