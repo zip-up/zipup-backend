@@ -77,11 +77,25 @@ public class FundService {
     List<Fund> fundList = fundRepository.findAllByStatus(ColumnStatus.PUBLIC);
     return fundList.stream()
             .map(Fund::toSummaryResponse)
-            .sorted((f1, f2) -> Double.compare(f2.getPercent(), f1.getPercent()))
-            .limit(10)
+            .sorted((f1, f2) -> {
+              int percentComparison = Double.compare(f2.getPercent(), f1.getPercent());
+              if (percentComparison != 0) {
+                return percentComparison;
+              }
+              boolean f1Positive = f1.getDDay() > 0;
+              boolean f2Positive = f2.getDDay() > 0;
+              if (f1Positive && !f2Positive) {
+                return -1;
+              } else if (!f1Positive && f2Positive) {
+                return 1;
+              } else if (f1Positive && f2Positive) {
+                return Long.compare(f1.getDDay(), f2.getDDay());
+              } else {
+                return Long.compare(f2.getDDay(), f1.getDDay());
+              }
+            })            .limit(10)
             .collect(Collectors.toList());
   }
-
   @Transactional
   public void changePrivateFunding(Fund fund) {
     fund.setStatus(ColumnStatus.PRIVATE);
