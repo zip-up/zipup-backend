@@ -1,9 +1,7 @@
 package com.zipup.server.user.presentation;
 
 import com.zipup.server.funding.dto.SimpleDataResponse;
-import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ErrorResponse;
-import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.dto.*;
 import com.zipup.server.user.facade.UserFacade;
@@ -19,19 +17,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-
-import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_ACCESS_JWT;
-import static com.zipup.server.global.exception.CustomErrorCode.EXPIRED_TOKEN;
-import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -42,13 +33,11 @@ public class UserController {
   private final UserService userService;
   @SuppressWarnings("rawtypes")
   private final UserFacade userFacade;
-  private final JwtProvider jwtProvider;
 
   @SuppressWarnings("rawtypes")
-  public UserController(UserService userService, @Qualifier("userFundFacade") UserFacade userFacade, JwtProvider jwtProvider) {
+  public UserController(UserService userService, @Qualifier("userFundFacade") UserFacade userFacade) {
     this.userService = userService;
     this.userFacade = userFacade;
-    this.jwtProvider = jwtProvider;
   }
 
   @Operation(summary = "회원 가입")
@@ -90,16 +79,9 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   @GetMapping("")
   public UserListResponse getUserInfo(
-    final HttpServletRequest httpServletRequest,
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
   ) {
-      String accessToken = jwtProvider.resolveToken(httpServletRequest);
-      if (!StringUtils.hasText(accessToken)) throw new BaseException(EMPTY_ACCESS_JWT);
-      if (jwtProvider.validateToken(accessToken)) throw new BaseException(EXPIRED_TOKEN);
-      Authentication authentication = jwtProvider.getAuthenticationByToken(accessToken);
-      String userId = authentication.getName();
-      isValidUUID(userId);
-    return userFacade.findUserById(userId).toResponseList();
+    return userFacade.findUserById(user.getUsername()).toResponseList();
   }
 
   @Operation(summary = "회원 탈퇴")
