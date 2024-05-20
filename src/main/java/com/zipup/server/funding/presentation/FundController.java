@@ -159,9 +159,14 @@ public class FundController {
     return ResponseEntity.ok(userFacade.deleteEntity(request));
   }
 
-  @Operation(summary = "인기 펀딩 목록 api", description = "진행 중인 펀딩 + 기간이 적게 남은 펀딩 + 참여도 퍼센트 높은 펀딩 순")
+  @Operation(summary = "인기 펀딩 목록 api", description = "참여도 퍼센트 높은 펀딩 순 + 진행 중인 펀딩 + 기간이 적게 남은 펀딩")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "인기 펀딩 조회 성공",
+                  content = @Content(schema = @Schema(type = "인기 펀딩 조회 성공", implementation = FundingSummaryResponse.class)))
+  })
   @GetMapping("/popular")
-  @Hidden
   public List<FundingSummaryResponse> getPopularFundingList() {
     return fundService.getPopularFundingList();
   }
