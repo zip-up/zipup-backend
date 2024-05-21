@@ -232,7 +232,7 @@ public class PaymentServiceTest {
     when(paymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(mockPayment1));
     when(tossService.get("/" + paymentKey, TossPaymentResponse.class)).thenReturn(Mono.just(expectedResponse));
 
-    TossPaymentResponse actualResponse = paymentService.fetchPaymentByPaymentKey(paymentKey);
+    Mono<TossPaymentResponse> actualResponse = paymentService.fetchPaymentByPaymentKey(paymentKey);
 
     verify(tossService).get("/" + paymentKey, TossPaymentResponse.class);
     Assertions.assertEquals(expectedResponse, actualResponse);

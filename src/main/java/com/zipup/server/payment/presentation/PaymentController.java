@@ -142,7 +142,7 @@ public class PaymentController {
   public TossPaymentResponse getPaymentByPaymentKey(
           final @RequestParam(value = "paymentKey") String paymentKey
   ) {
-    return paymentService.fetchPaymentByPaymentKey(paymentKey);
+    return paymentService.fetchPaymentByPaymentKey(paymentKey).block();
   }
 
   @Operation(summary = "orderId로 결제 조회", description = "orderId로 결제 조회")
@@ -170,7 +170,7 @@ public class PaymentController {
   public TossPaymentResponse getPaymentByOrderId(
           final @RequestParam(value = "orderId") String orderId
   ) {
-    return paymentService.fetchPaymentByOrderId(orderId);
+    return paymentService.fetchPaymentByOrderId(orderId).block();
   }
 
   @Operation(summary = "임시 데이터", description = "임시")
