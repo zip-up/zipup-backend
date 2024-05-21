@@ -106,7 +106,7 @@ public class FundController {
       isValidUUID(userId);
     }
 
-    return fundService.getFundingDetail(fundId, userId);
+    return userFacade.findEntityDetail(fundId, userId);
   }
 
   @Operation(summary = "펀딩 주최", description = "펀딩 주최")

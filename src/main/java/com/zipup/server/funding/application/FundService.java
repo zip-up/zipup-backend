@@ -58,13 +58,6 @@ public class FundService {
   }
 
   @Transactional(readOnly = true)
-  public FundingDetailResponse getFundingDetail(String fundId, String userId) {
-    isValidUUID(fundId);
-
-    return findById(fundId).toDetailResponse(userId != null ? userService.findById(userId) : null);
-  }
-
-  @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getFundList() {
     return fundRepository.findAll()
             .stream()

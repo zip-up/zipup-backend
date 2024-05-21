@@ -150,7 +150,8 @@ public class PaymentService {
                 log.info("Id :: {}", payment.getId());
                 log.info("Status :: {}", payment.getStatus());
                 Payment targetPayment = findByPaymentKey(payment.getPaymentKey());
-                targetPayment.setPaymentStatus(INVALID_PAYMENT_STATUS);
+                changeInvalidPaymentStatus(targetPayment);
+                log.info("Change Status :: {}", payment.getStatus());
               }
               return Mono.empty();
             }).subscribe());
@@ -239,12 +240,17 @@ public class PaymentService {
 
   @Transactional
   public void changePartialCancelPaymentStatus(Payment payment) {
-    payment.setPaymentStatus(CANCELED);
+    payment.setPaymentStatus(PARTIAL_CANCELED);
   }
 
   @Transactional
   public void changeCancelInvalidPaymentStatus(Payment payment) {
     payment.setPaymentStatus(INVALID_PAYMENT_STATUS_CANCELED);
+  }
+
+  @Transactional
+  public void changeInvalidPaymentStatus(Payment payment) {
+    payment.setPaymentStatus(INVALID_PAYMENT_STATUS);
   }
 
 }
