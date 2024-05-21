@@ -1,6 +1,7 @@
 package com.zipup.server.payment.application;
 
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UniqueConstraintException;
 import com.zipup.server.global.util.entity.ColumnStatus;
@@ -143,29 +144,37 @@ public class PaymentService {
     getPaymentList().stream()
             .filter(payment -> !payment.getStatus().startsWith(INVALID_PAYMENT_STATUS.name()))
             .peek(payment -> System.out.println(payment.getStatus()))
-            .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()));
+            .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()).onErrorResume(throwable -> {
+              if (throwable instanceof PaymentException) {
+                Payment targetPayment = findByPaymentKey(payment.getPaymentKey());
+                targetPayment.setPaymentStatus(INVALID_PAYMENT_STATUS);
+              }
+              return Mono.empty();
+            }).subscribe());
   }
 
   @Transactional
-  public TossPaymentResponse fetchPaymentByPaymentKey(String paymentKey) {
-    TossPaymentResponse response = tossService.get("/" + paymentKey, TossPaymentResponse.class).block();
-    if (response != null) {
-      Payment payment = findByPaymentKey(paymentKey);
-      payment.setPaymentStatus(response.getStatus());
-    }
-
-    return response;
+  public Mono<TossPaymentResponse> fetchPaymentByPaymentKey(String paymentKey) {
+    return tossService.get("/" + paymentKey, TossPaymentResponse.class)
+            .flatMap(tossPaymentResponse -> {
+              if (tossPaymentResponse != null) {
+                Payment payment = findByPaymentKey(tossPaymentResponse.getPaymentKey());
+                payment.setPaymentStatus(tossPaymentResponse.getStatus());
+              }
+              return Mono.justOrEmpty(tossPaymentResponse);
+            });
   }
 
   @Transactional
-  public TossPaymentResponse fetchPaymentByOrderId(String orderId) {
-    TossPaymentResponse response = tossService.get("/orders/" + orderId, TossPaymentResponse.class).block();
-    if (response != null) {
-      Payment payment = findByPaymentKey(response.getPaymentKey());
-      payment.setPaymentStatus(response.getStatus());
-    }
-
-    return response;
+  public Mono<TossPaymentResponse> fetchPaymentByOrderId(String orderId) {
+    return tossService.get("/orders/" + orderId, TossPaymentResponse.class)
+            .flatMap(tossPaymentResponse -> {
+              if (tossPaymentResponse != null) {
+                Payment payment = findByPaymentKey(tossPaymentResponse.getPaymentKey());
+                payment.setPaymentStatus(tossPaymentResponse.getStatus());
+              }
+              return Mono.justOrEmpty(tossPaymentResponse);
+            });
   }
 
   @Transactional
@@ -180,7 +189,8 @@ public class PaymentService {
             .equals(request.getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
-    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS) || payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS_CANCELED)) {
+    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
+      changeCancelInvalidPaymentStatus(payment);
       return payment.toCancelResponse(null);
     }
 
@@ -195,11 +205,11 @@ public class PaymentService {
 
     Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
-      payment.setPaymentStatus(CANCELED);
+      changeCancelPaymentStatus(payment);
     } else {
       if (request.getCancelAmount() < payment.getBalanceAmount()) {
         payment.setBalanceAmount(payment.getBalanceAmount() - request.getCancelAmount());
-        payment.setPaymentStatus(PARTIAL_CANCELED);
+        changePartialCancelPaymentStatus(payment);
       }
     }
 
@@ -217,6 +227,21 @@ public class PaymentService {
   @Transactional
   public void changeUnlinkPayment(Payment payment) {
     payment.setStatus(ColumnStatus.UNLINK);
+  }
+
+  @Transactional
+  public void changeCancelPaymentStatus(Payment payment) {
+    payment.setPaymentStatus(CANCELED);
+  }
+
+  @Transactional
+  public void changePartialCancelPaymentStatus(Payment payment) {
+    payment.setPaymentStatus(CANCELED);
+  }
+
+  @Transactional
+  public void changeCancelInvalidPaymentStatus(Payment payment) {
+    payment.setPaymentStatus(INVALID_PAYMENT_STATUS_CANCELED);
   }
 
 }
