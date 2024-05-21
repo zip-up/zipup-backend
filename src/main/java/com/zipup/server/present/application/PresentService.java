@@ -66,6 +66,11 @@ public class PresentService {
   }
 
   @Transactional(readOnly = true)
+  public List<Present> findAllByFundAndStatus(Fund fund, ColumnStatus status) {
+    return presentRepository.findAllByFundAndStatus(fund, status);
+  }
+
+  @Transactional(readOnly = true)
   public List<Present> findAllByUserAndStatusIsNot(User user, ColumnStatus status) {
     return presentRepository.findAllByUserAndStatusIsNot(user, status);
   }

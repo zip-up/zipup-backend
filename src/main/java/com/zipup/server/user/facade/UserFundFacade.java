@@ -3,6 +3,7 @@ package com.zipup.server.user.facade;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingCancelRequest;
+import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
@@ -20,11 +21,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
 import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
+import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
 @RequiredArgsConstructor
@@ -101,6 +105,41 @@ public class UserFundFacade implements UserFacade<Fund> {
     return presentList.stream()
             .map(Present::toSummaryResponse)
             .collect(Collectors.toList());
+  }
+
+  @Override
+  public FundingDetailResponse findEntityDetail(String fundId, String userId) {
+    isValidUUID(fundId);
+    Fund targetFund = fundService.findById(fundId);
+    User targetUser = userService.findById(userId);
+    List<Present> targetPresent = presentService.findAllByFundAndStatus(targetFund, ColumnStatus.PUBLIC);
+
+    Boolean isOrganizer = targetUser != null && targetUser.equals(targetFund.getUser());
+    boolean isParticipant = targetPresent.stream()
+            .anyMatch(p -> p.getUser().equals(targetUser));
+    int nowPresent = targetPresent.stream()
+            .mapToInt(present -> present.getPayment().getBalanceAmount())
+            .sum();
+    int goalPrice = targetFund.getGoalPrice();
+    long duration = Duration.between(LocalDateTime.now(), targetFund.getFundingPeriod().getFinishFunding()).toDays();
+    String fundingStatus = duration > 0 ? String.valueOf(duration) : "완료";
+
+    return FundingDetailResponse.builder()
+            .id(targetFund.getId().toString())
+            .title(targetFund.getTitle())
+            .imageUrl(targetFund.getImageUrl())
+            .productUrl(targetFund.getProductUrl())
+            .description(targetFund.getDescription())
+            .expirationDate(fundingStatus.equals("완료") ? 0 : Long.parseLong(fundingStatus))
+            .isCompleted(fundingStatus.equals("완료"))
+            .goalPrice(targetFund.getGoalPrice())
+            .percent((int) Math.round(((double) nowPresent / goalPrice) * 100))
+            .presentList(targetPresent.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
+            .isOrganizer(isOrganizer)
+            .isParticipant(isParticipant)
+            .organizer(targetUser.getId().toString())
+            .organizerName(targetUser.getName())
+            .build();
   }
 
 }

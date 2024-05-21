@@ -1,6 +1,7 @@
 package com.zipup.server.user.facade;
 
 import com.zipup.server.funding.dto.FundingCancelRequest;
+import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.user.domain.User;
@@ -14,4 +15,5 @@ public interface UserFacade<T> {
   SimpleDataResponse unlinkUser(WithdrawalRequest userId);
   List findMyEntityList(String userId);
   List deleteEntity(FundingCancelRequest request);
+  FundingDetailResponse findEntityDetail(String entityId, String userId);
 }
