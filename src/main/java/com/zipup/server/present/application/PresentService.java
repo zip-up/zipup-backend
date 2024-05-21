@@ -188,10 +188,7 @@ public class PresentService {
     String paymentNumber = payment.getId().toString().replaceAll("-", "");
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
-    System.out.println("refundable :: " + refundable);
-    if (!refundable) refundable = !historyStatus.contains("취소");
-    System.out.println("historyStatus :: " + historyStatus);
-    System.out.println("refundable :: " + refundable);
+    if (refundable) refundable = !historyStatus.startsWith("취소");
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
