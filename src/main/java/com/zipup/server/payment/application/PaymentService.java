@@ -14,6 +14,7 @@ import com.zipup.server.payment.infrastructure.PaymentRepository;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.infrastructure.PresentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import static com.zipup.server.global.util.entity.PaymentStatus.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
 
   private final TossService tossService;
@@ -143,9 +145,10 @@ public class PaymentService {
   public void updatePaymentStatus() {
     getPaymentList().stream()
             .filter(payment -> !payment.getStatus().startsWith(INVALID_PAYMENT_STATUS.name()))
-            .peek(payment -> System.out.println(payment.getStatus()))
             .forEach(payment -> fetchPaymentByPaymentKey(payment.getPaymentKey()).onErrorResume(throwable -> {
               if (throwable instanceof PaymentException) {
+                log.info("Id :: {}", payment.getId());
+                log.info("Status :: {}", payment.getStatus());
                 Payment targetPayment = findByPaymentKey(payment.getPaymentKey());
                 targetPayment.setPaymentStatus(INVALID_PAYMENT_STATUS);
               }
