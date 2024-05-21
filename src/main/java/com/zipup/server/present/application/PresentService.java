@@ -64,6 +64,11 @@ public class PresentService {
     return presentRepository.findAllByUserAndStatus(user, status);
   }
 
+  @Transactional(readOnly = true)
+  public List<Present> findAllByUserAndStatusIsNot(User user, ColumnStatus status) {
+    return presentRepository.findAllByUserAndStatusIsNot(user, status);
+  }
+
   @Transactional
   public void changePrivateParticipate(Present present) {
     present.setStatus(ColumnStatus.PRIVATE);
@@ -153,7 +158,7 @@ public class PresentService {
   @Transactional(readOnly = true)
   public List<PaymentHistoryResponse> getMyPaymentList(String userId) {
     User targetUser = userService.findById(userId);
-    List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+    List<Present> presentList = findAllByUserAndStatusIsNot(targetUser, ColumnStatus.UNLINK);
 
     return presentList.stream()
             .map(this::createPaymentHistoryResponse)

@@ -14,5 +14,6 @@ import java.util.UUID;
 @Repository
 public interface PresentRepository extends JpaRepository<Present, UUID> {
   List<Present> findAllByUserAndStatus(User user, ColumnStatus status);
+  List<Present> findAllByUserAndStatusIsNot(User user, ColumnStatus status);
   Optional<Present> findByPayment(Payment payment);
 }
