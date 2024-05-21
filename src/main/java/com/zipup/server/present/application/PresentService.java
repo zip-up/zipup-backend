@@ -135,7 +135,7 @@ public class PresentService {
     PaymentStatus paymentStatus = targetPayment.getPaymentStatus();
 
     if (!targetPresent.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
-    if (paymentStatus.equals(CANCELED) || paymentStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)) throw new PaymentException(HttpStatus.FORBIDDEN.value(), ALREADY_CANCEL);
+    if (paymentStatus.equals(CANCELED) || paymentStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)) throw new PaymentException(HttpStatus.CONFLICT.value(), ALREADY_CANCEL);
 
     Integer cancelAmount = request.getCancelAmount();
     if (cancelAmount != null && targetPayment.getBalanceAmount() < cancelAmount)
@@ -188,7 +188,10 @@ public class PresentService {
     String paymentNumber = payment.getId().toString().replaceAll("-", "");
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
+    System.out.println("refundable :: " + refundable);
     if (!refundable) refundable = historyStatus.startsWith("결제");
+    System.out.println("historyStatus :: " + historyStatus);
+    System.out.println("refundable :: " + refundable);
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
