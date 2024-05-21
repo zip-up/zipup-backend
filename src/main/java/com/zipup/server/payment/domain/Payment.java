@@ -70,7 +70,7 @@ public class Payment extends BaseTimeEntity {
   private String paymentMethod;
 
   @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "ENUM('READY', 'IN_PROGRESS', 'WAITING_FOR_DEPOSIT', 'DONE', 'CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED', 'INVALID_PAYMENT_STATUS') DEFAULT 'READY'")
+  @Column(columnDefinition = "ENUM('READY', 'IN_PROGRESS', 'WAITING_FOR_DEPOSIT', 'DONE', 'CANCELED', 'PARTIAL_CANCELED', 'ABORTED', 'EXPIRED', 'INVALID_PAYMENT_STATUS', 'INVALID_PAYMENT_STATUS_CANCELED') DEFAULT 'READY'")
   @NotNull(message = "결제 status 누락")
   @Setter
   private PaymentStatus paymentStatus;
