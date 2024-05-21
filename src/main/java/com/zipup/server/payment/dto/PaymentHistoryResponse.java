@@ -19,6 +19,8 @@ public class PaymentHistoryResponse {
   private String fundingImage;
   @Schema(description = "결제 일시", example = "yyyy-MM-dd HH:mm:ss")
   private String paymentDate;
+  @Schema(description = "특정 펀딩의 최근 결제일", example = "yyyy-MM-dd HH:mm:ss")
+  private String mostRecentPaymentDateInFunding;
   @Schema(description = "가격")
   private Integer amount;
   @Schema(description = "결제 번호")

@@ -100,37 +100,4 @@ public class Payment extends BaseTimeEntity {
             .build();
   }
 
-  public PaymentHistoryResponse toHistoryResponse(Boolean isVirtualAccount, Boolean isDepositCompleted, Boolean refundable) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    String historyStatus = getStatusText(paymentStatus);
-    String paymentNumber = id.toString().replaceAll("-", "");
-
-    return PaymentHistoryResponse.builder()
-            .id(id.toString())
-            .fundingName(present.getFund().getTitle())
-            .fundingImage(present.getFund().getImageUrl())
-            .paymentDate(getCreatedDate().format(formatter))
-            .status(historyStatus)
-            .amount(balanceAmount)
-            .paymentNumber(paymentNumber.substring(0, Math.min(15, paymentNumber.length())))
-            .refundable(refundable)
-            .isVirtualAccount(isVirtualAccount)
-            .isDepositCompleted(isDepositCompleted)
-            .build();
-  }
-
-  private String getStatusText(PaymentStatus status) {
-    switch (status) {
-      case DONE:
-      case READY:
-      case WAITING_FOR_DEPOSIT:
-        return "결제완료";
-      case CANCELED:
-      case PARTIAL_CANCELED:
-        return "취소완료";
-      default:
-        return "취소요청";
-    }
-  }
-
 }
