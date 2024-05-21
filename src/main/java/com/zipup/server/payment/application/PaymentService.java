@@ -181,7 +181,6 @@ public class PaymentService {
       throw new BaseException(ACCESS_DENIED);
 
     if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
-      changePrivatePayment(payment);
       return payment.toCancelResponse(null);
     }
 
@@ -197,7 +196,6 @@ public class PaymentService {
     Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
       payment.setPaymentStatus(CANCELED);
-      changePrivatePayment(payment);
     } else {
       if (request.getCancelAmount() < payment.getBalanceAmount()) {
         payment.setBalanceAmount(payment.getBalanceAmount() - request.getCancelAmount());

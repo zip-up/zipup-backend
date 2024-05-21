@@ -25,6 +25,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +43,8 @@ public class PresentService {
   private final FundService fundService;
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
+
+  private final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
   @Transactional(readOnly = true)
   public Present findById(String id) {
@@ -57,6 +62,22 @@ public class PresentService {
   @Transactional(readOnly = true)
   public List<Present> findAllByUserAndStatus(User user, ColumnStatus status) {
     return presentRepository.findAllByUserAndStatus(user, status);
+  }
+
+  @Transactional
+  public void changePrivateParticipate(Present present) {
+    present.setStatus(ColumnStatus.PRIVATE);
+  }
+
+  @Transactional
+  public void changeUnlinkParticipate(Present present) {
+    present.setStatus(ColumnStatus.UNLINK);
+    paymentService.changeUnlinkPayment(present.getPayment());
+  }
+
+  @Transactional
+  public void setPresentCancelReason(Present present, String cancelReason) {
+    present.setCancelReason(cancelReason);
   }
 
   @Transactional
@@ -95,7 +116,8 @@ public class PresentService {
     presentList.forEach(present -> present.getFund().getId());
 
     return presentList.stream()
-            .map(present -> present.getFund().toSummaryResponse())
+            .map(Present::getFund)
+            .map(Fund::toSummaryResponse)
             .collect(Collectors.toList());
   }
 
@@ -134,35 +156,65 @@ public class PresentService {
     List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
 
     return presentList.stream()
-            .map(Present::getPayment)
             .map(this::createPaymentHistoryResponse)
+            .sorted(paymentHistoryResponseComparator())
             .collect(Collectors.toList());
   }
 
-  private PaymentHistoryResponse createPaymentHistoryResponse(Payment payment) {
-    Fund fund = payment.getPresent().getFund();
-    FundingSummaryResponse response = fund.toSummaryResponse();
-    boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
-    boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
+  private PaymentHistoryResponse createPaymentHistoryResponse(Present present) {
+    Payment targetPayment = present.getPayment();
+    Fund targetFund = present.getFund();
+    FundingSummaryResponse response = targetFund.toSummaryResponse();
     boolean refundable = response.getPercent() < 100;
 
-    return payment.toHistoryResponse(isVirtualAccount, isDepositCompleted, refundable);
+    LocalDateTime mostRecentPaymentDateInFunding = targetFund.getPresents().stream()
+            .map(Present::getCreatedDate)
+            .max(Comparator.naturalOrder())
+            .orElse(present.getCreatedDate());
+
+    return toHistoryResponse(targetPayment, present, refundable, mostRecentPaymentDateInFunding);
   }
 
-  @Transactional
-  public void changePrivateParticipate(Present present) {
-    present.setStatus(ColumnStatus.PRIVATE);
+  private PaymentHistoryResponse toHistoryResponse(Payment payment, Present present, Boolean refundable, LocalDateTime mostRecentPaymentDateInFunding) {
+    String historyStatus = getStatusText(payment.getPaymentStatus());
+    String paymentNumber = payment.getId().toString().replaceAll("-", "");
+    boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
+    boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
+
+    return PaymentHistoryResponse.builder()
+            .id(payment.getId().toString())
+            .fundingName(present.getFund().getTitle())
+            .fundingImage(present.getFund().getImageUrl())
+            .paymentDate(payment.getCreatedDate().format(FORMATTER))
+            .mostRecentPaymentDateInFunding(mostRecentPaymentDateInFunding.format(FORMATTER))
+            .status(historyStatus)
+            .amount(payment.getBalanceAmount())
+            .paymentNumber(paymentNumber.substring(0, Math.min(15, paymentNumber.length())))
+            .refundable(refundable)
+            .isVirtualAccount(isVirtualAccount)
+            .isDepositCompleted(isDepositCompleted)
+            .build();
   }
 
-  @Transactional
-  public void changeUnlinkParticipate(Present present) {
-    present.setStatus(ColumnStatus.UNLINK);
-    paymentService.changeUnlinkPayment(present.getPayment());
+  private Comparator<PaymentHistoryResponse> paymentHistoryResponseComparator() {
+    return Comparator
+            .comparing((PaymentHistoryResponse r) -> LocalDateTime.parse(r.getMostRecentPaymentDateInFunding(), FORMATTER))
+            .thenComparing((PaymentHistoryResponse r) -> LocalDateTime.parse(r.getPaymentDate(), FORMATTER))
+            .reversed();
   }
 
-  @Transactional
-  public void setPresentCancelReason(Present present, String cancelReason) {
-    present.setCancelReason(cancelReason);
+  private String getStatusText(PaymentStatus status) {
+    switch (status) {
+      case DONE:
+      case READY:
+      case WAITING_FOR_DEPOSIT:
+        return "결제완료";
+      case CANCELED:
+      case PARTIAL_CANCELED:
+        return "취소완료";
+      default:
+        return "취소요청";
+    }
   }
 
 }
