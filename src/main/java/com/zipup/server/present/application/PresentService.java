@@ -32,9 +32,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
-import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
+import static com.zipup.server.global.util.entity.PaymentStatus.CANCELED;
+import static com.zipup.server.global.util.entity.PaymentStatus.INVALID_PAYMENT_STATUS_CANCELED;
 
 @Service
 @RequiredArgsConstructor
@@ -131,14 +132,16 @@ public class PresentService {
     User targetUser = userService.findById(request.getUserId());
     Payment targetPayment = paymentService.findById(request.getPaymentId());
     Present targetPresent = findByPayment(targetPayment);
+    PaymentStatus paymentStatus = targetPayment.getPaymentStatus();
 
     if (!targetPresent.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
+    if (paymentStatus.equals(CANCELED) || paymentStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)) throw new PaymentException(HttpStatus.FORBIDDEN.value(), ALREADY_CANCEL);
+
+    Integer cancelAmount = request.getCancelAmount();
+    if (cancelAmount != null && targetPayment.getBalanceAmount() < cancelAmount)
+      throw new PaymentException(HttpStatus.FORBIDDEN.value(), NOT_CANCELABLE_AMOUNT);
 
     String paymentKey = targetPayment.getPaymentKey();
-    Integer cancelAmount = request.getCancelAmount();
-
-    if (cancelAmount != null && targetPayment.getBalanceAmount() < cancelAmount)
-      throw new PaymentException(HttpStatus.FORBIDDEN.value(), "NOT_CANCELABLE_AMOUNT", "취소 할 수 없는 금액 입니다.");
 
     PaymentCancelRequest paymentCancelRequest = PaymentCancelRequest.builder()
             .userId(request.getUserId())
@@ -185,6 +188,7 @@ public class PresentService {
     String paymentNumber = payment.getId().toString().replaceAll("-", "");
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
+    if (!refundable) refundable = historyStatus.startsWith("결제");
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
@@ -216,6 +220,7 @@ public class PresentService {
         return "결제완료";
       case CANCELED:
       case PARTIAL_CANCELED:
+      case INVALID_PAYMENT_STATUS_CANCELED:
         return "취소완료";
       default:
         return "취소요청";

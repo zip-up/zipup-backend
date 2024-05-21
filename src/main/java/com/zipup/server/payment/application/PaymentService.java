@@ -180,7 +180,7 @@ public class PaymentService {
             .equals(request.getUserId()))
       throw new BaseException(ACCESS_DENIED);
 
-    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
+    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS) || payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS_CANCELED)) {
       return payment.toCancelResponse(null);
     }
 

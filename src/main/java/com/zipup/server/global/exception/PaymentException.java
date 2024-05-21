@@ -15,4 +15,10 @@ public class PaymentException extends RuntimeException {
     this.message = message;
   }
 
+  public PaymentException(int status, CustomErrorCode customErrorCode) {
+    this.status = status;
+    this.code = customErrorCode.name();
+    this.message = customErrorCode.getMessage();
+  }
+
 }
