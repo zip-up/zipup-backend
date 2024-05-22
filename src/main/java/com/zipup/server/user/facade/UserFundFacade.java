@@ -46,6 +46,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<Fund> findAllEntityByUserAndStatus(User user, ColumnStatus status) {
     return fundService.findAllByUserAndStatus(user, status);
   }
@@ -79,6 +80,7 @@ public class UserFundFacade implements UserFacade<Fund> {
     return new SimpleDataResponse(userId);
   }
 
+  @Override
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> findMyEntityList(String userId) {
     User targetUser = findUserById(userId);
@@ -89,6 +91,7 @@ public class UserFundFacade implements UserFacade<Fund> {
             .collect(Collectors.toList());
   }
 
+  @Override
   @Transactional
   public List<PresentSummaryResponse> deleteEntity(FundingCancelRequest request) {
     User targetUser = findUserById(request.getUserId());
@@ -108,6 +111,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public FundingDetailResponse findEntityDetail(String fundId, String userId) {
     isValidUUID(fundId);
     Fund targetFund = fundService.findById(fundId);
