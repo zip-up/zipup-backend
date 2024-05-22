@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,12 @@ public class UserService {
     isValidUUID(id);
     return userRepository.findById(UUID.fromString(id))
             .orElseThrow(() -> new ResourceNotFoundException(DATA_NOT_FOUND));
+  }
+
+  @Transactional(readOnly = true)
+  public Optional<User> findByIdOptional(String id) {
+    isValidUUID(id);
+    return userRepository.findById(UUID.fromString(id));
   }
 
   @SneakyThrows
