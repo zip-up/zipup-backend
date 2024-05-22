@@ -111,13 +111,14 @@ public class UserFundFacade implements UserFacade<Fund> {
     isValidUUID(fundId);
     Fund targetFund = fundService.findById(fundId);
     if (!targetFund.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
-    User targetUser = userService.findById(userId);
-    if (targetUser == null || !targetUser.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
+    User nowUser = userService.findById(userId);
+    User targetUser = targetFund.getUser();
+    if (!targetUser.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
     List<Present> targetPresent = presentService.findAllByFundAndStatus(targetFund, ColumnStatus.PUBLIC);
 
-    Boolean isOrganizer = targetUser.equals(targetFund.getUser());
+    Boolean isOrganizer = targetUser.equals(nowUser);
     boolean isParticipant = targetPresent.stream()
-            .anyMatch(p -> p.getUser().equals(targetUser));
+            .anyMatch(p -> p.getUser().equals(nowUser));
     int nowPresent = targetPresent.stream()
             .mapToInt(present -> present.getPayment().getBalanceAmount())
             .sum();
