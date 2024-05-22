@@ -38,6 +38,11 @@ public class FundService {
     return fundRepository.findAllByUserAndStatus(user, status);
   }
 
+  @Transactional(readOnly = true)
+  public List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(String userId, ColumnStatus presentStatus, ColumnStatus fundStatus) {
+    return fundRepository.findFundingSummaryByUserIdAndStatus(UUID.fromString(userId), presentStatus, fundStatus);
+  }
+
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
     String productUrl = request.getProductUrl();
@@ -77,16 +82,12 @@ public class FundService {
               }
               boolean f1Positive = f1.getDDay() > 0;
               boolean f2Positive = f2.getDDay() > 0;
-              if (f1Positive && !f2Positive) {
-                return -1;
-              } else if (!f1Positive && f2Positive) {
-                return 1;
-              } else if (f1Positive && f2Positive) {
-                return Long.compare(f1.getDDay(), f2.getDDay());
-              } else {
-                return Long.compare(f2.getDDay(), f1.getDDay());
-              }
-            })            .limit(10)
+              if (f1Positive && f2Positive) return Long.compare(f1.getDDay(), f2.getDDay());
+              if (f1Positive) return -1;
+              else if (f2Positive) return 1;
+              return Long.compare(f2.getDDay(), f1.getDDay());
+            })
+            .limit(10)
             .collect(Collectors.toList());
   }
   @Transactional
