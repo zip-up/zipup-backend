@@ -14,6 +14,6 @@ public class FundingSummaryResponse {
   private String title;
   private String imageUrl;
   private int dDay;
-  private Integer percent;
+  private int percent;
   private UUID organizer;
 }

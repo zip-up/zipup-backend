@@ -1,9 +1,10 @@
 package com.zipup.server.funding.domain;
 
-import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
-import com.zipup.server.global.util.entity.*;
+import com.zipup.server.global.util.entity.BaseTimeEntity;
+import com.zipup.server.global.util.entity.FundingPeriod;
+import com.zipup.server.global.util.entity.GiftCard;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.user.domain.User;
 import lombok.*;
@@ -15,7 +16,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "fundings")
@@ -89,11 +89,6 @@ public class Fund extends BaseTimeEntity {
     return imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl;
   }
 
-  private String calculateStatus() {
-    long duration = Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays();
-    return duration > 0 ? String.valueOf(duration) : "완료";
-  }
-
   private int calculatePercentage() {
     int nowPresent = presents.stream()
             .mapToInt(present -> present.getPayment().getBalanceAmount())
@@ -109,29 +104,6 @@ public class Fund extends BaseTimeEntity {
             .percent(calculatePercentage())
             .dDay((int) Duration.between(LocalDateTime.now(), fundingPeriod.getFinishFunding()).toDays())
             .organizer(user.getId())
-            .build();
-  }
-
-  public FundingDetailResponse toDetailResponse(User nowUser) {
-    Boolean isOrganizer = nowUser != null && nowUser.equals(user);
-    boolean isParticipant = presents.stream()
-            .anyMatch(p -> p.getUser().equals(nowUser));
-
-    return FundingDetailResponse.builder()
-            .id(id.toString())
-            .title(title)
-            .imageUrl(formatImageUrl())
-            .productUrl(productUrl)
-            .description(description)
-            .expirationDate(calculateStatus().equals("완료") ? 0 : Long.parseLong(calculateStatus()))
-            .isCompleted(calculateStatus().equals("완료"))
-            .goalPrice(goalPrice)
-            .percent(calculatePercentage())
-            .presentList(presents.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
-            .isOrganizer(isOrganizer)
-            .isParticipant(isParticipant)
-            .organizer(user.getId().toString())
-            .organizerName(user.getName())
             .build();
   }
 
