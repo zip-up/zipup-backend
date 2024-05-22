@@ -47,7 +47,6 @@ public class UserService {
 
   @Transactional(readOnly = true)
   public Optional<User> findByIdOptional(String id) {
-    isValidUUID(id);
     return userRepository.findById(UUID.fromString(id));
   }
 
