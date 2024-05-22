@@ -7,6 +7,7 @@ import com.zipup.server.funding.dto.FundingDetailResponse;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.present.application.PresentService;
@@ -26,8 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.zipup.server.global.exception.CustomErrorCode.ACCESS_DENIED;
-import static com.zipup.server.global.exception.CustomErrorCode.ACTIVE_FUNDING;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
@@ -60,7 +60,7 @@ public class UserFundFacade implements UserFacade<Fund> {
     List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
     boolean hasActiveFunding = fundList.stream()
             .map(Fund::toSummaryResponse)
-            .noneMatch(response -> response.getPercent() < 100 && !response.getStatus().equals("완료"));
+            .noneMatch(response -> response.getPercent() < 100 && response.getDDay() < 0);
 
     if (!hasActiveFunding) throw new UserException(ACTIVE_FUNDING, userId);
 
@@ -83,12 +83,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Override
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> findMyEntityList(String userId) {
-    User targetUser = findUserById(userId);
-    List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
-
-    return fundList.stream()
-            .map(Fund::toSummaryResponse)
-            .collect(Collectors.toList());
+    return fundService.findFundingSummaryByUserIdAndStatus(userId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
   }
 
   @Override
@@ -115,10 +110,12 @@ public class UserFundFacade implements UserFacade<Fund> {
   public FundingDetailResponse findEntityDetail(String fundId, String userId) {
     isValidUUID(fundId);
     Fund targetFund = fundService.findById(fundId);
+    if (!targetFund.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
     User targetUser = userService.findById(userId);
+    if (targetUser == null || !targetUser.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
     List<Present> targetPresent = presentService.findAllByFundAndStatus(targetFund, ColumnStatus.PUBLIC);
 
-    Boolean isOrganizer = targetUser != null && targetUser.equals(targetFund.getUser());
+    Boolean isOrganizer = targetUser.equals(targetFund.getUser());
     boolean isParticipant = targetPresent.stream()
             .anyMatch(p -> p.getUser().equals(targetUser));
     int nowPresent = targetPresent.stream()
