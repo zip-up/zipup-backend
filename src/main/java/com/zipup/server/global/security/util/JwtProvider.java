@@ -178,8 +178,8 @@ public class JwtProvider {
             log.error("jwt provider :: {} {}", UNSUPPORTED_TOKEN.getMessage(), StringUtils.hasText(refreshToken));
             throw new BaseException(UNSUPPORTED_TOKEN);
         } catch (ExpiredJwtException e) {
-            log.error("jwt provider :: {} {}", EXPIRED_TOKEN.getMessage(), StringUtils.hasText(refreshToken));
-            throw new BaseException(EXPIRED_TOKEN);
+            log.error("jwt provider :: {} {}", EXPIRED_REFRESH_TOKEN.getMessage(), StringUtils.hasText(refreshToken));
+            throw new BaseException(EXPIRED_REFRESH_TOKEN);
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.error("jwt provider :: {} {}", WRONG_TYPE_TOKEN.getMessage(), StringUtils.hasText(refreshToken));
             throw new BaseException(WRONG_TYPE_TOKEN);

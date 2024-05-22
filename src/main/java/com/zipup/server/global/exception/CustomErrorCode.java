@@ -16,6 +16,7 @@ public enum CustomErrorCode {
   TOKEN_NOT_FOUND( 2005, "토큰이 존재하지 않습니다."),
   EXPIRED_TOKEN(2006,"만료된 Access 토큰입니다. Refresh 토큰을 이용해서 새로운 Access 토큰을 발급 받으세요."),
   ACCESS_DENIED(2007, "권한이 없습니다."),
+  EXPIRED_REFRESH_TOKEN(2008,"만료된 Refresh 토큰입니다. 다시 로그인해 주세요."),
 
   /**
    * 3000 : 비즈니스 오류
@@ -26,6 +27,7 @@ public enum CustomErrorCode {
   ACTIVE_FUNDING(3004, "진행 중인 펀딩 존재"),
   NOT_CANCELABLE_AMOUNT(3005, "취소 할 수 없는 금액 입니다."),
   ALREADY_CANCEL(3006, "이미 취소된 결제입니다."),
+  WITHDRAWAL_USER(3007, "탈퇴한 회원입니다."),
 
   /**
    * 4000 : 연결 오류

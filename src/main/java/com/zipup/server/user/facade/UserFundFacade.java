@@ -22,9 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
@@ -60,7 +59,7 @@ public class UserFundFacade implements UserFacade<Fund> {
     List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
     boolean hasActiveFunding = fundList.stream()
             .map(Fund::toSummaryResponse)
-            .noneMatch(response -> response.getPercent() < 100 && response.getDDay() < 0);
+            .noneMatch(response -> response.getPercent() < 100 && response.getDDay() > 0);
 
     if (!hasActiveFunding) throw new UserException(ACTIVE_FUNDING, userId);
 
@@ -83,7 +82,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Override
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> findMyEntityList(String userId) {
-    return fundService.findFundingSummaryByUserIdAndStatus(userId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
+    return fundService.findFundingSummaryByUserIdAndStatus(userId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
   }
 
   @Override
@@ -109,39 +108,20 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Transactional(readOnly = true)
   public FundingDetailResponse findEntityDetail(String fundId, String userId) {
     isValidUUID(fundId);
-    Fund targetFund = fundService.findById(fundId);
-    if (!targetFund.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
-    User nowUser = userId != null ? userService.findById(userId) : null;
-    User targetUser = targetFund.getUser();
-    if (!targetUser.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
-    List<Present> targetPresent = presentService.findAllByFundAndStatus(targetFund, ColumnStatus.PUBLIC);
+    FundingDetailResponse response = fundService.findFundingDetailByFundIdAndStatus(fundId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
+    if (response == null) throw new ResourceNotFoundException(DATA_NOT_FOUND);
 
-    Boolean isOrganizer = targetUser.equals(nowUser);
-    boolean isParticipant = targetPresent.stream()
-            .anyMatch(p -> p.getUser().equals(nowUser));
-    int nowPresent = targetPresent.stream()
-            .mapToInt(present -> present.getPayment().getBalanceAmount())
-            .sum();
-    int goalPrice = targetFund.getGoalPrice();
-    long duration = Duration.between(LocalDateTime.now(), targetFund.getFundingPeriod().getFinishFunding()).toDays();
-    String fundingStatus = duration > 0 ? String.valueOf(duration) : "완료";
+    List<PresentSummaryResponse> presentList = presentService.findPresentSummaryByFundIdAndStatus(fundId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
 
-    return FundingDetailResponse.builder()
-            .id(targetFund.getId().toString())
-            .title(targetFund.getTitle())
-            .imageUrl(targetFund.getImageUrl())
-            .productUrl(targetFund.getProductUrl())
-            .description(targetFund.getDescription())
-            .expirationDate(fundingStatus.equals("완료") ? 0 : Long.parseLong(fundingStatus))
-            .isCompleted(fundingStatus.equals("완료"))
-            .goalPrice(targetFund.getGoalPrice())
-            .percent((int) Math.round(((double) nowPresent / goalPrice) * 100))
-            .presentList(targetPresent.stream().map(Present::toSummaryResponse).collect(Collectors.toList()))
-            .isOrganizer(isOrganizer)
-            .isParticipant(isParticipant)
-            .organizer(targetUser.getId().toString())
-            .organizerName(targetUser.getName())
-            .build();
+    boolean isParticipant = presentList.stream()
+            .filter(p -> userId != null)
+            .anyMatch(p -> p.getParticipantId().equals(UUID.fromString(userId)));
+
+    response.setIsOrganizer(userId != null && UUID.fromString(userId).equals(response.getOrganizer()));
+    response.setIsParticipant(isParticipant);
+    response.setIsCompleted(response.getExpirationDate() <= 0);
+    response.setPresentList(presentList);
+    return response;
   }
 
 }
