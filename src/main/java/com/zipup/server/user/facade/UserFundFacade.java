@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
@@ -111,7 +112,7 @@ public class UserFundFacade implements UserFacade<Fund> {
     isValidUUID(fundId);
     Fund targetFund = fundService.findById(fundId);
     if (!targetFund.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
-    User nowUser = userService.findById(userId);
+    User nowUser = userService.findByIdOptional(userId).orElse(null);
     User targetUser = targetFund.getUser();
     if (!targetUser.getStatus().equals(ColumnStatus.PUBLIC)) throw new ResourceNotFoundException(DATA_NOT_FOUND);
     List<Present> targetPresent = presentService.findAllByFundAndStatus(targetFund, ColumnStatus.PUBLIC);
