@@ -75,6 +75,11 @@ public class PresentService {
     return presentRepository.findAllByUserAndStatusIsNot(user, status);
   }
 
+  @Transactional(readOnly = true)
+  public List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(String fundId, ColumnStatus presentStatus, ColumnStatus fundStatus) {
+    return presentRepository.findPresentSummaryByFundIdAndStatus(UUID.fromString(fundId), presentStatus, fundStatus);
+  }
+
   @Transactional
   public void changePrivateParticipate(Present present) {
     present.setStatus(ColumnStatus.PRIVATE);
@@ -121,15 +126,7 @@ public class PresentService {
 
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getMyParticipateList(String userId) {
-    User targetUser = userService.findById(userId);
-    List<Present> presentList = findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
-
-    presentList.forEach(present -> present.getFund().getId());
-
-    return presentList.stream()
-            .map(Present::getFund)
-            .map(Fund::toSummaryResponse)
-            .collect(Collectors.toList());
+    return presentRepository.findFundingSummaryByUserIdAndStatus(UUID.fromString(userId), ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
   }
 
   @Transactional

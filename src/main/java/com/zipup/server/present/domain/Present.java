@@ -57,13 +57,13 @@ public class Present extends BaseTimeEntity {
     int percentage = (int) Math.round(((double) payment.getBalanceAmount() / fund.getGoalPrice()) * 100);
 
     return PresentSummaryResponse.builder()
-            .id(id.toString())
+            .id(id)
             .senderName(senderName)
             .profileImage(user.getProfileImage() != null ? user.getProfileImage() : "")
             .congratsMessage(congratsMessage)
-            .participantId(user.getId().toString())
-            .fundId(fund.getId().toString())
-            .paymentId(payment.getId().toString())
+            .participantId(user.getId())
+            .fundId(fund.getId())
+            .paymentId(payment.getId())
             .contributionPercent(percentage)
             .build();
   }
