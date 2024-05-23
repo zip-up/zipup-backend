@@ -81,7 +81,7 @@ public class UserController {
   public UserListResponse getUserInfo(
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
   ) {
-    return userFacade.findUserById(user.getUsername()).toResponseList();
+    return userService.findById(user.getUsername()).toResponseList();
   }
 
   @Operation(summary = "회원 탈퇴")
