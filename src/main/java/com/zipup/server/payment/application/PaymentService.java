@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
@@ -70,7 +71,7 @@ public class PaymentService {
   public void checkPaymentInfo(String orderId, Integer amount, String userId) {
     if (isOrderIdExistInRedis(orderId, amount, userId))
       throw new UniqueConstraintException("OrderId, UserId", orderId + " " + userId);
-    redisTemplate.opsForValue().set(orderId + userId, String.valueOf(amount));
+    redisTemplate.opsForValue().set(orderId + userId, String.valueOf(amount), TimeUnit.MINUTES.toMillis(60), TimeUnit.MILLISECONDS);
   }
 
   @Transactional

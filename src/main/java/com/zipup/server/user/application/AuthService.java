@@ -18,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
-import static com.zipup.server.global.exception.CustomErrorCode.EMPTY_REFRESH_JWT;
-import static com.zipup.server.global.exception.CustomErrorCode.TOKEN_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.security.util.CookieUtil.COOKIE_TOKEN_REFRESH;
 
 @Service
@@ -77,16 +76,18 @@ public class AuthService {
   public void removeIdInRedisToken(String key) {
     Set<String> keysToDelete = redisTemplate.keys(key + "*");
 
-    if (keysToDelete != null)
-      redisTemplate.delete(keysToDelete);
+    if (keysToDelete != null && !keysToDelete.isEmpty()) {
+      for (String keyToDelete : keysToDelete) {
+        try {
+          redisTemplate.delete(keyToDelete);
+        } catch (Exception e) {
+          throw new BaseException(REDIS_ERROR);
+        }
+      }
+    }
   }
 
   public void signOut(String userId) {
-    String accessTokenInRedis = redisTemplate.opsForValue().get(userId);
-    String refreshTokenInRedis = redisTemplate.opsForValue().get(userId + "_REFRESH");
-
-    if (accessTokenInRedis == null && refreshTokenInRedis == null) throw new BaseException(TOKEN_NOT_FOUND);
-
     removeIdInRedisToken(userId);
     SecurityContextHolder.clearContext();
   }
