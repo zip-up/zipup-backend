@@ -82,7 +82,7 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
           "LEFT JOIN pre.payment pay " +
           "WHERE f.id = :fundId AND f.status = :fundStatus " +
-          "GROUP BY f.id, f.title, f.description, f.fundingPeriod.finishFunding, u.id, f.goalPrice"
+          "GROUP BY f.id, f.title, f.description, f.fundingPeriod.finishFunding, pre.id, f.goalPrice"
   )
   FundingDetailResponse findFundingDetailByFundIdAndStatus(
           @Param("fundId") UUID fundId
