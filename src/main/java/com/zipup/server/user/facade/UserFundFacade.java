@@ -111,7 +111,7 @@ public class UserFundFacade implements UserFacade<Fund> {
     FundingDetailResponse response = fundService.findFundingDetailByFundIdAndStatus(fundId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
     if (response == null) throw new ResourceNotFoundException(DATA_NOT_FOUND);
 
-    List<PresentSummaryResponse> presentList = presentService.findPresentSummaryByFundIdAndStatus(fundId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
+    List<PresentSummaryResponse> presentList = presentService.findPresentSummaryByFundIdAndStatus(fundId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
 
     boolean isParticipant = presentList.stream()
             .filter(p -> userId != null)
