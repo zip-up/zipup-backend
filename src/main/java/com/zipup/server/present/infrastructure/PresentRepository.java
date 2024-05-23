@@ -29,11 +29,11 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "u.id " +
           ") " +
           "FROM Present pre " +
-          "LEFT JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
-          "LEFT JOIN pre.fund f ON f.status = :fundStatus " +
-          "LEFT JOIN pre.payment p " +
+          "JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
+          "JOIN pre.fund f ON f.status = :fundStatus " +
+          "JOIN pre.payment p " +
           "WHERE pre.status = :presentStatus " +
-          "GROUP BY pre.id, f.id, u.id")
+          "GROUP BY pre.id, f.id, u.id, f.title, u.profileImage ")
   List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(
           @Param("userId") UUID userId
           , @Param("userStatus") ColumnStatus userStatus
