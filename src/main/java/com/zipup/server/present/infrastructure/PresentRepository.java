@@ -57,7 +57,7 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "LEFT JOIN pre.payment pay " +
           "LEFT JOIN pre.user u ON u.status = :userStatus " +
           "WHERE pre.status = :presentStatus " +
-          "GROUP BY pre.id, pre.senderName, u.id, f.id, pre.congratsMessage " +
+          "GROUP BY pre.id, pre.senderName, f.id, pre.congratsMessage " +
           "ORDER BY pay.balanceAmount DESC "
   )
   List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(
