@@ -3,6 +3,7 @@ package com.zipup.server.funding.application;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
+import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.user.application.UserService;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.DATA_NOT_FOUND;
+import static com.zipup.server.global.exception.CustomErrorCode.WITHDRAWAL_USER;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 
 @Service
@@ -50,11 +52,13 @@ public class FundService {
   }
 
   @Transactional
-  public SimpleFundingDataResponse createFunding(CreateFundingRequest request) {
+  public SimpleFundingDataResponse createFunding(CreateFundingRequest request, String userId) {
     String productUrl = request.getProductUrl();
 
     Fund targetFund = request.toEntity();
-    targetFund.setUser(userService.findById(request.getUserId()));
+    User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+    targetFund.setUser(targetUser);
 
     CrawlerResponse crawlerResponse = crawlerService.crawlingProductInfo(productUrl);
     String imageUrl = crawlerResponse == null ? ""

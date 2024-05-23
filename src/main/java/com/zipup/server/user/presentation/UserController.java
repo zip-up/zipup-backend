@@ -97,8 +97,7 @@ public class UserController {
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           final @RequestBody WithdrawalRequest withdrawalRequest
   ) {
-    withdrawalRequest.setUserId(user.getUsername());
-    return userFacade.unlinkUser(withdrawalRequest);
+    return userFacade.unlinkUser(withdrawalRequest, user.getUsername());
   }
 
   @Operation(summary = "임시 데이터", description = "임시")

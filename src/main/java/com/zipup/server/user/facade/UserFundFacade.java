@@ -41,22 +41,16 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Override
   @Transactional(readOnly = true)
   public User findUserById(String userId) {
-    return userService.findById(userId);
-  }
-
-  @Override
-  @Transactional(readOnly = true)
-  public List<Fund> findAllEntityByUserAndStatus(User user, ColumnStatus status) {
-    return fundService.findAllByUserAndStatus(user, status);
+    User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+    return targetUser;
   }
 
   @Override
   @Transactional
-  public SimpleDataResponse unlinkUser(WithdrawalRequest withdrawalRequest) {
-    String userId = withdrawalRequest.getUserId();
-    User targetUser = userService.findById(userId);
-
-    List<Fund> fundList = findAllEntityByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
+  public SimpleDataResponse unlinkUser(WithdrawalRequest withdrawalRequest, String userId) {
+    User targetUser = findUserById(userId);
+    List<Fund> fundList = fundService.findAllByUserAndStatus(targetUser, ColumnStatus.PUBLIC);
     boolean hasActiveFunding = fundList.stream()
             .map(Fund::toSummaryResponse)
             .noneMatch(response -> response.getPercent() < 100 && response.getDDay() > 0);
@@ -82,13 +76,14 @@ public class UserFundFacade implements UserFacade<Fund> {
   @Override
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> findMyEntityList(String userId) {
+    findUserById(userId);
     return fundService.findFundingSummaryByUserIdAndStatus(userId, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
   }
 
   @Override
   @Transactional
-  public List<PresentSummaryResponse> deleteEntity(FundingCancelRequest request) {
-    User targetUser = findUserById(request.getUserId());
+  public List<PresentSummaryResponse> deleteEntity(FundingCancelRequest request, String userId) {
+    User targetUser = findUserById(userId);
     Fund targetFund = fundService.findById(request.getFundingId());
 
     if (!targetFund.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);

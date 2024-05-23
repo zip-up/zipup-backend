@@ -60,7 +60,6 @@ public class FundServiceTest {
   @BeforeEach
   void setUp() {
     createFundingRequest = new CreateFundingRequest(
-            null,
             "Title",
             "Road Address",
             "Detail Address",
@@ -245,9 +244,10 @@ public class FundServiceTest {
 
     when(crawlerResponse.getImageUrl()).thenReturn("https://ImageURL");
     when(crawlerService.crawlingProductInfo("https://ProductURL")).thenReturn(crawlerResponse);
+    when(userService.findById(userId)).thenReturn(user);
     when(fundRepository.save(any(Fund.class))).thenReturn(mockFund1);
 
-    SimpleFundingDataResponse response = fundService.createFunding(createFundingRequest);
+    SimpleFundingDataResponse response = fundService.createFunding(createFundingRequest, userId);
 
     assertNotNull(response);
     assertEquals(response.getId(), mockFund1.getId().toString());

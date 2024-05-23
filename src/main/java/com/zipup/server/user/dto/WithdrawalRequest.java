@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WithdrawalRequest {
-  @Schema(description = "회원 id")
-  private String userId;
-
   @Schema(description = "탈퇴 사유", required = true)
   private String withdrawalReason;
 }

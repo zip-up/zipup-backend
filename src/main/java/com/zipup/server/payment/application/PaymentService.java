@@ -5,6 +5,7 @@ import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UniqueConstraintException;
 import com.zipup.server.global.util.entity.ColumnStatus;
+import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentConfirmRequest;
@@ -12,10 +13,12 @@ import com.zipup.server.payment.dto.PaymentResultResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
 import com.zipup.server.present.domain.Present;
+import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.infrastructure.PresentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
@@ -221,6 +224,55 @@ public class PaymentService {
             .map(TossPaymentResponse::getCancels)
             .map(payment::toCancelResponse)
             .orElseThrow(() -> new BaseException(UNKNOWN_ERROR));
+  }
+
+  @Transactional
+  public PaymentResultResponse cancelPaymentByPresent(ParticipateCancelRequest request, Payment payment) {
+    PaymentStatus paymentStatus = payment.getPaymentStatus();
+    if (paymentStatus.equals(CANCELED) || paymentStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)) throw new PaymentException(HttpStatus.CONFLICT.value(), ALREADY_CANCEL);
+    Integer cancelAmount = request.getCancelAmount();
+    if (cancelAmount != null && payment.getBalanceAmount() < cancelAmount)
+      throw new PaymentException(HttpStatus.FORBIDDEN.value(), NOT_CANCELABLE_AMOUNT);
+
+    String idempotencyKey = payment.getId().toString();
+    if (payment.getPaymentStatus().equals(INVALID_PAYMENT_STATUS)) {
+      changeCancelInvalidPaymentStatus(payment);
+      return payment.toCancelResponse(null);
+    }
+
+    Map<String, Object> data = createCancelData(request, idempotencyKey);
+
+    Mono<TossPaymentResponse> response = tossService.post("/" + payment.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
+    updateCancelPaymentStatus(request, payment);
+
+    return Optional.ofNullable(response.block())
+            .map(TossPaymentResponse::getCancels)
+            .map(payment::toCancelResponse)
+            .orElseThrow(() -> new BaseException(UNKNOWN_ERROR));
+  }
+
+  private Map<String, Object> createCancelData(ParticipateCancelRequest request, String idempotencyKey) {
+    Map<String, Object> data = new HashMap<>();
+    data.put("idempotencyKey", idempotencyKey);
+    data.put("cancelReason", request.getCancelReason());
+    if (request.getCancelAmount() != null) {
+      data.put("cancelAmount", request.getCancelAmount());
+    }
+    if (request.getRefundReceiveAccount() != null) {
+      data.put("refundReceiveAccount", request.getRefundReceiveAccount());
+    }
+    return data;
+  }
+
+
+  private void updateCancelPaymentStatus(ParticipateCancelRequest request, Payment payment) {
+    Integer cancelAmount = request.getCancelAmount();
+    if (cancelAmount == null || cancelAmount.equals(payment.getBalanceAmount())) {
+      changeCancelPaymentStatus(payment);
+    } else if (cancelAmount < payment.getBalanceAmount()) {
+      payment.setBalanceAmount(payment.getBalanceAmount() - cancelAmount);
+      changePartialCancelPaymentStatus(payment);
+    }
   }
 
   @Transactional
