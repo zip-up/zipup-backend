@@ -28,7 +28,7 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
             "u.id " +
           ") " +
           "FROM Fund f " +
-          "LEFT JOIN f.user u ON u.id = :userId AND u.status = :userStatus " +
+          "JOIN f.user u ON u.id = :userId AND u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
           "LEFT JOIN pre.payment p " +
           "WHERE f.status = :fundStatus " +

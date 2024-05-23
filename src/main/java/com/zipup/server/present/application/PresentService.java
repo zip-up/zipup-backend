@@ -61,23 +61,13 @@ public class PresentService {
   }
 
   @Transactional(readOnly = true)
-  public List<Present> findAllByUserAndStatus(User user, ColumnStatus status) {
-    return presentRepository.findAllByUserAndStatus(user, status);
-  }
-
-  @Transactional(readOnly = true)
-  public List<Present> findAllByFundAndStatus(Fund fund, ColumnStatus status) {
-    return presentRepository.findAllByFundAndStatus(fund, status);
-  }
-
-  @Transactional(readOnly = true)
   public List<Present> findAllByUserAndStatusIsNot(User user, ColumnStatus status) {
     return presentRepository.findAllByUserAndStatusIsNot(user, status);
   }
 
   @Transactional(readOnly = true)
-  public List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(String fundId, ColumnStatus presentStatus, ColumnStatus fundStatus) {
-    return presentRepository.findPresentSummaryByFundIdAndStatus(UUID.fromString(fundId), presentStatus, fundStatus);
+  public List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(String fundId, ColumnStatus userStatus, ColumnStatus presentStatus, ColumnStatus fundStatus) {
+    return presentRepository.findPresentSummaryByFundIdAndStatus(UUID.fromString(fundId), userStatus, presentStatus, fundStatus);
   }
 
   @Transactional

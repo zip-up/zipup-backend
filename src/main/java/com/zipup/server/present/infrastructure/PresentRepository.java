@@ -1,6 +1,5 @@
 package com.zipup.server.present.infrastructure;
 
-import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.payment.domain.Payment;
@@ -19,7 +18,6 @@ import java.util.UUID;
 @Repository
 public interface PresentRepository extends JpaRepository<Present, UUID> {
   List<Present> findAllByUserAndStatus(User user, ColumnStatus status);
-  List<Present> findAllByFundAndStatus(Fund fund, ColumnStatus status);
   List<Present> findAllByUserAndStatusIsNot(User user, ColumnStatus status);
   Optional<Present> findByPayment(Payment payment);
   @Query("SELECT new com.zipup.server.funding.dto.FundingSummaryResponse(" +
@@ -53,13 +51,14 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "pay.id " +
           ") " +
           "FROM Present pre " +
-          "LEFT JOIN pre.fund f ON f.id = :fundId AND f.status = :fundStatus " +
+          "JOIN pre.fund f ON f.id = :fundId AND f.status = :fundStatus " +
           "LEFT JOIN pre.payment pay " +
-          "LEFT JOIN pre.user u " +
+          "LEFT JOIN pre.user u ON u.status = :userStatus " +
           "WHERE pre.status = :presentStatus " +
           "GROUP BY pre.id, pre.senderName, u.id, f.id, pre.congratsMessage")
   List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(
           @Param("fundId") UUID fundId
+          , @Param("userStatus") ColumnStatus userStatus
           , @Param("presentStatus") ColumnStatus presentStatus
           , @Param("fundStatus") ColumnStatus fundStatus
   );
