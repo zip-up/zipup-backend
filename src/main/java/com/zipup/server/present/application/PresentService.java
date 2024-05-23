@@ -142,6 +142,13 @@ public class PresentService {
             .collect(Collectors.toList());
   }
 
+//  @Transactional(readOnly = true)
+//  public List<PaymentHistoryResponse> getPaymentList(String userId) {
+//    User targetUser = userService.findById(userId);
+//    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+//    return presentRepository.findPaymentHistoryByUserAndStatus(targetUser, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
+//  }
+
   private PaymentHistoryResponse createPaymentHistoryResponse(Present present) {
     Payment targetPayment = present.getPayment();
     Fund targetFund = present.getFund();
@@ -189,6 +196,7 @@ public class PresentService {
     switch (status) {
       case DONE:
       case READY:
+      case INVALID_PAYMENT_STATUS:
       case WAITING_FOR_DEPOSIT:
         return "결제완료";
       case CANCELED:

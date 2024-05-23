@@ -18,7 +18,6 @@ import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import com.zipup.server.user.dto.WithdrawalRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,9 +65,7 @@ public class UserFundFacade implements UserFacade<Fund> {
 
     userService.setWithdrawalReason(targetUser, withdrawalRequest.getWithdrawalReason());
     userService.unlinkStatusUser(targetUser);
-    authService.removeIdInRedisToken(userId);
-
-    SecurityContextHolder.clearContext();
+    authService.signOut(userId);
 
     return new SimpleDataResponse(userId);
   }
