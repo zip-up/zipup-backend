@@ -52,8 +52,7 @@ public class PresentController {
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipatePresentRequest request
   ) {
-    request.setParticipateId(user.getUsername());
-    return presentService.participateFunding(request);
+    return presentService.participateFunding(request, user.getUsername());
   }
 
   @Operation(summary = "펀딩 참여 취소", description = "펀딩 결제 취소 - 참여자")
@@ -70,8 +69,7 @@ public class PresentController {
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipateCancelRequest request
   ) {
-    request.setUserId(user.getUsername());
-    return presentService.cancelParticipate(request);
+    return presentService.cancelParticipate(request, user.getUsername());
   }
 
   @Operation(summary = "내가 참여한 펀딩 목록 조회",

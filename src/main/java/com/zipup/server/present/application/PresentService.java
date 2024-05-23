@@ -5,13 +5,11 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
-import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
-import com.zipup.server.payment.dto.PaymentCancelRequest;
 import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
@@ -21,7 +19,6 @@ import com.zipup.server.present.infrastructure.PresentRepository;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +31,6 @@ import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
-import static com.zipup.server.global.util.entity.PaymentStatus.CANCELED;
-import static com.zipup.server.global.util.entity.PaymentStatus.INVALID_PAYMENT_STATUS_CANCELED;
 
 @Service
 @RequiredArgsConstructor
@@ -87,17 +82,16 @@ public class PresentService {
   }
 
   @Transactional
-  public SimpleDataResponse participateFunding(ParticipatePresentRequest request) {
-    String participateId = request.getParticipateId();
+  public SimpleDataResponse participateFunding(ParticipatePresentRequest request, String participateId) {
+    User targetUser = userService.findById(participateId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+
     String fundingId = request.getFundingId();
     String paymentId = request.getPaymentId();
 
-    isValidUUID(fundingId);
-    isValidUUID(paymentId);
-
     Present participateFunding = Present.builder()
+            .user(targetUser)
             .fund(fundService.findById(fundingId))
-            .user(userService.findById(participateId))
             .payment(paymentService.findById(paymentId))
             .senderName(request.getSenderName())
             .congratsMessage(request.getCongratsMessage())
@@ -120,30 +114,16 @@ public class PresentService {
   }
 
   @Transactional
-  public String cancelParticipate(ParticipateCancelRequest request) {
-    User targetUser = userService.findById(request.getUserId());
+  public String cancelParticipate(ParticipateCancelRequest request, String userId) {
+    User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+
     Payment targetPayment = paymentService.findById(request.getPaymentId());
     Present targetPresent = findByPayment(targetPayment);
-    PaymentStatus paymentStatus = targetPayment.getPaymentStatus();
 
     if (!targetPresent.getUser().equals(targetUser)) throw new BaseException(ACCESS_DENIED);
-    if (paymentStatus.equals(CANCELED) || paymentStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)) throw new PaymentException(HttpStatus.CONFLICT.value(), ALREADY_CANCEL);
 
-    Integer cancelAmount = request.getCancelAmount();
-    if (cancelAmount != null && targetPayment.getBalanceAmount() < cancelAmount)
-      throw new PaymentException(HttpStatus.FORBIDDEN.value(), NOT_CANCELABLE_AMOUNT);
-
-    String paymentKey = targetPayment.getPaymentKey();
-
-    PaymentCancelRequest paymentCancelRequest = PaymentCancelRequest.builder()
-            .userId(request.getUserId())
-            .paymentKey(paymentKey)
-            .cancelReason(request.getCancelReason())
-            .cancelAmount(cancelAmount)
-            .refundReceiveAccount(request.getRefundReceiveAccount())
-            .build();
-
-    paymentService.cancelPayment(paymentCancelRequest);
+    paymentService.cancelPaymentByPresent(request, targetPayment);
     changePrivateParticipate(targetPresent);
     setPresentCancelReason(targetPresent, request.getCancelReason());
 
@@ -153,6 +133,7 @@ public class PresentService {
   @Transactional(readOnly = true)
   public List<PaymentHistoryResponse> getMyPaymentList(String userId) {
     User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
     List<Present> presentList = findAllByUserAndStatusIsNot(targetUser, ColumnStatus.UNLINK);
 
     return presentList.stream()

@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ParticipatePresentRequest {
-  @Schema(description = "참여자 식별자")
-  private String participateId;
   @Schema(description = "펀딩 식별자")
   private String fundingId;
   @Schema(description = "결제 정보 식별자")

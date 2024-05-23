@@ -9,8 +9,6 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class FundingCancelRequest {
-  @Schema(description = "주최자 id")
-  private String userId;
   @Schema(description = "펀딩 id")
   private String fundingId;
   @Schema(description = "취소 사유", required = true)

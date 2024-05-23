@@ -79,7 +79,6 @@ public class PresentServiceTest {
             .build();
 
     participateRequest = ParticipatePresentRequest.builder()
-            .participateId(userId)
             .paymentId(paymentId)
             .fundingId(fundId)
             .congratsMessage("mock-congrats")
@@ -87,7 +86,6 @@ public class PresentServiceTest {
             .build();
 
     cancelRequest = ParticipateCancelRequest.builder()
-            .userId(userId)
             .cancelAmount(1000)
             .cancelReason("mock-reason")
             .build();
@@ -97,15 +95,15 @@ public class PresentServiceTest {
   @DisplayName("present 조회 성공")
   void testFindPresentByUserAndFund_Success() {
     // given
-    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent1));
+    when(presentRepository.findById(UUID.fromString(presentId))).thenReturn(Optional.of(mockPresent1));
 
     // when
-    Optional<Present> targetPresent = presentRepository.findByUserAndFund(user, fund);
+    Optional<Present> targetPresent = presentRepository.findById(UUID.fromString(presentId));
 
     // then
     Assertions.assertTrue(targetPresent.isPresent());
     assertEquals(mockPresent1, targetPresent.get());
-    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(presentRepository).findById(UUID.fromString(presentId));
   }
 
   @Test
@@ -114,27 +112,27 @@ public class PresentServiceTest {
     // when & then
     ResourceNotFoundException thrown = assertThrows(
             ResourceNotFoundException.class,
-            () -> presentService.findByUserAndFund(User.builder().build(), fund)
+            () -> presentService.findById(presentId)
     );
     Assertions.assertNotNull(thrown);
     assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
-    verify(presentRepository, times(0)).findByUserAndFund(user, fund);
+    verify(presentRepository, times(0)).findById(UUID.fromString(presentId));
   }
 
   @Test
   @DisplayName("present 조회 없을 때")
   void testFindPresentByUserAndFund_NotFound() {
     // given
-    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.empty());
+    when(presentRepository.findById(UUID.fromString(presentId))).thenReturn(Optional.empty());
 
     // when & then
     ResourceNotFoundException thrown = assertThrows(
             ResourceNotFoundException.class,
-            () -> presentService.findByUserAndFund(user, fund)
+            () -> presentService.findById(presentId)
     );
     Assertions.assertNotNull(thrown);
     assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
-    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(presentRepository).findById(UUID.fromString(presentId));
   }
 
   @Test
@@ -243,7 +241,7 @@ public class PresentServiceTest {
     when(userService.findById(userId)).thenReturn(user);
     when(paymentService.findById(paymentId)).thenReturn(payment);
     when(presentRepository.save(any(Present.class))).thenReturn(mockPresent1);
-    SimpleDataResponse response = presentService.participateFunding(participateRequest);
+    SimpleDataResponse response = presentService.participateFunding(participateRequest, userId);
 
     assertNotNull(response);
     assertEquals(response.getId(), mockPresent1.getId().toString());
@@ -254,7 +252,6 @@ public class PresentServiceTest {
   @DisplayName("펀딩 참여 시도 시 invalid uuid")
   public void testParticipateFunding_InvalidUUID() {
     participateRequest = ParticipatePresentRequest.builder()
-            .participateId(userId)
             .paymentId(paymentId)
             .fundingId("invalidId")
             .congratsMessage("mock-congrats")
@@ -265,7 +262,7 @@ public class PresentServiceTest {
 
     UUIDException thrown = assertThrows(
             UUIDException.class,
-            () -> presentService.participateFunding(participateRequest)
+            () -> presentService.participateFunding(participateRequest, userId)
     );
     assertNotNull(thrown);
     assertEquals(thrown.getStatus(), INVALID_USER_UUID);
@@ -279,7 +276,6 @@ public class PresentServiceTest {
     String invalidId = UUID.randomUUID().toString();
 
     participateRequest = ParticipatePresentRequest.builder()
-            .participateId(userId)
             .paymentId(paymentId)
             .fundingId(invalidId)
             .congratsMessage("mock-congrats")
@@ -290,7 +286,7 @@ public class PresentServiceTest {
 
     ResourceNotFoundException thrown = assertThrows(
             ResourceNotFoundException.class,
-            () -> presentService.participateFunding(participateRequest)
+            () -> presentService.participateFunding(participateRequest, userId)
     );
     assertNotNull(thrown);
     assertEquals(thrown.getStatus(), DATA_NOT_FOUND);
@@ -303,17 +299,17 @@ public class PresentServiceTest {
   public void testCancelParticipate_success() {
     when(userService.findById(userId)).thenReturn(user);
     when(fundService.findById(fundId)).thenReturn(fund);
-    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(presentRepository.findById(UUID.fromString(presentId))).thenReturn(Optional.of(mockPresent2));
     when(mockPresent2.getUser()).thenReturn(user);
     when(mockPresent2.getPayment()).thenReturn(payment);
     when(payment.getPaymentKey()).thenReturn("payment_key");
     when(payment.getBalanceAmount()).thenReturn(10000);
 
-    String response = presentService.cancelParticipate(cancelRequest);
+    String response = presentService.cancelParticipate(cancelRequest, userId);
 
     assertNotNull(response);
     assertEquals(response, "취소 성공");
-    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(presentRepository).findById(UUID.fromString(presentId));
     verify(mockPresent2).setStatus(ColumnStatus.PRIVATE);
   }
 
@@ -322,17 +318,17 @@ public class PresentServiceTest {
   public void testCancelParticipate_AccessDenied() {
     when(userService.findById(userId)).thenReturn(user);
     when(fundService.findById(fundId)).thenReturn(fund);
-    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(presentRepository.findById(UUID.fromString(presentId))).thenReturn(Optional.of(mockPresent2));
     when(mockPresent2.getUser()).thenReturn(User.builder().id(UUID.randomUUID()).build());
 
     BaseException thrown = assertThrows(
             BaseException.class,
-            () -> presentService.cancelParticipate(cancelRequest)
+            () -> presentService.cancelParticipate(cancelRequest, userId)
     );
     assertNotNull(thrown);
     assertEquals(thrown.getStatus(), ACCESS_DENIED);
     verify(fundService).findById(fundId);
-    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(presentRepository).findById(UUID.fromString(presentId));
     verify(mockPresent2, times(0)).getPayment();
   }
 
@@ -341,7 +337,7 @@ public class PresentServiceTest {
   public void testCancelParticipate_NotCancelableAmount() {
     when(fundService.findById(fundId)).thenReturn(fund);
     when(userService.findById(userId)).thenReturn(user);
-    when(presentRepository.findByUserAndFund(user, fund)).thenReturn(Optional.of(mockPresent2));
+    when(presentRepository.findById(UUID.fromString(presentId))).thenReturn(Optional.of(mockPresent2));
     when(mockPresent2.getUser()).thenReturn(user);
     when(mockPresent2.getPayment()).thenReturn(payment);
     when(payment.getPaymentKey()).thenReturn("payment_key");
@@ -349,14 +345,14 @@ public class PresentServiceTest {
 
     PaymentException thrown = assertThrows(
             PaymentException.class,
-            () -> presentService.cancelParticipate(cancelRequest)
+            () -> presentService.cancelParticipate(cancelRequest, userId)
     );
     assertNotNull(thrown);
     assertEquals(thrown.getStatus(), HttpStatus.FORBIDDEN.value());
     assertEquals(thrown.getCode(), "NOT_CANCELABLE_AMOUNT");
     assertEquals(thrown.getMessage(), "취소 할 수 없는 금액 입니다.");
     verify(fundService).findById(fundId);
-    verify(presentRepository).findByUserAndFund(user, fund);
+    verify(presentRepository).findById(UUID.fromString(presentId));
     verify(paymentService, times(0)).cancelPayment(any(PaymentCancelRequest.class));
     verify(mockPresent2, times(0)).setStatus(ColumnStatus.PRIVATE);
   }

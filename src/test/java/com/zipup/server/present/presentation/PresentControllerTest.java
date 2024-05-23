@@ -86,14 +86,13 @@ public class PresentControllerTest {
   @WithMockUser
   public void testParticipateFunding_success() throws Exception {
     ParticipatePresentRequest participateRequest = ParticipatePresentRequest.builder()
-            .participateId(userId)
             .fundingId(fundId)
             .paymentId(paymentId)
             .build();
 
     String presentId = UUID.randomUUID().toString();
     SimpleDataResponse response = new SimpleDataResponse(presentId);
-    given(presentService.participateFunding(any(ParticipatePresentRequest.class))).willReturn(response);
+    given(presentService.participateFunding(any(ParticipatePresentRequest.class), userId)).willReturn(response);
 
     mockMvc.perform(MockMvcRequestBuilders.post(PAYMENT_END_POINT)
                     .contentType(MediaType.APPLICATION_JSON)

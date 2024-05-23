@@ -25,15 +25,17 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "f.title, " +
           "COALESCE(f.imageUrl, ''), " +
           "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE), " +
-          "CAST(COALESCE(SUM(p.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
+          "CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
           "u.id " +
           ") " +
           "FROM Present pre " +
           "JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
           "JOIN pre.fund f ON f.status = :fundStatus " +
-          "JOIN pre.payment p " +
+          "JOIN pre.payment pay " +
           "WHERE pre.status = :presentStatus " +
-          "GROUP BY pre.id, f.id, u.id, f.title, u.profileImage ")
+          "GROUP BY pre.id, f.id, u.id, f.title, u.profileImage " +
+          "ORDER BY pay.balanceAmount DESC "
+  )
   List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(
           @Param("userId") UUID userId
           , @Param("userStatus") ColumnStatus userStatus
@@ -55,7 +57,9 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "LEFT JOIN pre.payment pay " +
           "LEFT JOIN pre.user u ON u.status = :userStatus " +
           "WHERE pre.status = :presentStatus " +
-          "GROUP BY pre.id, pre.senderName, u.id, f.id, pre.congratsMessage")
+          "GROUP BY pre.id, pre.senderName, u.id, f.id, pre.congratsMessage " +
+          "ORDER BY pay.balanceAmount DESC "
+  )
   List<PresentSummaryResponse> findPresentSummaryByFundIdAndStatus(
           @Param("fundId") UUID fundId
           , @Param("userStatus") ColumnStatus userStatus

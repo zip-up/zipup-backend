@@ -15,8 +15,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CreateFundingRequest {
-  @Schema(description = "회원 아이디")
-  private String userId;
   @Schema(description = "펀딩 제목", required = true)
   private String title;
   @Schema(description = "주소", required = true)

@@ -120,8 +120,7 @@ public class FundController {
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody CreateFundingRequest request
   ) {
-    request.setUserId(user.getUsername());
-    return fundService.createFunding(request);
+    return fundService.createFunding(request, user.getUsername());
   }
 
   @Operation(summary = "주최자 - 펀딩 삭제", description = "주최자 - 펀딩 삭제")
@@ -138,8 +137,7 @@ public class FundController {
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody FundingCancelRequest request
   ) {
-    request.setUserId(user.getUsername());
-    return (List<PresentSummaryResponse>) userFacade.deleteEntity(request);
+    return (List<PresentSummaryResponse>) userFacade.deleteEntity(request, user.getUsername());
   }
 
   @Operation(summary = "인기 펀딩 목록 api", description = "참여도 퍼센트 높은 펀딩 순 + 진행 중인 펀딩 + 기간이 적게 남은 펀딩")

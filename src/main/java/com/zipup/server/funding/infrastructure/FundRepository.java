@@ -24,15 +24,17 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
             "f.title, " +
             "COALESCE(f.imageUrl, ''), " +
             "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE), " +
-            "CAST(COALESCE(SUM(p.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
+            "CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
             "u.id " +
           ") " +
           "FROM Fund f " +
           "JOIN f.user u ON u.id = :userId AND u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
-          "LEFT JOIN pre.payment p " +
+          "LEFT JOIN pre.payment pay " +
           "WHERE f.status = :fundStatus " +
-          "GROUP BY f.id, f.title, f.fundingPeriod.finishFunding, u.id, f.goalPrice")
+          "GROUP BY f.id, f.title, f.fundingPeriod.finishFunding, u.id, f.goalPrice " +
+          "ORDER BY CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int) DESC "
+  )
   List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(
           @Param("userId") UUID userId
           , @Param("userStatus") ColumnStatus userStatus
@@ -45,17 +47,17 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
             "f.title, " +
             "COALESCE(f.imageUrl, ''), " +
             "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE) , " +
-            "CAST(COALESCE(SUM(p.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
+            "CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
             "u.id " +
           ") " +
           "FROM Fund f " +
           "LEFT JOIN f.user u ON u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
-          "LEFT JOIN pre.payment p " +
+          "LEFT JOIN pre.payment pay " +
           "WHERE f.status = :fundStatus AND DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE) > 0" +
           "GROUP BY f.id, f.title, u.id " +
-          "ORDER BY CAST(COALESCE(SUM(p.balanceAmount) / f.goalPrice * 100, 0) AS int) DESC "
-          )
+          "ORDER BY CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int) DESC "
+  )
   List<FundingSummaryResponse> findPopularFundingSummaryByStatus(
           @Param("userStatus") ColumnStatus userStatus
           , @Param("presentStatus") ColumnStatus presentStatus
@@ -70,7 +72,7 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
             "COALESCE(f.imageUrl, ''), " +
             "COALESCE(f.productUrl, ''), " +
             "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE), " +
-            "CAST(COALESCE(SUM(p.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
+            "CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int), " +
             "f.goalPrice, " +
             "u.id, " +
             "u.name " +
@@ -78,9 +80,10 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
           "FROM Fund f " +
           "LEFT JOIN f.user u ON u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
-          "LEFT JOIN pre.payment p " +
+          "LEFT JOIN pre.payment pay " +
           "WHERE f.id = :fundId AND f.status = :fundStatus " +
-          "GROUP BY f.id, f.title, f.description, f.fundingPeriod.finishFunding, u.id, f.goalPrice")
+          "GROUP BY f.id, f.title, f.description, f.fundingPeriod.finishFunding, u.id, f.goalPrice"
+  )
   FundingDetailResponse findFundingDetailByFundIdAndStatus(
           @Param("fundId") UUID fundId
           , @Param("userStatus") ColumnStatus userStatus
