@@ -1,8 +1,10 @@
 package com.zipup.server.funding.application;
 
 import com.zipup.server.funding.domain.Fund;
+import com.zipup.server.funding.domain.Zipku;
 import com.zipup.server.funding.dto.*;
 import com.zipup.server.funding.infrastructure.FundRepository;
+import com.zipup.server.funding.infrastructure.ZipkuRepository;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.util.entity.ColumnStatus;
@@ -26,6 +28,7 @@ import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
 public class FundService {
 
   private final FundRepository fundRepository;
+  private final ZipkuRepository zipkuRepository;
   private final UserService userService;
   private final CrawlerService crawlerService;
 
@@ -72,6 +75,18 @@ public class FundService {
     return new SimpleFundingDataResponse(response.getId().toString(), imageUrl);
   }
 
+  @Transactional
+  public SimpleFundingDataResponse createStaticFunding(CreateFundingRequest request, String userId) {
+    Fund targetFund = request.toEntity();
+    User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+    targetFund.setUser(targetUser);
+    setImageUrl(targetFund, request.getImageUrl());
+    Fund response = fundRepository.save(targetFund);
+
+    return new SimpleFundingDataResponse(response.getId().toString(), request.getImageUrl());
+  }
+
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getFundList() {
     return fundRepository.findAll()
@@ -83,6 +98,14 @@ public class FundService {
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getPopularFundingList() {
     return fundRepository.findPopularFundingSummaryByStatus(ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, PageRequest.of(0, 10));
+  }
+
+  @Transactional(readOnly = true)
+  public List<ZipkuResponse> getStaticFundingList() {
+    return zipkuRepository.findAll()
+            .stream()
+            .map(Zipku::toSummaryResponse)
+            .collect(Collectors.toList());
   }
 
   @Transactional
