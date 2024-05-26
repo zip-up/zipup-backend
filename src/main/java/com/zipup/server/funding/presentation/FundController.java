@@ -166,6 +166,18 @@ public class FundController {
     return fundService.getPopularFundingList();
   }
 
+  @Operation(summary = "펀딩 목록 api - 요즘 핫한 집꾸템 추천!", description = "정렬 기준 없음")
+  @ApiResponses(value = {
+          @ApiResponse(
+                  responseCode = "200",
+                  description = "집꾸템 조회 성공",
+                  content = @Content(schema = @Schema(type = "집꾸템 조회 성공", implementation = FundingSummaryResponse.class)))
+  })
+  @GetMapping("/static")
+  public List<ZipkuResponse> getStaticFundingList() {
+    return fundService.getStaticFundingList();
+  }
+
   @Operation(summary = "임시 데이터", description = "임시")
   @GetMapping("/temp")
   public ResponseEntity<List<FundingSummaryResponse>> getFundList() {
