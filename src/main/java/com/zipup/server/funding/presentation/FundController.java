@@ -123,6 +123,20 @@ public class FundController {
     return fundService.createFunding(request, user.getUsername());
   }
 
+  @Operation(summary = "펀딩 주최 - 요즘 핫한 집꾸템 추천!", description = "펀딩 주최 - 요즘 핫한 집꾸템 추천!")
+  @ApiResponse(
+          responseCode = "201",
+          description = "펀딩 주최 성공",
+          content = @Content(schema = @Schema(implementation = SimpleFundingDataResponse.class)))
+  @ResponseStatus(HttpStatus.CREATED)
+  @PostMapping("/static")
+  public SimpleFundingDataResponse createStaticFunding(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
+          @RequestBody CreateFundingRequest request
+  ) {
+    return fundService.createStaticFunding(request, user.getUsername());
+  }
+
   @Operation(summary = "주최자 - 펀딩 삭제", description = "주최자 - 펀딩 삭제")
   @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "펀딩 취소 요청. 주최자 id는 비워서 요청하시면 됩니다.")
   @ApiResponses(value = {

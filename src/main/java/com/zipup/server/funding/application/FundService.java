@@ -72,6 +72,18 @@ public class FundService {
     return new SimpleFundingDataResponse(response.getId().toString(), imageUrl);
   }
 
+  @Transactional
+  public SimpleFundingDataResponse createStaticFunding(CreateFundingRequest request, String userId) {
+    Fund targetFund = request.toEntity();
+    User targetUser = userService.findById(userId);
+    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
+    targetFund.setUser(targetUser);
+    setImageUrl(targetFund, request.getImageUrl());
+    Fund response = fundRepository.save(targetFund);
+
+    return new SimpleFundingDataResponse(response.getId().toString(), request.getImageUrl());
+  }
+
   @Transactional(readOnly = true)
   public List<FundingSummaryResponse> getFundList() {
     return fundRepository.findAll()
