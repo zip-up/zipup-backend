@@ -17,6 +17,7 @@ import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.infrastructure.PresentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -168,6 +169,7 @@ public class PaymentService {
               if (tossPaymentResponse != null) {
                 Payment payment = findByPaymentKey(tossPaymentResponse.getPaymentKey());
                 payment.setPaymentStatus(tossPaymentResponse.getStatus());
+                paymentRepository.save(payment);
               }
               return Mono.justOrEmpty(tossPaymentResponse);
             });
@@ -180,6 +182,7 @@ public class PaymentService {
               if (tossPaymentResponse != null) {
                 Payment payment = findByPaymentKey(tossPaymentResponse.getPaymentKey());
                 payment.setPaymentStatus(tossPaymentResponse.getStatus());
+                paymentRepository.save(payment);
               }
               return Mono.justOrEmpty(tossPaymentResponse);
             });
