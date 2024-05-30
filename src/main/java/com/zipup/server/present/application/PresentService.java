@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
+import static com.zipup.server.global.util.entity.PaymentStatus.INVALID_PAYMENT_STATUS;
 
 @Service
 @RequiredArgsConstructor
@@ -160,10 +161,12 @@ public class PresentService {
   }
 
   private PaymentHistoryResponse toHistoryResponse(Payment payment, Present present, Boolean refundable, LocalDateTime mostRecentPaymentDateInFunding) {
-    TossPaymentResponse paymentResponse = paymentService.fetchPaymentByPaymentKey(payment.getPaymentKey()).block();
-    if (paymentResponse == null) throw new PaymentException(HttpStatus.SERVICE_UNAVAILABLE.value(), TOSS_ERROR);
-
-    PaymentStatus fetchStatus = paymentResponse.getStatus();
+    PaymentStatus fetchStatus;
+    if (!payment.getPaymentStatus().name().startsWith(INVALID_PAYMENT_STATUS.name())) {
+      TossPaymentResponse paymentResponse = paymentService.fetchPaymentByPaymentKey(payment.getPaymentKey()).block();
+      if (paymentResponse == null) throw new PaymentException(HttpStatus.SERVICE_UNAVAILABLE.value(), TOSS_ERROR);
+      fetchStatus = paymentResponse.getStatus();
+    } else fetchStatus = payment.getPaymentStatus();
 
     String historyStatus = getStatusText(fetchStatus);
     String paymentNumber = payment.getId().toString().replaceAll("-", "");
