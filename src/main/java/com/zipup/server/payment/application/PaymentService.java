@@ -7,10 +7,7 @@ import com.zipup.server.global.exception.UniqueConstraintException;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.domain.Payment;
-import com.zipup.server.payment.dto.PaymentCancelRequest;
-import com.zipup.server.payment.dto.PaymentConfirmRequest;
-import com.zipup.server.payment.dto.PaymentResultResponse;
-import com.zipup.server.payment.dto.TossPaymentResponse;
+import com.zipup.server.payment.dto.*;
 import com.zipup.server.payment.infrastructure.PaymentRepository;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
@@ -110,7 +107,8 @@ public class PaymentService {
         bank = response.getTransfer().getBankCode();
         break;
       case "휴대폰":
-        phoneNumber = response.getMobilePhone().getCustomerMobilePhone().getMasking();
+        MobilePhone mobilePhone = response.getMobilePhone();
+        phoneNumber = mobilePhone.getCustomerMobilePhone().getMasking();
         break;
       case "간편결제":
         easyPay = response.getEasyPay().getProvider();
