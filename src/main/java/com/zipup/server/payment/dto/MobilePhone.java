@@ -1,5 +1,6 @@
 package com.zipup.server.payment.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonInclude
 public class MobilePhone {
   @Schema(description = "휴대폰 정보")
   private CustomerMobilePhone customerMobilePhone;
