@@ -5,12 +5,14 @@ import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.PaymentStatus;
 import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentHistoryResponse;
+import com.zipup.server.payment.dto.TossPaymentResponse;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
@@ -19,6 +21,7 @@ import com.zipup.server.present.infrastructure.PresentRepository;
 import com.zipup.server.user.application.UserService;
 import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,13 +145,6 @@ public class PresentService {
             .collect(Collectors.toList());
   }
 
-//  @Transactional(readOnly = true)
-//  public List<PaymentHistoryResponse> getPaymentList(String userId) {
-//    User targetUser = userService.findById(userId);
-//    if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
-//    return presentRepository.findPaymentHistoryByUserAndStatus(targetUser, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC, ColumnStatus.PUBLIC);
-//  }
-
   private PaymentHistoryResponse createPaymentHistoryResponse(Present present) {
     Payment targetPayment = present.getPayment();
     Fund targetFund = present.getFund();
@@ -164,7 +160,12 @@ public class PresentService {
   }
 
   private PaymentHistoryResponse toHistoryResponse(Payment payment, Present present, Boolean refundable, LocalDateTime mostRecentPaymentDateInFunding) {
-    String historyStatus = getStatusText(payment.getPaymentStatus());
+    TossPaymentResponse paymentResponse = paymentService.fetchPaymentByPaymentKey(payment.getPaymentKey()).block();
+    if (paymentResponse == null) throw new PaymentException(HttpStatus.SERVICE_UNAVAILABLE.value(), TOSS_ERROR);
+
+    PaymentStatus fetchStatus = paymentResponse.getStatus();
+
+    String historyStatus = getStatusText(fetchStatus);
     String paymentNumber = payment.getId().toString().replaceAll("-", "");
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
@@ -195,7 +196,6 @@ public class PresentService {
   private String getStatusText(PaymentStatus status) {
     switch (status) {
       case DONE:
-      case READY:
       case INVALID_PAYMENT_STATUS:
       case WAITING_FOR_DEPOSIT:
         return "결제완료";
