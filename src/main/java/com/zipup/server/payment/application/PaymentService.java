@@ -17,7 +17,6 @@ import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.infrastructure.PresentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -210,9 +209,8 @@ public class PaymentService {
     data.put("cancelReason", request.getCancelReason());
     if (request.getCancelAmount() != null)
       data.put("cancelAmount", request.getCancelAmount());
-    if (request.getRefundReceiveAccount() != null) {
+    if (request.getRefundReceiveAccount() != null)
       data.put("refundReceiveAccount", request.getRefundReceiveAccount());
-    }
 
     Mono<TossPaymentResponse> response = tossService.post("/" + request.getPaymentKey() + "/cancel", data, TossPaymentResponse.class);
     if (request.getCancelAmount() == null || request.getCancelAmount().equals(payment.getBalanceAmount())) {
@@ -259,12 +257,10 @@ public class PaymentService {
     Map<String, Object> data = new HashMap<>();
     data.put("idempotencyKey", idempotencyKey);
     data.put("cancelReason", request.getCancelReason());
-    if (request.getCancelAmount() != null) {
+    if (request.getCancelAmount() != null)
       data.put("cancelAmount", request.getCancelAmount());
-    }
-    if (request.getRefundReceiveAccount() != null) {
+    if (request.getRefundReceiveAccount() != null)
       data.put("refundReceiveAccount", request.getRefundReceiveAccount());
-    }
     return data;
   }
 
@@ -277,11 +273,6 @@ public class PaymentService {
       payment.setBalanceAmount(payment.getBalanceAmount() - cancelAmount);
       changePartialCancelPaymentStatus(payment);
     }
-  }
-
-  @Transactional
-  public void changePrivatePayment(Payment payment) {
-    payment.setStatus(ColumnStatus.PRIVATE);
   }
 
   @Transactional
