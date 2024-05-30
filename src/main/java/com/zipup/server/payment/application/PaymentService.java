@@ -107,7 +107,10 @@ public class PaymentService {
         bank = response.getTransfer().getBankCode();
         break;
       case "휴대폰":
+        System.out.println("response :: " + response);
         MobilePhone mobilePhone = response.getMobilePhone();
+        System.out.println("mobilePhone :: " + mobilePhone);
+        System.out.println("mobilePhone.getCustomerMobilePhone() :: " + mobilePhone.getCustomerMobilePhone());
         phoneNumber = mobilePhone.getCustomerMobilePhone().getMasking();
         break;
       case "간편결제":
