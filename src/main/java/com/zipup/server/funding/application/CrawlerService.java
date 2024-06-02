@@ -7,20 +7,16 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
+import java.util.Objects;
 
 @Service
 @Slf4j
 public class CrawlerService {
-
-  @Value("${web-driver.chrome}")
-  private String chromeDriver;
 
   @Value("${selenium.port}")
   private int seleniumPort;
@@ -35,10 +31,8 @@ public class CrawlerService {
     WebDriver driver = setChromeDriver();
 
     try {
+      if (driver == null) throw new RuntimeException("chorme driver is null");
       driver.get(url);
-//      WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
-//      wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//meta[@property='og:image']")));
-
       WebElement ogTitleElement = driver.findElement(By.xpath("//meta[@property='og:title']"));
       String ogTitle = ogTitleElement.getAttribute("content");
 
@@ -50,23 +44,27 @@ public class CrawlerService {
       log.error(ex.getMessage());
       return null;
     } finally {
-      driver.quit();
+      Objects.requireNonNull(driver).quit();
     }
   }
 
   private WebDriver setChromeDriver() {
-    String seleniumUrl = null;
-    try {
-      seleniumUrl = seleniumHost + ":" + seleniumPort + seleniumPath;
+    String seleniumUrl = seleniumHost + ":" + seleniumPort + seleniumPath;
 
+    try {
+      URL url = new URL(seleniumUrl);
       DesiredCapabilities capabilities = new DesiredCapabilities();
       capabilities.setBrowserName("chrome");
-      return new RemoteWebDriver(new URL(seleniumUrl), capabilities);
-    } catch (Exception ex) {
-      log.error(seleniumUrl);
-      log.error(ex.getMessage());
-      return null;
-    }
-  }
 
+      return new RemoteWebDriver(url, capabilities);
+    } catch (MalformedURLException ex) {
+      log.error("Invalid Selenium URL :: " + seleniumUrl);
+      log.error(ex.getMessage());
+    } catch (Exception ex) {
+      log.error("Failed to create WebDriver for Selenium URL :: " + seleniumUrl);
+      log.error(ex.getMessage());
+    }
+
+    return null;
+  }
 }
