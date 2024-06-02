@@ -3,6 +3,7 @@ package com.zipup.server.funding.domain;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
+import com.zipup.server.global.util.entity.ColumnStatus;
 import com.zipup.server.global.util.entity.FundingPeriod;
 import com.zipup.server.global.util.entity.GiftCard;
 import com.zipup.server.present.domain.Present;
@@ -91,6 +92,7 @@ public class Fund extends BaseTimeEntity {
 
   private int calculatePercentage() {
     int nowPresent = presents.stream()
+            .filter(present -> present.getStatus().equals(ColumnStatus.PUBLIC))
             .mapToInt(present -> present.getPayment().getBalanceAmount())
             .sum();
     return (int) Math.round(((double) nowPresent / goalPrice) * 100);
