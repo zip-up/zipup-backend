@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 
 import static com.zipup.server.global.exception.CustomErrorCode.*;
 import static com.zipup.server.global.util.UUIDUtil.isValidUUID;
-import static com.zipup.server.global.util.entity.PaymentStatus.INVALID_PAYMENT_STATUS;
+import static com.zipup.server.global.util.entity.PaymentStatus.*;
 
 @Service
 @RequiredArgsConstructor
@@ -157,27 +157,31 @@ public class PresentService {
             .max(Comparator.naturalOrder())
             .orElse(present.getCreatedDate());
 
-    return toHistoryResponse(targetPayment, present, refundable, mostRecentPaymentDateInFunding);
+    return toHistoryResponse(targetPayment, present, targetFund, refundable, mostRecentPaymentDateInFunding);
   }
 
-  private PaymentHistoryResponse toHistoryResponse(Payment payment, Present present, Boolean refundable, LocalDateTime mostRecentPaymentDateInFunding) {
+  private PaymentHistoryResponse toHistoryResponse(Payment payment, Present present, Fund fund, Boolean refundable, LocalDateTime mostRecentPaymentDateInFunding) {
     PaymentStatus fetchStatus;
-    if (!payment.getPaymentStatus().name().startsWith(INVALID_PAYMENT_STATUS.name())) {
+    PaymentStatus previousStatus = payment.getPaymentStatus();
+    if (!previousStatus.name().startsWith(INVALID_PAYMENT_STATUS.name())) {
       TossPaymentResponse paymentResponse = paymentService.fetchPaymentByPaymentKey(payment.getPaymentKey()).block();
       if (paymentResponse == null) throw new PaymentException(HttpStatus.SERVICE_UNAVAILABLE.value(), TOSS_ERROR);
       fetchStatus = paymentResponse.getStatus();
-    } else fetchStatus = payment.getPaymentStatus();
+    } else fetchStatus = previousStatus;
+
+    if (!fetchStatus.equals(previousStatus) && (fetchStatus.equals(CANCELED) || fetchStatus.equals(INVALID_PAYMENT_STATUS_CANCELED)))
+      changePrivateParticipate(present);
 
     String historyStatus = getStatusText(fetchStatus);
-    String paymentNumber = payment.getId().toString().replaceAll("-", "");
+    String paymentNumber = payment.getId().toString();
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
-    boolean isDepositCompleted = payment.getPaymentStatus().equals(PaymentStatus.DONE);
+    boolean isDepositCompleted = previousStatus.equals(PaymentStatus.DONE);
     if (refundable) refundable = !historyStatus.startsWith("취소");
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
-            .fundingName(present.getFund().getTitle())
-            .fundingImage(present.getFund().getImageUrl())
+            .fundingName(fund.getTitle())
+            .fundingImage(fund.getImageUrl())
             .paymentDate(payment.getCreatedDate().format(FORMATTER))
             .mostRecentPaymentDateInFunding(mostRecentPaymentDateInFunding.format(FORMATTER))
             .status(historyStatus)
