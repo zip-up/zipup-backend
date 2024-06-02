@@ -176,7 +176,7 @@ public class PresentService {
     String paymentNumber = payment.getId().toString();
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = previousStatus.equals(PaymentStatus.DONE);
-    if (refundable) refundable = historyStatus.startsWith("취소");
+    if (refundable) refundable = !historyStatus.startsWith("취소");
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
