@@ -57,7 +57,7 @@ services:
   zipup-selenium:
     networks:
       - app-tier
-    image: selenium/standalone-chrome:4.1.0-20211209
+    image: selenium/standalone-chrome:latest
     restart: unless-stopped
     container_name: zipup-selenium
     ports:
