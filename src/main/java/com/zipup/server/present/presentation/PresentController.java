@@ -1,7 +1,6 @@
 package com.zipup.server.present.presentation;
 
 import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.ErrorResponse;
 import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.present.application.PresentService;
@@ -41,7 +40,7 @@ public class PresentController {
           @ApiResponse(
                   responseCode = "200",
                   description = "참여 성공",
-                  content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+                  content = @Content(schema = @Schema(implementation = PresentSuccessResponse.class))),
           @ApiResponse(
                   responseCode = "400",
                   description = "잘못된 UUID 형태",

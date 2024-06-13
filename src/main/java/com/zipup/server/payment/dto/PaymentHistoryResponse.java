@@ -1,5 +1,6 @@
 package com.zipup.server.payment.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentHistoryResponse {
   @Schema(description = "결제 식별자 값")
   private String id;
@@ -33,4 +35,6 @@ public class PaymentHistoryResponse {
   private Boolean isVirtualAccount;
   @Schema(description = "입금 처리 완료 여부")
   private Boolean isDepositCompleted;
+  @Schema(description = "가상 계좌 정보")
+  private VirtualAccount virtualAccount;
 }
