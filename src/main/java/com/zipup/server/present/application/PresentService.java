@@ -3,7 +3,6 @@ package com.zipup.server.present.application;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
-import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.PaymentException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
@@ -193,7 +192,12 @@ public class PresentService {
     String paymentNumber = payment.getId().toString();
     boolean isVirtualAccount = payment.getPaymentMethod().equals("가상계좌");
     boolean isDepositCompleted = previousStatus.equals(PaymentStatus.DONE);
+    VirtualAccount virtualAccount = null;
     if (refundable) refundable = !historyStatus.startsWith("취소");
+    if (isVirtualAccount) virtualAccount = VirtualAccount.builder()
+            .bankCode(payment.getBank())
+            .accountNumber(payment.getAccountNumber())
+            .build();
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
@@ -207,6 +211,7 @@ public class PresentService {
             .refundable(refundable)
             .isVirtualAccount(isVirtualAccount)
             .isDepositCompleted(isDepositCompleted)
+            .virtualAccount(virtualAccount)
             .build();
   }
 
