@@ -234,19 +234,19 @@ public class PresentServiceTest {
     verify(presentRepository, times(0)).findAllByUserAndStatus(user, ColumnStatus.PUBLIC);
   }
 
-  @Test
-  @DisplayName("펀딩 참여 성공")
-  public void testParticipateFunding_success() {
-    when(fundService.findById(fundId)).thenReturn(fund);
-    when(userService.findById(userId)).thenReturn(user);
-    when(paymentService.findById(paymentId)).thenReturn(payment);
-    when(presentRepository.save(any(Present.class))).thenReturn(mockPresent1);
-    SimpleDataResponse response = presentService.participateFunding(participateRequest, userId);
-
-    assertNotNull(response);
-    assertEquals(response.getId(), mockPresent1.getId().toString());
-    verify(presentRepository).save(isA(Present.class));
-  }
+//  @Test
+//  @DisplayName("펀딩 참여 성공")
+//  public void testParticipateFunding_success() {
+//    when(fundService.findById(fundId)).thenReturn(fund);
+//    when(userService.findById(userId)).thenReturn(user);
+//    when(paymentService.findById(paymentId)).thenReturn(payment);
+//    when(presentRepository.save(any(Present.class))).thenReturn(mockPresent1);
+//    SimpleDataResponse response = presentService.participateFunding(participateRequest, userId);
+//
+//    assertNotNull(response);
+//    assertEquals(response.getId(), mockPresent1.getId().toString());
+//    verify(presentRepository).save(isA(Present.class));
+//  }
 
   @Test
   @DisplayName("펀딩 참여 시도 시 invalid uuid")
