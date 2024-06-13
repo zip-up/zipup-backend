@@ -13,9 +13,11 @@ import com.zipup.server.payment.application.PaymentService;
 import com.zipup.server.payment.domain.Payment;
 import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.payment.dto.TossPaymentResponse;
+import com.zipup.server.payment.dto.VirtualAccount;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
+import com.zipup.server.present.dto.PresentSuccessResponse;
 import com.zipup.server.present.dto.PresentSummaryResponse;
 import com.zipup.server.present.infrastructure.PresentRepository;
 import com.zipup.server.user.application.UserService;
@@ -86,22 +88,37 @@ public class PresentService {
   }
 
   @Transactional
-  public SimpleDataResponse participateFunding(ParticipatePresentRequest request, String participateId) {
+  public PresentSuccessResponse participateFunding(ParticipatePresentRequest request, String participateId) {
     User targetUser = userService.findById(participateId);
     if (targetUser.getStatus().equals(ColumnStatus.UNLINK)) throw new BaseException(WITHDRAWAL_USER);
 
     String fundingId = request.getFundingId();
     String paymentId = request.getPaymentId();
+    Payment payment = paymentService.findById(paymentId);
 
     Present participateFunding = Present.builder()
             .user(targetUser)
             .fund(fundService.findById(fundingId))
-            .payment(paymentService.findById(paymentId))
+            .payment(payment)
             .senderName(request.getSenderName())
             .congratsMessage(request.getCongratsMessage())
             .build();
 
-    return new SimpleDataResponse(presentRepository.save(participateFunding).getId().toString());
+    String paymentMethod = payment.getPaymentMethod();
+    boolean isVirtualAccount = paymentMethod.equals("가상계좌");
+    VirtualAccount virtualAccount = null;
+    if (isVirtualAccount) virtualAccount = VirtualAccount.builder()
+            .accountNumber(payment.getAccountNumber())
+            .bankCode(payment.getBank())
+            .build();
+
+    PresentSuccessResponse response = PresentSuccessResponse.builder()
+            .id(presentRepository.save(participateFunding).getId())
+            .method(paymentMethod)
+            .virtualAccount(virtualAccount)
+            .build();
+
+    return response;
   }
 
   @Transactional(readOnly = true)

@@ -1,5 +1,6 @@
 package com.zipup.server.payment.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.zipup.server.global.util.entity.RefundStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class VirtualAccount {
   @Schema(description = "가상계좌 타입. '일반', '고정' 중 하나")
   private String accountType;

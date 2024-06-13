@@ -7,6 +7,7 @@ import com.zipup.server.payment.dto.PaymentHistoryResponse;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.dto.ParticipateCancelRequest;
 import com.zipup.server.present.dto.ParticipatePresentRequest;
+import com.zipup.server.present.dto.PresentSuccessResponse;
 import com.zipup.server.present.dto.PresentSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -48,7 +49,7 @@ public class PresentController {
   })
   @ResponseStatus(HttpStatus.OK)
   @PostMapping("")
-  public SimpleDataResponse participateFunding(
+  public PresentSuccessResponse participateFunding(
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody ParticipatePresentRequest request
   ) {
