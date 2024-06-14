@@ -133,6 +133,15 @@ public class PaymentService {
     paymentRepository.save(paymentResult);
     redisTemplate.delete(request.getOrderId() + userId);
 
+    PaymentResultResponse paymentResultResponse = paymentResult.toDetailResponse();
+    if (method.equals("가상계좌")) {
+      VirtualAccount virtualAccount = VirtualAccount.builder()
+              .accountNumber(accountNumber)
+              .bankCode(bank)
+              .build();
+      paymentResultResponse.setVirtualAccount(virtualAccount);
+    }
+
     return paymentResult.toDetailResponse();
   }
 
