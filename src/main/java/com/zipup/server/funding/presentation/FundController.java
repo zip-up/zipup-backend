@@ -94,7 +94,6 @@ public class FundController {
   @GetMapping("")
   public FundingDetailResponse getFundingDetail(
           final HttpServletRequest httpServletRequest,
-          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestParam(value = "funding") String fundId
   ) {
     String accessToken = jwtProvider.resolveToken(httpServletRequest);

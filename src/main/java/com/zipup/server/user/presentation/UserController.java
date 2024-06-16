@@ -100,6 +100,23 @@ public class UserController {
     return userFacade.unlinkUser(withdrawalRequest, user.getUsername());
   }
 
+  @Operation(summary = "배송지 등록", description = "배송지 & 전화번호 등록")
+  @PostMapping("/pickup")
+  public SimpleDataResponse setPickupInfo(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
+          @RequestBody PickUpInfoRequest request
+  ) {
+    return userService.setPickupInfo(user.getUsername(), request);
+  }
+
+  @Operation(summary = "배송지 조회", description = "배송지 & 전화번호 조회")
+  @GetMapping("/pickup")
+  public PickUpInfoRequest getPickupInfo(
+          final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
+  ) {
+    return userService.getPickupInfo(user.getUsername());
+  }
+
   @Operation(summary = "임시 데이터", description = "임시")
   @GetMapping("/temp")
   public ResponseEntity<List<UserListResponse>> getUserList() {
