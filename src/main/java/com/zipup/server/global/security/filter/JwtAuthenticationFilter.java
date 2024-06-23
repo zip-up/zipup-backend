@@ -43,6 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final String[] AUTH_FILTER_LIST = {
           "/api/v1/.*/list",
           "/api/v1/user",
+          "/api/v1/user/.*",
           "/api/v1/fund",
           "/api/v1/present/payment/list",
           "/api/v1/payment/.*",
