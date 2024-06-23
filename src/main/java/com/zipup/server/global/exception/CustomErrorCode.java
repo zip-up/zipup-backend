@@ -28,6 +28,7 @@ public enum CustomErrorCode {
   NOT_CANCELABLE_AMOUNT(3005, "취소 할 수 없는 금액 입니다."),
   ALREADY_CANCEL(3006, "이미 취소된 결제입니다."),
   WITHDRAWAL_USER(3007, "탈퇴한 회원입니다."),
+  INVALID_USER_INFO(3008, "잘못된 입력 정보입니다."),
 
   /**
    * 4000 : 연결 오류

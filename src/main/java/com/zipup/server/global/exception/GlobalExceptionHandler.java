@@ -15,6 +15,7 @@ import javax.persistence.NoResultException;
 import javax.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 
+import static com.zipup.server.global.exception.CustomErrorCode.INVALID_USER_INFO;
 import static com.zipup.server.global.exception.CustomErrorCode.UNIQUE_CONSTRAINT;
 
 @Slf4j
@@ -72,7 +73,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BaseException.class)
   protected ResponseEntity<ErrorResponse> handleBaseException(BaseException ex) {
-    log.error("--- CustomException ---", ex);
+    log.error("--- CustomAuthorizedException ---", ex);
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ErrorResponse.toErrorResponse(ex.getStatus()));
   }
@@ -108,8 +109,15 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.CONFLICT)
   @ExceptionHandler(UniqueConstraintException.class)
   public ErrorResponse handleUniqueConstraintException(UniqueConstraintException ex) {
-    log.error("--- ResourceNotFoundException ---", ex);
-    return new ErrorResponse(UNIQUE_CONSTRAINT.getCode(), ex.getMessage(), "UNIQUE_CONSTRAINT");
+    log.error("--- UniqueConstraintException ---", ex);
+    return new ErrorResponse(UNIQUE_CONSTRAINT.getCode(), ex.getMessage(), UNIQUE_CONSTRAINT.name());
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler(InvalidPickUpInfoException.class)
+  public ErrorResponse handleInvalidPickUpInfoException(InvalidPickUpInfoException ex) {
+    log.error("--- InvalidPickUpInfoException ---", ex);
+    return new ErrorResponse(INVALID_USER_INFO.getCode(), ex.getMessage(), INVALID_USER_INFO.name());
   }
 
 }
