@@ -25,7 +25,7 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "f.title, " +
           "COALESCE(f.imageUrl, ''), " +
           "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE), " +
-          "CAST(COALESCE((SELECT SUM(p.balanceAmount) FROM Payment p JOIN p.present pr AND p.status = :presentStatus WHERE pr.fund.id = f.id), 0) / f.goalPrice * 100 AS int), " +
+          "CAST(COALESCE((SELECT SUM(p.balanceAmount) FROM Payment p WHERE p.present.fund.id = f.id AND p.present.status = :presentStatus), 0) / f.goalPrice * 100 AS int), " +
           "u.id " +
           ") " +
           "FROM Present pre " +
@@ -33,7 +33,7 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "JOIN pre.fund f ON f.status = :fundStatus " +
           "JOIN pre.payment pay " +
           "WHERE pre.status = :presentStatus " +
-          "GROUP BY f.id, u.id, f.title, u.profileImage " +
+          "GROUP BY f.id, f.title, f.imageUrl, f.fundingPeriod.finishFunding, f.goalPrice, u.id " +
           "ORDER BY pay.balanceAmount DESC "
   )
   List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(
