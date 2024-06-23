@@ -111,13 +111,11 @@ public class PresentService {
             .bankCode(payment.getBank())
             .build();
 
-    PresentSuccessResponse response = PresentSuccessResponse.builder()
+    return PresentSuccessResponse.builder()
             .id(presentRepository.save(participateFunding).getId())
             .method(paymentMethod)
             .virtualAccount(virtualAccount)
             .build();
-
-    return response;
   }
 
   @Transactional(readOnly = true)
@@ -194,10 +192,15 @@ public class PresentService {
     boolean isDepositCompleted = previousStatus.equals(PaymentStatus.DONE);
     VirtualAccount virtualAccount = null;
     if (refundable) refundable = !historyStatus.startsWith("취소");
-    if (isVirtualAccount) virtualAccount = VirtualAccount.builder()
-            .bankCode(payment.getBank())
-            .accountNumber(payment.getAccountNumber())
-            .build();
+    if (isVirtualAccount) {
+      String bankCode = payment.getBank();
+      String accountNumber = payment.getAccountNumber();
+      if (!bankCode.equals("") && accountNumber != null)
+        virtualAccount = VirtualAccount.builder()
+              .bankCode(bankCode)
+              .accountNumber(accountNumber)
+              .build();
+    }
 
     return PaymentHistoryResponse.builder()
             .id(payment.getId().toString())
