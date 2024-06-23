@@ -30,10 +30,10 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           ") " +
           "FROM Fund f " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
-          "JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
+          "JOIN f.user u ON u.id = :userId AND u.status = :userStatus " +
           "LEFT JOIN pre.payment pay " +
           "WHERE f.status = :fundStatus " +
-          "GROUP BY f.id, u.id, f.title, u.profileImage " +
+          "GROUP BY f.id, u.id, f.title, f.imageUrl, f.fundingPeriod.finishFunding " +
           "ORDER BY pay.balanceAmount DESC "
   )
   List<FundingSummaryResponse> findFundingSummaryByUserIdAndStatus(
