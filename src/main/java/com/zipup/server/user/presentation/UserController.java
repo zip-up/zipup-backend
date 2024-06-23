@@ -101,7 +101,12 @@ public class UserController {
   }
 
   @Operation(summary = "배송지 등록", description = "배송지 & 전화번호 등록")
-  @PostMapping("/pickup")
+  @PatchMapping("/pickup")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "회원 정보",
+                  content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+  })
+  @ResponseStatus(HttpStatus.OK)
   public SimpleDataResponse setPickupInfo(
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user,
           @RequestBody PickUpInfoRequest request
@@ -111,6 +116,11 @@ public class UserController {
 
   @Operation(summary = "배송지 조회", description = "배송지 & 전화번호 조회")
   @GetMapping("/pickup")
+  @ApiResponses(value = {
+          @ApiResponse(responseCode = "200", description = "배송지 & 전화번호 정보",
+                  content = @Content(schema = @Schema(implementation = PickUpInfoRequest.class))),
+  })
+  @ResponseStatus(HttpStatus.OK)
   public PickUpInfoRequest getPickupInfo(
           final @Parameter(hidden = true) @AuthenticationPrincipal UserDetails user
   ) {
