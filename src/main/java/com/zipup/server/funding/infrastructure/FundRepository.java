@@ -54,7 +54,9 @@ public interface FundRepository extends JpaRepository<Fund, UUID> {
           "LEFT JOIN f.user u ON u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
           "LEFT JOIN pre.payment pay " +
-          "WHERE f.status = :fundStatus AND DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE) > 0" +
+          "WHERE f.status = :fundStatus " +
+          "AND DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE) > 0 " +
+          "AND SUM(pay.balanceAmount) / f.goalPrice < 1 " +
           "GROUP BY f.id, f.title, u.id " +
           "ORDER BY CAST(COALESCE(SUM(pay.balanceAmount) / f.goalPrice * 100, 0) AS int) DESC "
   )
