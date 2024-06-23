@@ -26,4 +26,6 @@ public class PaymentResultResponse {
   private String status;
   @Schema(description = "취소 내역")
   private List<CancelRecord> cancels;
+  @Schema(description = "가상 계좌 정보")
+  private VirtualAccount virtualAccount;
 }
