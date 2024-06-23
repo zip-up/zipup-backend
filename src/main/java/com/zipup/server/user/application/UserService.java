@@ -1,5 +1,6 @@
 package com.zipup.server.user.application;
 
+import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.security.util.JwtProperties;
@@ -81,6 +82,21 @@ public class UserService {
     }
     else if (isRefresh) throw new BaseException(EMPTY_REFRESH_JWT);
     else throw new BaseException(EMPTY_ACCESS_JWT);
+  }
+
+  @Transactional
+  public SimpleDataResponse setPickupInfo(String userId, PickUpInfoRequest request) {
+    User user = findById(userId);
+    user.setPhoneNumber(request.getPhoneNumber());
+    user.setDetailAddress(request.getDetailAddress());
+    user.setRoadAddress(request.getRoadAddress());
+
+    return new SimpleDataResponse(userId);
+  }
+
+  public PickUpInfoRequest getPickupInfo(String userId) {
+    User user = findById(userId);
+    return new PickUpInfoRequest(user.getRoadAddress(), user.getDetailAddress(), user.getPhoneNumber());
   }
 
   @Transactional(readOnly = true)
