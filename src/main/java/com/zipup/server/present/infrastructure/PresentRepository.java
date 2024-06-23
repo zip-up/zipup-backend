@@ -25,7 +25,7 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "f.title, " +
           "COALESCE(f.imageUrl, ''), " +
           "DATEDIFF(f.fundingPeriod.finishFunding, CURRENT_DATE), " +
-          "CAST(COALESCE((SELECT SUM(p.balanceAmount) FROM Payment p JOIN p.present pr WHERE pr.fund.id = f.id), 0) / f.goalPrice * 100 AS int), " +
+          "CAST(COALESCE((SELECT SUM(p.balanceAmount) FROM Payment p JOIN p.present pr AND p.status = :presentStatus WHERE pr.fund.id = f.id), 0) / f.goalPrice * 100 AS int), " +
           "u.id " +
           ") " +
           "FROM Present pre " +
