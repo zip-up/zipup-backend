@@ -29,8 +29,8 @@ public interface PresentRepository extends JpaRepository<Present, UUID> {
           "u.id " +
           ") " +
           "FROM Fund f " +
-          "JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
           "LEFT JOIN f.presents pre ON pre.status = :presentStatus " +
+          "JOIN pre.user u ON u.id = :userId AND u.status = :userStatus " +
           "LEFT JOIN pre.payment pay " +
           "WHERE f.status = :fundStatus " +
           "GROUP BY f.id, u.id, f.title, u.profileImage " +
