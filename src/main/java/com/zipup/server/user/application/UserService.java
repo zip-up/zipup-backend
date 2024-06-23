@@ -2,6 +2,7 @@ package com.zipup.server.user.application;
 
 import com.zipup.server.funding.dto.SimpleDataResponse;
 import com.zipup.server.global.exception.BaseException;
+import com.zipup.server.global.exception.InvalidPickUpInfoException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.security.util.JwtProperties;
 import com.zipup.server.global.security.util.JwtProvider;
@@ -86,10 +87,20 @@ public class UserService {
 
   @Transactional
   public SimpleDataResponse setPickupInfo(String userId, PickUpInfoRequest request) {
+    String phoneNumber = request.getPhoneNumber();
+    String roadAddress = request.getRoadAddress();
+    String detailAddress = request.getDetailAddress();
+    if (phoneNumber == null || phoneNumber.isBlank() || !phoneNumber.startsWith("010"))
+      throw new InvalidPickUpInfoException("전화번호", phoneNumber);
+    if (roadAddress == null || !roadAddress.isBlank())
+      throw new InvalidPickUpInfoException("도로명주소", roadAddress);
+    if (detailAddress == null || !detailAddress.isBlank())
+      throw new InvalidPickUpInfoException("상세주소", roadAddress);
+
     User user = findById(userId);
-    user.setPhoneNumber(request.getPhoneNumber());
-    user.setDetailAddress(request.getDetailAddress());
-    user.setRoadAddress(request.getRoadAddress());
+    user.setPhoneNumber(phoneNumber);
+    user.setDetailAddress(roadAddress);
+    user.setRoadAddress(detailAddress);
 
     return new SimpleDataResponse(userId);
   }

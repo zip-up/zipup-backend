@@ -105,6 +105,8 @@ public class UserController {
   @ApiResponses(value = {
           @ApiResponse(responseCode = "200", description = "회원 정보",
                   content = @Content(schema = @Schema(implementation = SimpleDataResponse.class))),
+          @ApiResponse(responseCode = "400", description = "잘못된 배송지&전화번호 입력값",
+                  content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
   })
   @ResponseStatus(HttpStatus.OK)
   public SimpleDataResponse setPickupInfo(
