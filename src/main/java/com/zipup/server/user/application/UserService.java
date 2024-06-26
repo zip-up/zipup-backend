@@ -50,7 +50,6 @@ public class UserService {
   @Transactional
   public SignInResponse signUp(SignUpRequest request) {
     User user = createUser(request);
-
     return SignInResponse.builder()
             .id(user.getId().toString())
             .email(user.getEmail())
