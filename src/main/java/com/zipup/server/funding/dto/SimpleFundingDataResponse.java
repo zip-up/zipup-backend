@@ -11,5 +11,6 @@ import lombok.RequiredArgsConstructor;
 public class SimpleFundingDataResponse {
   @Schema(description = "펀딩 식별자 값 (UUID)")
   private final String id;
+  @Schema(description = "펀딩 이미지")
   private final String imageUrl;
 }
