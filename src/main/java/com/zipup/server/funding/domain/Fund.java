@@ -2,10 +2,7 @@ package com.zipup.server.funding.domain;
 
 import com.zipup.server.funding.dto.FundingSummaryResponse;
 import com.zipup.server.global.util.converter.StringToUuidConverter;
-import com.zipup.server.global.util.entity.BaseTimeEntity;
-import com.zipup.server.global.util.entity.ColumnStatus;
-import com.zipup.server.global.util.entity.FundingPeriod;
-import com.zipup.server.global.util.entity.GiftCard;
+import com.zipup.server.global.util.entity.*;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.user.domain.User;
 import lombok.*;
@@ -71,6 +68,10 @@ public class Fund extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('CHUNSIK')")
   private GiftCard card;
+
+  @Enumerated(EnumType.STRING)
+  @Column(columnDefinition = "ENUM('SHIPPING', 'COMPLETED') DEFAULT 'SHIPPING'")
+  private DeliveryStatus deliveryStatus;
 
   @Embedded
   private FundingPeriod fundingPeriod;
