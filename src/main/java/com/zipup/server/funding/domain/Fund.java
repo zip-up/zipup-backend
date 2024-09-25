@@ -9,6 +9,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ public class Fund extends BaseTimeEntity {
   private String phoneNumber;
 
   @Column(columnDefinition = "text")
+  @Max(value = 500)
   private String description;
 
   @Column
@@ -64,6 +66,10 @@ public class Fund extends BaseTimeEntity {
   @Column
   @Setter
   private String cancelReason;
+
+  @Column(columnDefinition = "text")
+  @Setter
+  private String letter;
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('CHUNSIK')")
