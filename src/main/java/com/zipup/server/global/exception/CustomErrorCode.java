@@ -37,6 +37,7 @@ public enum CustomErrorCode {
   SERVER_ERROR(4001, "서버와의 연결에 실패하였습니다."),
   REDIS_ERROR(4002, "redis 연결에 실패하였습니다."),
   TOSS_ERROR(4003, "toss payment 연결에 실패하였습니다."),
+  SSE_ERROR(4004,"SSE CONNECT ERROR"),
 
   /**
    * 5000 : 알 수 없는 오류
