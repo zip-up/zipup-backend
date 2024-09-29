@@ -97,7 +97,7 @@ public class Fund extends BaseTimeEntity {
     return imageUrl.startsWith("//") ? "https:" + imageUrl : imageUrl;
   }
 
-  private int calculatePercentage() {
+  public int calculatePercentage() {
     int nowPresent = presents.stream()
             .filter(present -> present.getStatus().equals(ColumnStatus.PUBLIC))
             .mapToInt(present -> present.getPayment().getBalanceAmount())

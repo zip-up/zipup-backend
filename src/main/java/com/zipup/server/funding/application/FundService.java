@@ -53,6 +53,10 @@ public class FundService {
   public FundingDetailResponse findFundingDetailByFundIdAndStatus(String fundId, ColumnStatus userStatus, ColumnStatus presentStatus, ColumnStatus fundStatus) {
     return fundRepository.findFundingDetailByFundIdAndStatus(UUID.fromString(fundId), userStatus, presentStatus, fundStatus);
   }
+  @Transactional(readOnly = true)
+  public List<FundingAllResponse> findFundingDetailAll(ColumnStatus userStatus, ColumnStatus presentStatus, ColumnStatus fundStatus) {
+    return fundRepository.findFundingDetailAll(userStatus, presentStatus, fundStatus);
+  }
 
   @Transactional
   public SimpleFundingDataResponse createFunding(CreateFundingRequest request, String userId) {

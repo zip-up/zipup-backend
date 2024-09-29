@@ -1,13 +1,14 @@
 package com.zipup.server.notify.application;
 
-import com.zipup.server.notify.Repository.EmitterRepository;
-import com.zipup.server.notify.Repository.NotificationRepository;
+import com.zipup.server.notify.infrastructure.EmitterRepository;
+import com.zipup.server.notify.infrastructure.NotificationRepository;
 import com.zipup.server.notify.domain.Notification;
 import com.zipup.server.notify.dto.NotificationResponse;
 import com.zipup.server.notify.dto.NotificationType;
 import com.zipup.server.global.exception.CustomErrorCode;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.user.domain.CustomUserDetails;
+import com.zipup.server.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,10 +45,10 @@ public class NotificationService {
             throw  new UserException(CustomErrorCode.SSE_ERROR, email);
         }
     }
-    public void send(String receiver, NotificationType notificationType, String title, String content, String url) {
-        Notification notification = notificationRepository.save(new Notification(notificationType, title, content, url, receiver, false));
+    public void send(User receiver, NotificationType notificationType, String title,String url) {
+        Notification notification = notificationRepository.save(new Notification(notificationType,url ,title, receiver, false));
 
-        Map<String, SseEmitter> emitters = emitterRepository.findByEmail(receiver);
+        Map<String, SseEmitter> emitters = emitterRepository.findByEmail(receiver.getEmail());
         emitters.forEach(
                 (key, emitter) -> {
                     sendToClient(emitter, key, new NotificationResponse(notification));

@@ -10,6 +10,8 @@ import com.zipup.server.global.exception.BaseException;
 import com.zipup.server.global.exception.ResourceNotFoundException;
 import com.zipup.server.global.exception.UserException;
 import com.zipup.server.global.util.entity.ColumnStatus;
+import com.zipup.server.notify.application.NotificationService;
+import com.zipup.server.notify.dto.NotificationType;
 import com.zipup.server.present.application.PresentService;
 import com.zipup.server.present.domain.Present;
 import com.zipup.server.present.dto.PresentSummaryResponse;
@@ -36,6 +38,7 @@ public class UserFundFacade implements UserFacade<Fund> {
   private final AuthService authService;
   private final FundService fundService;
   private final PresentService presentService;
+  private final NotificationService notificationService;
 
   @Override
   @Transactional(readOnly = true)
@@ -90,6 +93,7 @@ public class UserFundFacade implements UserFacade<Fund> {
 
     List<Present> presentList = targetFund.getPresents();
     presentList.forEach(presentService::changePrivateParticipate);
+    notificationService.send(targetUser, NotificationType.DELETE, String.valueOf(targetFund.getId()),targetFund.getTitle());
 
     return presentList.stream()
             .map(Present::toSummaryResponse)

@@ -70,7 +70,6 @@ public class PaymentService {
       throw new UniqueConstraintException("OrderId, UserId", orderId + " " + userId);
     redisTemplate.opsForValue().set(orderId + userId, String.valueOf(amount), TimeUnit.MINUTES.toMillis(60), TimeUnit.MILLISECONDS);
   }
-
   @Transactional
   public PaymentResultResponse confirmPayment(PaymentConfirmRequest request, String userId) {
     if (existsByPaymentKey(request.getPaymentKey())) throw new UniqueConstraintException("PaymentKey", request.getPaymentKey());

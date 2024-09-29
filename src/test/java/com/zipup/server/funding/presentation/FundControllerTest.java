@@ -1,9 +1,8 @@
-package com.zipup.server.funding.presentaion;
+package com.zipup.server.funding.presentation;
 
 import com.zipup.server.funding.application.CrawlerService;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
-import com.zipup.server.funding.presentation.FundController;
 import com.zipup.server.global.security.util.JwtProvider;
 import com.zipup.server.global.util.entity.UserRole;
 import com.zipup.server.user.domain.User;

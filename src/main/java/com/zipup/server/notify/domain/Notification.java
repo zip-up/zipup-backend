@@ -2,6 +2,7 @@ package com.zipup.server.notify.domain;
 
 import com.zipup.server.notify.dto.NotificationType;
 import com.zipup.server.global.util.entity.BaseTimeEntity;
+import com.zipup.server.user.domain.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,20 +20,21 @@ public class Notification extends BaseTimeEntity {
     private NotificationType notificationType;
     @Column(columnDefinition = "text")
     private String title;
-    @Column(columnDefinition = "text")
-    private String content;
+
     @Column(columnDefinition = "text")
     private String url;
-    @Column
-    private String receiver;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User receiver;
+
     @Column
     private Boolean isRead;
 
 
-    public Notification(NotificationType notificationType, String title, String content, String url, String receiver, Boolean isRead) {
+    public Notification(NotificationType notificationType, String title,String url, User receiver, Boolean isRead) {
         this.notificationType = notificationType;
         this.title = title;
-        this.content = content;
         this.url = url;
         this.receiver = receiver;
         this.isRead = isRead;

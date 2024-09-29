@@ -1,6 +1,7 @@
 package com.zipup.server.notify.dto;
 
 import com.zipup.server.notify.domain.Notification;
+import com.zipup.server.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,15 +13,14 @@ public class NotificationResponse {
     private Long id;
     private NotificationType notificationType;
     private String title;
-    private String content;
     private String url;
-    private String receiver;
+    private String nickname;
 
     public NotificationResponse(Notification notification) {
         this.id = notification.getId();
         this.notificationType = notification.getNotificationType();
         this.title = notification.getTitle();
-        this.content = notification.getContent();
-        this.url = notification.getReceiver();
+        this.url = notification.getUrl();
+        this.nickname = notification.getReceiver().getName();
     }
 }

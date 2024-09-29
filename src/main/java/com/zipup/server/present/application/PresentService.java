@@ -1,5 +1,8 @@
 package com.zipup.server.present.application;
 
+import com.zipup.server.funding.infrastructure.FundRepository;
+import com.zipup.server.notify.application.NotificationService;
+import com.zipup.server.notify.dto.NotificationType;
 import com.zipup.server.funding.application.FundService;
 import com.zipup.server.funding.domain.Fund;
 import com.zipup.server.funding.dto.FundingSummaryResponse;
@@ -30,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -44,6 +48,7 @@ public class PresentService {
   private final FundService fundService;
   private final PaymentService paymentService;
   private final PresentRepository presentRepository;
+  private final NotificationService notificationService;
 
   private final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -95,9 +100,14 @@ public class PresentService {
     String paymentId = request.getPaymentId();
     Payment payment = paymentService.findById(paymentId);
 
+    Fund fund = fundService.findById(fundingId);
+    if (fund.getGoalPrice() ==
+            fund.calculatePercentage()) {
+      notificationService.send(targetUser, NotificationType.COMPLETE, String.valueOf(fund.getId()),fund.getTitle());
+    }
     Present participateFunding = Present.builder()
             .user(targetUser)
-            .fund(fundService.findById(fundingId))
+            .fund(fund)
             .payment(payment)
             .senderName(request.getSenderName())
             .congratsMessage(request.getCongratsMessage())
@@ -110,7 +120,7 @@ public class PresentService {
             .accountNumber(payment.getAccountNumber())
             .bankCode(payment.getBank())
             .build();
-
+    notificationService.send(targetUser, NotificationType.PRESENT, String.valueOf(fund.getId()),fund.getTitle());
     return PresentSuccessResponse.builder()
             .id(presentRepository.save(participateFunding).getId())
             .method(paymentMethod)
@@ -145,6 +155,8 @@ public class PresentService {
     changePrivateParticipate(targetPresent);
     setPresentCancelReason(targetPresent, request.getCancelReason());
 
+    Fund fund = targetPresent.getFund();
+    notificationService.send(targetUser, NotificationType.CANCEL, String.valueOf(fund.getId()),fund.getTitle());
     return "취소 성공";
   }
 
